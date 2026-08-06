@@ -1,0 +1,8 @@
+/* ==========================================================================
+   EG-<TEST-ID> — <Test Name>
+   Scope ALL rules under the body class added in variation.js
+   ========================================================================== */
+
+.EG-<TEST-ID> {
+  /* your scoped styles here */
+}

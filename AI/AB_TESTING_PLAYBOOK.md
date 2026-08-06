@@ -1,0 +1,542 @@
+# AB Testing Playbook
+
+Default coding standard for every A/B test in this repository. Distilled from the latest shipped tests (MONASH CRO series, REVIVSERUMS, PRAXINDO, JUVIA, BELLA & DUKE, GUARDIAN FUNERALS, RIGID HITCH, AAPL). Follow this file for all future work. It replaces ad-hoc / older wrapper styles found in legacy folders.
+
+---
+
+## 1. Repository Layout (per test)
+
+```
+CLIENT/
+  TEST NAME/
+    metadata.json          # RAG search metadata (always create)
+    v1.json / v2.json      # platform config: files + urls
+    share.js               # shared goals/tracking (optional, shared across variations)
+    readme.md              # optional notes / test brief
+    variation1/
+      variation.js         # main implementation
+      variation.css        # scoped styles
+    variation2/            # additional variations (variationB/, variation3/ etc.)
+      ...
+```
+
+- Client folder is the client name in caps (e.g. `MONASH`, `REVIVSERUMS`, `PRAXINDO`).
+- Test folder name mirrors the internal test ID (e.g. `CRO MOL 12.01 Application  Restructure`).
+- `v1.json` shape:
+
+```json
+{
+  "files": ["./variation1/variation.css", "./variation1/variation.js", "./share.js"],
+  "urls": ["https://client-site.com/page"]
+}
+```
+
+- `metadata.json` must include: `id`, `client`, `website_url`, `type`, `platform`, `website_type`, `framework` (`vanilla js`), `devices`, `techniques`, `changes_made`, `number_of_variations`, `variation_differences`, `complexity`, `notes`.
+
+---
+
+## 2. Base Script (variation.js) — use this wrapper verbatim
+
+Every test starts from the standard wrapper. `init()` is the only entry point. Do not restructure the wrapper unless specifically required.
+
+```js
+(function () {
+  try {
+    /* main variables */
+    var debug = 0;
+    var variation_name = "EG-<TEST-ID>";
+    var $;
+
+    /* all Pure helper functions */
+
+    // Polls for a selector then triggers once; always self-clears with a timeout.
+    function waitForElement(selector, trigger, delayInterval, delayTimeout) {
+      var interval = setInterval(function () {
+        if (
+          document &&
+          document.querySelector(selector) &&
+          document.querySelectorAll(selector).length > 0
+        ) {
+          clearInterval(interval);
+          trigger();
+        }
+      }, delayInterval);
+      setTimeout(function () {
+        clearInterval(interval);
+      }, delayTimeout);
+    }
+
+    // Delegated event binding for static + dynamic elements. Always use this.
+    function live(selector, event, callback, context) {
+      function addEvent(el, type, handler) {
+        if (el.attachEvent) el.attachEvent("on" + type, handler);
+        else el.addEventListener(type, handler);
+      }
+      this.Element &&
+        (function (ElementPrototype) {
+          ElementPrototype.matches =
+            ElementPrototype.matches ||
+            ElementPrototype.matchesSelector ||
+            ElementPrototype.webkitMatchesSelector ||
+            ElementPrototype.msMatchesSelector ||
+            function (selector) {
+              var node = this,
+                nodes = (node.parentNode || node.document).querySelectorAll(selector),
+                i = -1;
+              while (nodes[++i] && nodes[i] != node);
+              return !!nodes[i];
+            };
+        })(Element.prototype);
+      function live(selector, event, callback, context) {
+        addEvent(context || document, event, function (e) {
+          var found,
+            el = e.target || e.srcElement;
+          while (el && el.matches && el !== context && !(found = el.matches(selector))) el = el.parentElement;
+          if (el && found) callback.call(el, e);
+        });
+      }
+      live(selector, event, callback, context);
+    }
+
+    // Standard SPA routing listener. Copy as-is; only customise the callback body.
+    function listener() {
+      window.addEventListener("locationchange", function () {
+        // re-run init / cleanup for the new route
+      });
+      history.pushState = ((f) =>
+        function pushState() {
+          var ret = f.apply(this, arguments);
+          window.dispatchEvent(new Event("pushstate"));
+          window.dispatchEvent(new Event("locationchange"));
+          return ret;
+        })(history.pushState);
+      history.replaceState = ((f) =>
+        function replaceState() {
+          var ret = f.apply(this, arguments);
+          window.dispatchEvent(new Event("replacestate"));
+          window.dispatchEvent(new Event("locationchange"));
+          return ret;
+        })(history.replaceState);
+      window.addEventListener("popstate", () => {
+        window.dispatchEvent(new Event("locationchange"));
+      });
+    }
+
+    /* Variation Init */
+    function init() {
+      document.body.classList.add('EG-<TEST-ID>');
+      // orchestrate helpers...
+    }
+
+    listener(); // only when SPA support is needed
+
+    /* Initialize variation */
+    waitForElement('<required-selector>', init, 50, 15000);
+  } catch (e) {
+    if (debug) console.log(e, "error in Test " + variation_name);
+  }
+})();
+```
+
+- Default polling: `delayInterval = 50`, `delayTimeout = 15000`. Never run `init()` directly before the required DOM exists.
+- Wrap everything in `try/catch`; log only when `debug` is enabled.
+
+---
+
+## 3. Naming Conventions
+
+- **Body class**: `EG-<TEST-ID>` added once inside `init()`. Examples seen in the repo: `EG-AB-06-HP`, `EG-MOL1001`, `EG-PXD-SM27`, `EG-GF-homepage`, `EG-GC`, `EG-HP`. Every rule in CSS must be scoped by this class.
+- **New DOM elements**: lowercase `eg-` prefixed classes (`.eg-hero-section`, `.eg-course`, `.eg-guest-cta`, `.eg-btn`). Never reuse site classes for our elements.
+- **variation_name**: descriptive, e.g. `"EG-PXD-SM27-Redesign"`, `"EG-HP-VariantA"`.
+
+---
+
+## 4. DOM Selector Rules
+
+- **Dynamic selectors are forbidden**: no auto-generated classes, random IDs, hashed attributes.
+- **Every selector must be a valid CSS selector.** IDs that start with a digit (e.g. Salesforce/SFMC IDs like `00N2v00000VhUGp`) are NOT valid in `#id` form — `querySelector('#00N2v00000VhUGp')` throws `SyntaxError`. Reference them via an attribute selector `[id="00N2v00000VhUGp"]` or a stable class/`data-*` attribute instead. Never build selectors from raw dynamic strings.
+- **No `contains("...")` partial-class matching.** It is not a CSS selector — it silently matches any substring and breaks on renames (`contains("col-12")` also matches `col-12x`). Use the exact stable class name.
+- **No Bootstrap/grid utility classes as anchors** (`.row`, `.col-12`, `.col-sm-6`, `.container`, `.mb-5`, `.d-flex`, etc.). They describe layout, not meaning, and are the first thing to change in a redesign. Anchor to the semantic wrapper (`.forms-layout__form`, `[data-field="course"]`) instead.
+- **No tag-only heading selectors** (`#some-id h6` where the tag is the whole handle). `h6` can become `h5` or a `p` tomorrow. Select the stable container/class/`data-*` and style the heading inside it, or use a text-stable parent.
+- **No visual/utility classes as anchors** (`.bg-gradient`, `.text-white`, `.shadow-sm`, `.font-bold`). They describe styling, not structure, and get renamed freely.
+- **No positional selectors** (`.row > div:nth-child(3)`) — DOM order and grid columns change.
+- **Stable-selector checklist:** (a) semantic id/class/`data-*`, (b) survives a theme/grid update, (c) identical across dev → staging → prod. If any answer is no, find a better anchor.
+- Preferred: `id`, stable classes, `data-*` attributes, and CSS selector chaining (e.g. `[data-login="logged-out"] #cart-page .button-go-to-checkout`).
+- Never assume a single element — loop `querySelectorAll(...)` results and apply the change to every match where applicable.
+- Prevent duplicate insertion/listeners/observers:
+  - `if (!parent.querySelector('.eg-element')) { ... }`
+  - `if (!document.body.classList.contains('EG-X')) { document.body.classList.add('EG-X'); }`
+- Prefer `insertAdjacentHTML` / `insertAdjacentElement` / `insertBefore` over `innerHTML` overwrites that destroy event bindings.
+
+---
+
+## 5. JavaScript Rules
+
+- **Function structure**: no nested functions inside `init()`. All helpers sit at the top level of the IIFE; `init()` only orchestrates.
+- **Code readability**: keep code simple, modular, easy to understand and maintain. Avoid overly complex logic.
+- **Commenting**: JS comments only (markdown/HTML comments do not ship in variations). Comment every major function with its purpose; avoid per-line noise.
+- **Events**: always `live(selector, event, callback, context)` for delegated events. Do not hand-roll delegation, and avoid binding to elements that don't exist yet.
+- **SPA support**: try the standard `listener()` first (pushstate / replacestate / locationchange / popstate). Customise only the callback body. Fall back to a custom listener only if the standard one fails.
+- **setInterval / setInterval polling**: every interval must self-clear — either on success (`clearInterval(interval)` before `trigger()`) or via the paired `setTimeout` (15s default). No infinite intervals.
+- **Loops**: no `while(true)` or unbounded loops; every loop needs a guaranteed exit.
+- **MutationObserver**:
+  - Performance friendly: observe only the required container, use `subtree: true` only when needed, filter with `attributeFilter` when watching classes.
+  - Guard re-entrancy with an `isRunning` flag and debounce (`if (isRunning) return;`).
+  - Disconnect the observer when it is no longer needed.
+  - Never observe the whole `document`/`body` unless the test genuinely needs site-wide change detection.
+- **Duplicate protection**: before inserting elements, attaching listeners, or creating observers, check they don't already exist.
+- **Performance**: avoid repeated DOM queries (cache queried elements), unnecessary timers, duplicate listeners, and needless reflows/repaints.
+- **Keep the site safe**: never break existing functionality, modify unrelated components, or create global side effects.
+
+---
+
+## 6. CSS Rules
+
+- Scope every rule under the body class: `.EG-<TEST-ID> .eg-element { ... }`. Never write unscoped selectors.
+- Use the `eg-` prefix for all new classes.
+- Use comment section headers (`/* Main outer section wrapper */`, `/* Cards CSS */`) to group styles.
+- Mobile-first or explicit `@media (min-width: 992px)` / `@media (max-width: 767px)` breakpoints; test on desktop, tablet and mobile.
+- Prefer CSS `var(--...)` tokens from the site's design system when available; fall back to explicit hex values.
+- Avoid `!important` — use only when overriding a stubborn site rule (targeted `!important` on overrides is acceptable and common in shipped CSS).
+- Reuse site classes where appropriate so interactions (native collapse, forms, carousels) keep working.
+- The same forbidden anchors as §4 apply to CSS: no tag-only headings (`#x h6 { }` — the tag may change), no positional/grid chains (`.row > div`), no styling a heading you don't own. Target the stable class/`data-*` container and style the heading inside it.
+
+---
+
+## 7. share.js — Goals / Tracking
+
+`share.js` runs on every variation (it is listed in each `v1.json`) and is used for click/goal tracking, not layout:
+
+```js
+function init() {
+  live('.some-cta, .eg-analytics', 'click', function () {
+    console.log('tracked action description');
+  });
+}
+waitForElement('html body', init, 50, 15000);
+```
+
+- One `live()` per tracked interaction, with a human-readable log string describing the click.
+- Keep it pure — no DOM mutation in `share.js`.
+
+---
+
+## 8. Reusable Patterns Library
+
+This library is the primary source of implementation recipes. Before writing any code, find the pattern(s) below that match the test and adapt them. It is distilled from the shipped tests in the archive (MONASH CRO, REVIVSERUMS, PRAXINDO, JUVIA, BELLA & DUKE, GUARDIAN FUNERALS, RIGID HITCH, AAPL and more). No external RAG search is required.
+
+Every recipe assumes the base script from §2 and follows the rules from §4–§6. All patterns must stay idempotent (guard against duplicate insertion), use only stable selectors, and never break existing functionality.
+
+### P1. Image Swap (incl. lazy-load, srcset, picture)
+
+**When:** replacing hero / product / section imagery.
+
+**Recipe:**
+```js
+function swapImage(container, newSrc) {
+  var img = container.querySelector('img');
+  if (!img) return;
+  // Preserve the original for device-switch restore (P11)
+  if (!container.classList.contains('eg-swapped')) {
+    container.dataset.egOrig = img.currentSrc || img.src;
+    container.classList.add('eg-swapped');
+  }
+  // Set every resolution source so native + lazy-load libs pick it up
+  img.setAttribute('src', newSrc);
+  img.setAttribute('srcset', newSrc + ' 1x');
+  img.setAttribute('data-src', newSrc);       // lazy-loader hooks
+  img.setAttribute('data-lazy-src', newSrc);
+  var sources = container.querySelectorAll('source');
+  for (var i = 0; i < sources.length; i++) sources[i].setAttribute('srcset', newSrc);
+}
+```
+
+**Gotchas:**
+- Update `<source srcset>` inside `<picture>` too, or the swap silently fails on art-direction breakpoints.
+- Keep the element's height (fixed height, `aspect-ratio`, or a CSS min-height) so the swap does not cause layout shift (CLS).
+- Only touch images matching a stable container; never sweep `document.querySelectorAll('img')`.
+
+### P2. Insert a New Section / Block Between Elements
+
+**When:** adding a marketing section, banner, CTA, or content block at a specific spot.
+
+**Recipe:**
+```js
+function addSection() {
+  var anchor = document.querySelector('.stable-anchor');
+  if (!anchor || document.querySelector('.eg-hero-section')) return; // idempotent
+  var section = document.createElement('div');
+  section.className = 'eg-hero-section';
+  section.innerHTML = '<h2 class="eg-title">...</h2><p class="eg-copy">...</p>';
+  anchor.insertAdjacentElement('beforebegin', section); // afterend | beforebegin | afterbegin | beforeend
+}
+```
+
+**Gotchas:**
+- `insertAdjacentHTML('beforeend', html)` is the fastest way to fill an element; use `insertAdjacentElement` when you hold a node reference.
+- Always guard on the presence of the newly created element before inserting (double-poll / re-run protection).
+- Never `innerHTML =` an existing container that carries event bindings — that destroys them.
+
+### P3. Sticky Element (header / bar / CTA)
+
+**When:** making an element stick, appear, or collapse on scroll.
+
+**Recipe:**
+```js
+function initSticky() {
+  if (document.body.classList.contains('eg-stuck')) return;
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    document.body.classList.toggle('eg-stuck', y > 300); // CSS owns all styling
+  }, { passive: true });
+}
+```
+```css
+.EG-TEST-ID .site-header { transition: box-shadow .2s; }
+.EG-TEST-ID.eg-stuck .site-header { position: sticky; top: 0; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+```
+
+**Gotchas:**
+- Prefer CSS `position: sticky` for the element itself; only use a scroll listener when you must style other parts of the page based on scroll depth.
+- Use `{ passive: true }` and throttle with `requestAnimationFrame` if the callback does heavy work.
+- Check `position: sticky` against the site's scroll containers — sticky fails inside an `overflow: auto` ancestor that isn't the viewport.
+
+### P4. DOM Reordering (move existing sections)
+
+**When:** moving a section, reordering list items, transplanting an existing block into a new spot.
+
+**Recipe:**
+```js
+function reorder() {
+  var list = document.querySelector('.eg-parent');
+  if (!list || list.dataset.egReordered) return;
+  list.querySelectorAll('.eg-source-item').forEach(function (item) {
+    list.insertBefore(item, list.firstChild); // appendChild / insertBefore both auto-detach
+  });
+  list.dataset.egReordered = '1';
+}
+```
+
+**Gotchas:**
+- Moving a node auto-detaches it from its old position — no manual remove needed, but never append the same node twice (it silently moves instead of duplicating).
+- Loop in reverse when reordering into a new order to avoid index skew (`for (var i = n - 1; i >= 0; i--)`).
+- Reuse `live()` for any click handling on moved nodes so bindings survive the move.
+
+### P5. Survival Under AJAX / Re-render (MutationObserver guard)
+
+**When:** the page re-renders the target area (carousels, carts, infinite feeds) and undoes our changes.
+
+**Recipe:**
+```js
+var observerRunning = false;
+function ensureApplied() {
+  if (observerRunning) return; // re-entrancy guard
+  observerRunning = true;
+  applyChanges(); // the idempotent init work
+  setTimeout(function () { observerRunning = false; }, 200); // debounce
+}
+var mo = new MutationObserver(function (mutations) {
+  var changed = mutations.some(function (m) {
+    return m.type === 'childList' && m.addedNodes.length;
+  });
+  if (changed) ensureApplied();
+});
+mo.observe(document.querySelector('.target-container'), { childList: true, subtree: true });
+
+// Disconnect when done / not needed:
+// mo.disconnect();
+```
+
+**Gotchas:**
+- Scope the observer to the smallest container that changes; never observe `document.body` for whole-site change detection.
+- Guard with an `isRunning`/`observerRunning` flag + debounce to avoid infinite loops from your own mutations.
+- Disconnect the observer once the change is applied and stable.
+
+### P6. SPA Routing (cross-page persistence)
+
+**When:** the test must apply on multiple routes, or state must survive navigation.
+
+**Recipe:** use the standard `listener()` from §2 verbatim. Inside the callback, re-run `waitForElement` for the target of the new route and re-apply idempotent changes. For state that must persist across routes:
+
+```js
+var state = JSON.parse(localStorage.getItem('eg-flow') || '{}');
+function saveState(key, val) { state[key] = val; localStorage.setItem('eg-flow', JSON.stringify(state)); }
+```
+
+**Gotchas:**
+- Re-running `init()` must be safe — every mutation checks for the body class / element existence before acting.
+- Timestamp stored state when it should expire (e.g. urgency timers): store `Date.now()` and compare on read.
+
+### P7. Event Tracking / Goals
+
+**When:** measuring clicks on test elements or existing CTAs.
+
+**Recipe:** see §7 `share.js`. One `live()` per tracked interaction with a readable log string. Never mutate the DOM in `share.js`.
+
+### P8. Form Restructure (re-layout without breaking submission)
+
+**When:** redesigning a form's visual order/layout while keeping it functional.
+
+**Recipe:**
+```js
+function restructureForm() {
+  var form = document.querySelector('form.stable');
+  if (!form || form.classList.contains('eg-re') ) return;
+  form.classList.add('eg-re');
+  // Move existing fields into our layout via insertBefore/appendChild — do NOT clone
+  var submit = form.querySelector('.site-submit');
+  form.appendChild(submit); // submit last
+}
+```
+
+**Gotchas:**
+- Never clone inputs — duplicate `name`/`id` breaks autofill, validation, and submission parsing.
+- Keep every field's `name`, `id`, `required`, and value attributes intact.
+- Preserve native submit, tab order, autofill, and browser validation; test the form end-to-end.
+
+### P9. On-Demand External Library Loading
+
+**When:** the test needs a library the site does not ship (e.g. `tiny-slider` for a carousel).
+
+**Recipe:**
+```js
+function loadTinySlider(cb) {
+  if (window.tns) return cb();
+  if (document.querySelector('.eg-lib-loaded')) return; // already queued
+  var lib = document.createElement('div');
+  lib.className = 'eg-lib-loaded';
+  document.head.appendChild(lib);
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://cdn.example.com/tiny-slider.min.css';
+  document.head.appendChild(link);
+  var script = document.createElement('script');
+  script.src = 'https://cdn.example.com/tiny-slider.min.js';
+  script.onload = cb;
+  script.onerror = function () { /* fall back to static layout */ };
+  document.head.appendChild(script);
+}
+loadTinySlider(function () {
+  tns({ container: '.eg-carousel', items: 3, responsive: {...} });
+});
+```
+
+**Gotchas:**
+- Poll for the library's global (`window.tns`) before initialising — it may still be loading.
+- Guard against double-injection (both window-global check and a queued-element flag).
+- Provide a graceful non-JS/on-error fallback so content stays visible.
+
+### P10. Text / Copy / Price / Badge Replacement
+
+**When:** swapping headline/copy, changing prices, or adding sale badges.
+
+**Recipe:**
+```js
+function updateCopy() {
+  var heading = document.querySelector('.product-title');
+  if (!heading || heading.dataset.egDone) return;
+  heading.textContent = 'New headline';
+  heading.dataset.egDone = '1';
+
+  var price = document.querySelector('.price-amount');
+  if (price) price.textContent = '$49.99'; // keep currency formatting intact
+
+  var img = document.querySelector('.product-media');
+  if (img && !img.querySelector('.eg-badge')) {
+    var badge = document.createElement('span');
+    badge.className = 'eg-badge';
+    badge.textContent = 'Best Value';
+    img.appendChild(badge);
+  }
+}
+```
+
+**Gotchas:**
+- Change only the text node (`textContent`) of a leaf element — never rewrite `innerHTML` of a wrapper that has bindings.
+- Use ASCII / entity-safe strings for copy (avoid raw unicode that can break encoding in the injection pipeline).
+- For prices, preserve the site's currency formatting and `data-*` price hooks used by cart logic.
+
+### P11. Device-Switch Restore (matchMedia)
+
+**When:** the change must apply on some viewports and revert on others (e.g. mobile-only bar, desktop-only sidebar).
+
+**Recipe:**
+```js
+function deviceAware() {
+  var mq = window.matchMedia('(min-width: 992px)');
+  function apply() { document.body.classList.toggle('eg-desktop', mq.matches); }
+  apply();
+  mq.addEventListener('change', apply); // re-runs on rotate / resize across breakpoint
+}
+```
+
+**Gotchas:**
+- Keep the original values (e.g. stored via `dataset.egOrig` in P1) so you can restore on switch instead of re-sniffing.
+- Clean up `matchMedia` listeners with the test (they are scoped to the IIFE closure).
+
+### P12. Cross-Page Flow / Persistent State (localStorage)
+
+**When:** multi-step flow, first-visit nudges, urgency timers, previously-seen-CTA suppression.
+
+**Recipe:**
+```js
+var key = 'eg-' + variation_name;
+function initFlow() {
+  var data = {};
+  try { data = JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { data = {}; }
+  if (data.seen) return; // already engaged
+  // ... show CTA / start timer ...
+  function engage() { data.seen = 1; data.t = Date.now(); localStorage.setItem(key, JSON.stringify(data)); }
+  live('.eg-cta', 'click', engage);
+}
+```
+
+**Gotchas:**
+- Wrap `localStorage` access in try/catch (private mode / disabled storage throws).
+- Version the key with the variation name so different tests never collide.
+- Expire urgency/one-time timers by comparing `Date.now()` against the stored timestamp.
+
+---
+
+## 9. QA Checklist (run before shipping)
+
+- [ ] Wrapper is the standard base script; `init()` is the entry point.
+- [ ] `waitForElement` (50/15000 defaults) guards every initialization; no direct `init()` call on missing DOM.
+- [ ] Unique body class added inside `init()`; all CSS scoped to it.
+- [ ] Only stable selectors: semantic id/class/`data-*`; no `contains()`, no grid/utility classes (`.row`, `.col-sm-6`), no hashed/system IDs (Salesforce `00N...`), no tag-only headings (`h6`), no `.bg-gradient`-style visual classes, no positional selectors.
+- [ ] All inserts/listeners/observers guarded against duplicates.
+- [ ] Every `setInterval`/`setTimeout` clears itself or has a timeout.
+- [ ] MutationObservers are scoped, guarded (`isRunning`), and disconnected when done.
+- [ ] Events use `live()`; SPA tests use the standard `listener()`.
+- [ ] No `!important` unless required; no unscoped CSS.
+- [ ] Site functionality untouched; no global side effects.
+- [ ] `v1.json` created (+ `share.js` where clicks are tracked).
+- [ ] Verified on desktop, tablet, mobile.
+
+---
+
+## 10. Anti-Patterns (never do these)
+
+- `nth-child` / positional selectors on dynamic lists — they break the moment the site adds or reorders a row.
+- `contains("col-12")`-style partial-class matching — matches unrelated substrings and breaks on rename.
+- Bootstrap/grid utility classes (`.row`, `.col-sm-6`, `.container`) and visual classes (`.bg-gradient`, `.text-white`) as anchors — they change with the theme.
+- Hashed/system-generated IDs (Salesforce `00N2v00000VhUGp` and similar) — environment-specific, differ between sandbox and prod.
+- Tag-only heading selectors (`#x h6`) — `h6` may become `h5` or `p` at any time.
+- Hand-rolled event delegation or direct binding to elements that don't exist yet — use `live()`.
+- `while(true)` loops, unbounded intervals, or `setInterval` without a paired `setTimeout` self-clear.
+- Observing `document`/`body` with a MutationObserver for site-wide change detection.
+- `innerHTML =` on a container with event bindings; cloning inputs (duplicate `name`/`id`).
+- Rebuilding the whole page or touching unrelated components — scope everything to `EG-<TEST-ID>`.
+- Raw non-ASCII copy strings that can mangle encoding in the injection pipeline.
+- Re-initialising on every SPA route without idempotency guards (body class + element existence checks).
+
+---
+
+## 11. How to Use This Playbook
+
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P12).
+2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
+3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
+4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).
+5. New patterns discovered in future work should be added back into §8 so the library always expands.
+6. Run the QA checklist (§9) before finishing.

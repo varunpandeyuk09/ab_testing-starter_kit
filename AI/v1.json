@@ -1,0 +1,4 @@
+{
+  "files": ["./variation1/variation.css", "./variation1/variation.js", "./share.js"],
+  "urls": ["<https://client-site.com/page>"]
+}

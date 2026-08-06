@@ -1,0 +1,94 @@
+/* ==========================================================================
+   EG-EXAMPLE-SM01 — PLP Product Card Optimization
+   All rules scoped under .EG-EXAMPLE-SM01 (body class added in variation.js)
+
+   HOW TO READ THIS FILE:
+   - Every rule starts with .EG-EXAMPLE-SM01 — NEVER write unscoped selectors.
+   - New elements use .eg- prefix — never reuse site classes for our elements.
+   - Section headers group related rules (use them in your own tests).
+   - !important used only where the site rule is too specific to override normally.
+   ========================================================================== */
+
+/* ── Shipping Badge ────────────────────────────────────────────────────────
+   Injected before .price on every .product-item card via variation.js.
+   Display: inline-block pill, green background.
+   ───────────────────────────────────────────────────────────────────────── */
+.EG-EXAMPLE-SM01 .eg-shipping-badge {
+  display: inline-block;
+  background-color: #1a7a3c;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+}
+
+/* ── Product Card Adjustments ──────────────────────────────────────────────
+   Minor layout tweaks to the native .product-item to accommodate the badge.
+   ───────────────────────────────────────────────────────────────────────── */
+.EG-EXAMPLE-SM01 .product-item .price-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* ── Sticky Back-to-Top Bar ────────────────────────────────────────────────
+   Injected into document.body by variation.js.
+   Hidden by default; .eg-sticky-bar--visible class is toggled on scroll > 400px.
+   ───────────────────────────────────────────────────────────────────────── */
+.EG-EXAMPLE-SM01 .eg-sticky-bar {
+  position: fixed;
+  bottom: -70px;               /* start off-screen */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  transition: bottom 0.3s ease;
+  pointer-events: none;
+}
+
+.EG-EXAMPLE-SM01 .eg-sticky-bar.eg-sticky-bar--visible {
+  bottom: 20px;
+  pointer-events: auto;
+}
+
+.EG-EXAMPLE-SM01 .eg-sticky-bar__btn {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border: none;
+  border-radius: 24px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.EG-EXAMPLE-SM01 .eg-sticky-bar__btn:hover {
+  background-color: #333333;
+  transform: translateY(-2px);
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────
+   On mobile: badge stays the same, sticky bar goes full-width.
+   ───────────────────────────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+  .EG-EXAMPLE-SM01 .eg-sticky-bar {
+    left: 16px;
+    right: 16px;
+    transform: none;
+  }
+
+  .EG-EXAMPLE-SM01 .eg-sticky-bar__btn {
+    width: 100%;
+    text-align: center;
+    padding: 12px 22px;
+  }
+
+  .EG-EXAMPLE-SM01 .eg-shipping-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+}

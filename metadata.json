@@ -1,0 +1,16 @@
+{
+  "id": "<TEST_ID>",
+  "client": "<CLIENT>",
+  "website_url": "<https://client-site.com/page>",
+  "type": "<test-type>",
+  "platform": "<Convert | VWO | custom>",
+  "website_type": "<shopify | magento | nextjs | ...>",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": ["<technique-1>", "<technique-2>"],
+  "changes_made": ["<change-1>", "<change-2>"],
+  "number_of_variations": 1,
+  "variation_differences": "<N/A or description>",
+  "complexity": "<low | medium | high>",
+  "notes": "<implementation notes>"
+}

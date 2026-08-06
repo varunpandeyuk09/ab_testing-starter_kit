@@ -1,0 +1,26 @@
+{
+  "id": "EG-EXAMPLE-SM01",
+  "client": "EXAMPLE CLIENT",
+  "website_url": "https://www.example-client.com/collections/all",
+  "type": "PLP Product Card Optimization",
+  "platform": "Shopify",
+  "website_type": "E-commerce",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": [
+    "DOM insertion",
+    "MutationObserver",
+    "scroll event listener",
+    "delegated event binding",
+    "idempotent insertion guard"
+  ],
+  "changes_made": [
+    "Inserted 'Free Shipping' badge above price on every product card",
+    "Added sticky Back-to-Top bar that appears after 400px scroll",
+    "MutationObserver re-applies badges after filter/AJAX re-render"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation demonstrating badge injection + sticky CTA + MO guard pattern.",
+  "complexity": "medium",
+  "notes": "REFERENCE EXAMPLE — not a real shipped test. Used as a code quality and structure template for AI agents."
+}
