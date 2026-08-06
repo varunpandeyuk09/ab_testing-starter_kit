@@ -763,6 +763,47 @@ window.addEventListener('resize', waitForNextFrame); // avoid layout-thrash read
 - ResizeObserver fires repeatedly; debounce or cheaply assign in `compensate`.
 - `getBoundingClientRect().height` is a layout read — don't call it inside a scroll listener without a rAF wrapper.
 
+### P25. Derive Active Tab / Current View From Rendered Content (not click events)
+
+**When:** a theme intercepts tab/menu clicks — it stops propagation, drives tabs through its own plugin, or sets the `.active` class asynchronously — so click listeners and `.active`-class reads are unreliable. Instead, derive the current state from content the site itself renders: e.g. an AJAX-loaded submenu whose "back / overview" link href contains the active category. Source: AWG (AB042 sitewide nav mobile).
+
+**Recipe:** MutationObserver on the container that receives the AJAX content; parse the first path segment of the loaded submenu's overview-link href; apply your per-state hrefs. Keep the tab click binding as a fast path only.
+
+```js
+var urlParser = document.createElement('a');
+var DEFAULT_TAB = 'damen';
+
+function getActiveTab(body) {
+  var link = body.querySelector('.navigation-offcanvas-previous a[href]');
+  if (link) {
+    urlParser.href = link.getAttribute('href') || '';
+    var m = urlParser.pathname.match(/^\/(damen|herren|kinder|wohnen)(?:\/|$)/i);
+    if (m) return m[1].toLowerCase();
+  }
+  return DEFAULT_TAB;
+}
+
+// body-level MutationObserver: act only when a relevant node is added
+new MutationObserver(function (mutations) {
+  for (var i = 0; i < mutations.length; i++) {
+    var added = mutations[i].addedNodes;
+    for (var j = 0; j < added.length; j++) {
+      var n = added[j];
+      if (n.nodeType === 1 && n.querySelector && n.querySelector('.navigation-offcanvas-previous')) {
+        syncUi(n.closest('.offcanvas-body')); // derive + apply hrefs
+        return;
+      }
+    }
+  }
+}).observe(document.body, { childList: true, subtree: true });
+```
+
+**Gotchas:**
+- Parse with an anchor's `pathname`, not a regex on the raw href — it resolves relative URLs and strips query strings (`/wohnen?p=1` stays `/wohnen`).
+- AJAX `innerHTML` swaps surface as `childList` mutations on the container — observe the container, not the site's JS.
+- If the container may be re-created entirely, observe `document.body` subtree but bail out fast unless an added node contains your anchor.
+- Keep a `DEFAULT` state for the first render before any content loads.
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -810,9 +851,24 @@ window.addEventListener('resize', waitForNextFrame); // avoid layout-thrash read
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P24).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P25).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).
 5. New patterns discovered in future work should be added back into §8 so the library always expands.
 6. Run the QA checklist (§9) before finishing.
+
+---
+
+## 12. Working Faster — Tooling & Process Notes
+
+These save the most time on every test, whatever the client. Source: lessons from AWG (AB042), where most of the session went into site autopsy instead of code.
+
+1. **Check `AI/SITE_PROFILES.md` before any live inspection.** If the client is listed, verify only what changed; never re-autopsy a worked site.
+2. **Minified one-line HTML/JS can't be read with normal tools.** Use `Select-String` for line matches or PowerShell `[regex]::Match($content, 'pattern')` / `.Substring()` windows. (`rg` is not installed on this machine's PowerShell.) The fetched page and theme assets are worth saving to a scratch folder once — reuse them instead of re-fetching.
+3. **Don't chase the theme's minified JS bundle / webpack chunks to learn how a component works.** Dynamic chunks often 404 and the source is unreadable — a guaranteed time sink. Instead, hit the site's own AJAX/`/widgets/...` endpoint directly (see the client's site profile) to see the exact DOM the site renders, or test the behaviour in a live browser.
+4. **Detect state from the rendered DOM, not from plugin internals.** If clicks or `.active` classes are unreliable, use pattern **P25** — the site always renders a signal you can read (e.g. a submenu's back-link href).
+5. **Validate logic with `node` before shipping.** Parse-critical pieces (regexes, URL/href mapping, tab derivation) take seconds to verify:
+   `node -e "..."` (single-quote the script in PowerShell to avoid `$` interpolation) or a scratch `.js` file. Fix bugs here, not in the test tool.
+6. **Fetch pages with `Invoke-WebRequest` and an explicit `User-Agent`** (some stores 404 default PowerShell's UA).
+7. **Keep the file-transfer pipeline in mind:** when you download a site asset, save it to the scratch folder with a clear name — re-downloading a 800 KB minified CSS to grep it twice is wasted time.

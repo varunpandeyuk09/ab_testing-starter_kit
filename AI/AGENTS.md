@@ -49,13 +49,14 @@ Create this structure:
 ## STEP 1 — Research Before Writing Code
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
-2. Match the task against the Reusable Patterns Library (playbook §8, P1–P24). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
+2. Match the task against the Reusable Patterns Library (playbook §8, P1–P25). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
 3. **Fallback (only when NO pattern in §8 fits the brief):** run the RAG search — it auto-locates the `AB-test` archive anywhere on this machine and prints the top 3 similar past tests with their code:
    ```bash
    python scripts/search_tests.py "your test description"
    ```
-   Study the returned examples, then **add the newly discovered technique to the playbook §8 as the next P-number (P25, P26, ...)**, with a short snippet, so the library grows. Then adapt the pattern for the current brief.
-4. Inspect the live website (live DOM) before writing any code. Identify stable selectors, check whether elements are rendered dynamically, lazy-loading, and SPA behaviour. Confirm the change will not break existing functionality, analytics, tracking, accessibility, or responsiveness. Never assume — verify against the actual page.
+   Study the returned examples, then **add the newly discovered technique to the playbook §8 as the next P-number (P26, P27, ...)**, with a short snippet, so the library grows. Then adapt the pattern for the current brief.
+4. **Check `AI/SITE_PROFILES.md` first** — it stores verified DOM facts per client (stable selectors, AJAX endpoints, theme gotchas). If the client is listed, go straight to targeted verification of what changed; skip the full page autopsy.
+5. Inspect the live website (live DOM) before writing any code. Identify stable selectors, check whether elements are rendered dynamically, lazy-loading, and SPA behaviour. Confirm the change will not break existing functionality, analytics, tracking, accessibility, or responsiveness. Never assume — verify against the actual page.
 
 ---
 
