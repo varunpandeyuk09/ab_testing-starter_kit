@@ -32,8 +32,9 @@ ab_testing-starter_kit/
 
 **Step 1 — Study the archive.** We analysed 2500+ shipped tests from the `AB-test` folder (MONASH, PRAXINDO, REVIVSERUMS, GUARDIAN FUNERALS, JUVIA and more).
 
-**Step 2 — Distill into patterns.** The most common techniques were compressed into **12 reusable patterns (P1–P12)**:
+**Step 2 — Distill into patterns.** The most common techniques were compressed into **reusable patterns (P1–P24)**, with the second batch (P13–P24) harvested from a full-archive scan for novel techniques:
 - P1 Image Swap (lazy-load safe) · P2 Insert New Section · P3 Sticky Elements · P4 DOM Reordering · P5 Surviving AJAX Re-renders · P6 SPA Routing · P7 Click Tracking · P8 Form Restructure · P9 Loading External Libraries · P10 Text/Price/Badge Swap · P11 Device-Switch (desktop/mobile) · P12 Persistent State
+- P13 AJAX XHR Hook · P14 React Controlled Inputs · P15 Library Waiters · P16 Cookie Helpers · P17 Exit-Intent Popup · P18 Cart-Reactive Progress Bar · P19 Date Math · P20 Cross-Page Fetch/Clone · P21 IP-Geo Swap · P22 CSS-Only Carousel · P23 0fr/1fr Accordion · P24 rAF + ResizeObserver
 
 **Step 3 — Write the rulebook.** Every standard our team follows was documented: base script wrapper, stable selectors, naming, CSS scoping, QA checklist, and forbidden anti-patterns.
 

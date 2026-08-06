@@ -496,6 +496,282 @@ function initFlow() {
 - Version the key with the variation name so different tests never collide.
 - Expire urgency/one-time timers by comparing `Date.now()` against the stored timestamp.
 
+### P13. AJAX Response Re-application (XHR `send()` hook)
+
+**When:** the page re-renders content via fetch/XHR (minicarts, quick-view, facet filters, lazy sections) and your DOM changes are wiped. A MutationObserver (P5) re-applies changes only if the nodes change again; an XHR hook lets you re-apply at the exact moment new content lands.
+
+**Recipe:**
+```js
+(function () {
+  var origOpen = XMLHttpRequest.prototype.open;
+  var origSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open = function () {
+    this._egMethod = arguments[0];
+    this._egUrl = arguments[1];
+    return origOpen.apply(this, arguments);
+  };
+  XMLHttpRequest.prototype.send = function () {
+    this.addEventListener('load', function () {
+      if (this._egUrl && this._egUrl.indexOf('/cart/') > -1) reapplyCartUI(); // any guard you need
+    });
+    return origSend.apply(this, arguments);
+  };
+})();
+```
+
+**Gotchas:**
+- Keep the guard narrow (URL / method / responseType) so unrelated requests don't trigger work.
+- Re-apply must be idempotent — guard with a body class or `dataset` flag so you never double-wrap (see P8 / P10 gotchas).
+- If the site uses `fetch()` instead of XHR, wrap `window.fetch` the same way (check `url` in the first arg, read response via `res.clone().json()`).
+- Only hook once; guard the whole block so it can't be installed twice.
+
+### P14. React / Controlled-Input Automation
+
+**When:** the form field is a React (or Vue/Svelte) controlled input. Setting `.value` directly doesn't register, and `keydown` events are ignored. Source: FIJI_AIRWAYS (location auto-select).
+
+**Recipe:**
+```js
+function setReactInput(el, value) {
+  var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+  setter.call(el, value);                       // bypass React's internal tracker
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+}
+// then drive the dropdown, e.g. dispatch ArrowDown + Enter:
+function pickDropdownOption(optionText, sel) {
+  var dd = document.querySelector(sel);
+  if (!dd) return;
+  var opt = Array.prototype.slice.call(dd.querySelectorAll('li, .option'))
+    .find(function (o) { return o.textContent.trim().indexOf(optionText) > -1; });
+  if (!opt) return;
+  opt.click();
+}
+```
+
+**Gotchas:**
+- The value setter lives on the **prototype** (`HTMLInputElement.prototype`), not on the element itself; using it keeps React's internal value tracker in sync.
+- Always dispatch `input` (and sometimes `change`) with `bubbles: true` after setting.
+- For a controlled **select**, dispatch a `change` event on the `<select>` element instead.
+- This is inherently brittle to framework internals — pair with P5 (MutationObserver) so the follow-up UI is caught whether it renders sync or async.
+
+### P15. Library Readiness Waiters
+
+**When:** your code calls `$`, `Swiper`, `Slick`, `Munchkin`, etc., but the page loads the library lazily or after AJAX. Calling early throws; polling with `setTimeout` is uglier. Source: Moorings, WICKED_CLOTHES, SWEET PLAID.
+
+**Recipe:** use `snippets/waitForLibrary.js`:
+```js
+waitForJquery(function () { /* code that uses $ */ });
+// generic:
+waitForLibrary(function () { return window.Swiper; }, function () { new Swiper('.eg-swiper'); });
+```
+
+**Gotchas:**
+- Always provide a timeout so the interval dies and no console spam if the lib never loads.
+- Re-check readiness inside the callback if your code itself is async.
+- For libraries the site injects per-route (SPA), re-run the waiter inside the SPA listener (P6).
+
+### P16. Cookie Helpers
+
+**When:** popups, first-visit nudges, geo swaps, or anything that must remember a choice across pages/sessions without touching localStorage. Source: OCTO_PART, VACATION.
+
+**Recipe:** use `snippets/cookies.js`:
+```js
+if (!getCookie('eg_geo_seen')) { showGeoCTA(); setCookie('eg_geo_seen', '1', 30); }
+deleteCookie('eg_geo_seen'); // reset for QA
+```
+
+**Gotchas:**
+- Always `encodeURIComponent`/`decodeURIComponent` values — prices, phone numbers, and text can contain spaces/symbols.
+- Use the variation name in the cookie key so tests never collide.
+- `path=/` or the cookie silently doesn't apply on sub-pages.
+
+### P17. Exit-Intent Popup (desktop + mobile, cookie-guarded)
+
+**When:** exit-intent / cart-abandon popup. Desktop: mouse leaving the top of the viewport. Mobile: quick scroll-up. One-time per visitor via cookie. Source: OCTO_PART, LATTICE, VACATION.
+
+**Recipe:**
+```js
+var popupKey = 'eg_xi_' + variation_name;
+if (!getCookie(popupKey)) {
+  var armed = false, shown = false;
+  function showPopup() {
+    if (shown) return;
+    shown = true; setCookie(popupKey, '1', 30);
+    el.style.display = 'block';
+  }
+  if (window.matchMedia('(pointer: fine)').matches) {
+    document.addEventListener('mouseout', function (e) {
+      if (!e.relatedTarget && e.clientY <= 0) { if (!armed) { armed = true; setTimeout(function () { armed = false; }, 2000); } else showPopup(); }
+    });
+  } else {
+    var lastY = window.scrollY;
+    window.addEventListener('scroll', function () {
+      if (window.scrollY < lastY - 150) showPopup();   // fast upward scroll
+      lastY = window.scrollY;
+    });
+  }
+  live('.eg-xi-close', 'click', function () { el.style.display = 'none'; });
+  document.addEventListener('click', function (e) {
+    if (shown && !el.contains(e.target)) el.style.display = 'none';  // click-outside
+  });
+}
+```
+
+**Gotchas:**
+- The `mouseout` arm/disarm pattern stops the popup firing on every move to the top edge — require two passes or a short re-arm delay.
+- Add a real close button (`live`-bound) — the click-outside handler alone fails for screen-reader / keyboard users.
+- Store `shown` in a cookie **at show time**, not arm time, so QA can re-test.
+
+### P18. Cart-Reactive Progress Bar / Threshold Message
+
+**When:** free-shipping or threshold progress bars that must update live when the cart changes (add/remove/qty). Source: PRAXINDO SM25, ROYAL_DOUTON, VACATION, DRSEBISCELLFOOD.
+
+**Recipe:**
+```js
+function updateBar() {
+  var count = 0;
+  document.querySelectorAll('.mini-cart .line-item').forEach(function (li) {
+    count += parseFloat(li.querySelector('[data-qty]').dataset.qty) || 0;
+  });
+  var pct = Math.min(100, Math.round((count / threshold) * 100));
+  bar.style.width = pct + '%';
+  msg.textContent = count >= threshold ? 'Free shipping unlocked!' : 'You are $' + (threshold - count).toFixed(2) + ' away';
+}
+// re-apply on AJAX cart updates (P13) AND on direct DOM changes (P5):
+new MutationObserver(updateBar).observe(cartEl, { childList: true, subtree: true });
+```
+
+**Gotchas:**
+- Read the count from the **page's own cart DOM**, not your own counter — the site is the source of truth.
+- Guard against `NaN` (`|| 0`) when a qty field is empty or mid-edit.
+- Re-run `updateBar` after the XHR cart load completes (P13), not only on mutation, because the counter row may be fully replaced.
+
+### P19. Date Math (business-day estimates + timezone-normalized countdown)
+
+**When:** "ships in X business days", countdown to a promo window, or date-based urgency. Source: PRAXINDO SM23, Moorings.
+
+**Recipe:**
+```js
+function addBusinessDays(d, n) {
+  var date = new Date(d);
+  var added = 0;
+  while (added < n) {
+    date.setDate(date.getDate() + 1);
+    if (date.getDay() !== 0 && date.getDay() !== 6) added++;
+  }
+  return date;
+}
+function etaText() {
+  var eta = addBusinessDays(new Date(), 5);
+  return eta.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+// timezone-safe countdown: build the target from a UTC ISO string, never from local Date('2026-...') parsing
+var end = new Date('2026-12-31T23:59:59Z');
+function tick() { document.getElementById('eg-count').textContent = Math.max(0, Math.floor((end - Date.now()) / 1000)) + 's'; }
+setInterval(tick, 1000);
+```
+
+**Gotchas:**
+- Holiday lists vary by region — if the brief needs them, pass an explicit holiday array to `addBusinessDays`.
+- `new Date('YYYY-MM-DDTHH:mm:ssZ')` is parsed as UTC regardless of the visitor's timezone; `new Date('YYYY-MM-DD')` is parsed as local — pick deliberately.
+- Format with `toLocaleDateString` for the visitor's locale instead of hand-building month names.
+
+### P20. Cross-Page HTML Fetch → Parse → Clone
+
+**When:** you need a component (trust badge, size chart, FAQ, header/footer snippet) that only exists on another page of the same site, and you must reuse it verbatim rather than rebuild it. Source: TACTICALELITES, YANKEE_CANDLE.
+
+**Recipe:**
+```js
+fetch('/pages/shipping').then(function (r) { return r.text(); }).then(function (html) {
+  var doc = new DOMParser().parseFromString(html, 'text/html');
+  var el = doc.querySelector('.shipping-info');
+  if (el) { target.appendChild(el.cloneNode(true)); }   // cloneNode(true) keeps descendants + attrs
+}).catch(function () { /* silent fail — enhancement only */ });
+```
+
+**Gotchas:**
+- Same-origin only (usually fine — it's the same site). For cross-domain, use P9 to load a script instead.
+- Only `enhance` — never gate the page on the fetch; `.catch` and move on if it fails or the page is down.
+- Wrap all new content in your body-class-scoped CSS so it inherits styling and never clashes.
+
+### P21. IP-Geo Content Swap (region-specific phone / messaging)
+
+**When:** showing a local phone number or region-specific text based on visitor location. Source: Moorings.
+
+**Recipe:**
+```js
+waitForJquery(function () {
+  $.getJSON('https://ipapi.co/json/', function (data) {
+    var country = (data.country_name || '').toLowerCase();
+    document.querySelectorAll('.eg-phone').forEach(function (p) {
+      if (country === 'australia' || country === 'new zealand') p.textContent = '+61 000 000';
+      else p.textContent = '+1 000 000';
+    });
+  });
+});
+```
+
+**Gotchas:**
+- The geo call is async and external — run it inside `waitForJquery`/readiness waiter and let the UI update in place (no blocking).
+- Match on `country_code` too, not just name; fall back gracefully when the API fails (keep the original number).
+- Respect the site's existing privacy expectations — prefer the provider already used by the site if one exists.
+
+### P22. CSS-Only Carousel (scroll-snap + hidden scrollbar)
+
+**When:** product/category carousels that should feel native, need no JS drag handlers, and must keep touch swiping. Source: ALTIUM TS-2467, LILYSKIN, HW PART STORE.
+
+**Recipe:**
+```css
+.eg-carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.eg-carousel::-webkit-scrollbar { display: none; }
+.eg-carousel > * { flex: 0 0 auto; scroll-snap-align: start; }
+```
+
+**Gotchas:**
+- Hide the scrollbar in **both** standard (`scrollbar-width`) and WebKit (`::-webkit-scrollbar`) so desktop doesn't show a clunky bar.
+- Optionally add prev/next buttons that scroll `container.scrollBy({ left: 300, behavior: 'smooth' })`.
+- Only apply snap on touch-capable or coarse-pointer devices if desktop users expect free scrolling.
+
+### P23. 0fr/1fr Accordion Animation (pure CSS, no height hacks)
+
+**When:** FAQ/accordion sections that need a smooth open/close animation without measuring heights or JS. Source: AQUA.
+
+**Recipe:**
+```css
+.eg-acc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s ease; }
+.eg-acc-body > * { overflow: hidden; }
+.eg-acc.open .eg-acc-body { grid-template-rows: 1fr; }
+```
+
+**Gotchas:**
+- The inner wrapper (`> *`) must have `overflow: hidden` or the child content leaks during the animation.
+- Pair with a small `live('.eg-acc-head', 'click', ...)` handler that toggles the `.open` class.
+
+### P24. rAF-based `waitFor` + ResizeObserver viewport compensation
+
+**When:** elements appear after layout/font-load (rAF beats polling) and sticky/absolute elements must compensate when the viewport resizes or the header height changes. Source: ALTIUM, GERBERGEAR, ROYAL_DOUTON.
+
+**Recipe:**
+```js
+function waitForNextFrame(callback) { requestAnimationFrame(function () { requestAnimationFrame(callback); }); }
+function compensate() { stickyEl.style.top = headerEl.getBoundingClientRect().height + 'px'; }
+new ResizeObserver(compensate).observe(headerEl);   // header shrinks/grows on scroll or media queries
+window.addEventListener('resize', waitForNextFrame); // avoid layout-thrash reads in the same frame
+```
+
+**Gotchas:**
+- Double-rAF ensures the browser has painted after a reflow before you measure.
+- ResizeObserver fires repeatedly; debounce or cheaply assign in `compensate`.
+- `getBoundingClientRect().height` is a layout read — don't call it inside a scroll listener without a rAF wrapper.
+
+### Other techniques observed in the archive (use when a brief needs them)
+
+- **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
+- **SVG star-rating generator** — build filled/empty stars by joining inline `<svg>` paths instead of shipping images. Source: `CATHOLIC COMPANY`, `ALTIUM`.
+- **Custom video-player overlay** — pause site video via a wrapped element and listen for `webkitendfullscreen`/`fullscreenchange` to restore it. Source: `DRSEBISCELLFOOD`.
+- **IntersectionObserver sticky toggle** — swap a CTA between "in-flow" and "sticky" as the target scrolls out of view, instead of always-on sticky. Source: `CATHOLIC COMPANY`.
+- **Vendor/page guard** — early-return unless a specific cart-vendor marker or page path matches, so one script never runs on the wrong storefront. Source: `HW PART STORE`.
+- **`debug` toggle** — a query-param (`?egdebug=1`) or flag that logs actions, so QA can trace a script without shipping console noise in production. Source: `DRINKGT`, `Moorings`.
+
 ---
 
 ## 9. QA Checklist (run before shipping)
@@ -534,7 +810,7 @@ function initFlow() {
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P12).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P24).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).
