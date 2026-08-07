@@ -10,6 +10,41 @@ re-autopsy a site. Check this file BEFORE inspecting the live page (AGENTS.md ST
 - Note the test that proved each fact (so a future session can read its code).
 - Delete/update entries when a client's theme changes break them.
 
+## AREA-WISE rule (AGENTS.md STEP 1/STEP 4)
+
+Profiles are organised **by focus area** — never as a full-site dump. This keeps new-client
+setup to a few minutes (verify only the area the brief touches) instead of a full autopsy.
+
+- **Client header (`## CLIENT`)** = site-wide facts verified ONCE per client: auth/Cloudflare
+  behaviour, A/B platform (Varify/Convert/...), theme framework (Next.js, Shopware, Magento...),
+  and any reusable tooling.
+- **Area subsections (`### <AREA>`)** = per-area verified facts. Standard areas:
+  `navigation` | `product` | `checkout` | `section` | `form` | `page` | `search`.
+- A new test reads ONLY its focus area + the header; a new test in a NEW area appends that
+  area only. Never re-verify an area that is already recorded.
+
+Template:
+
+```
+## CLIENT
+
+- **Site:** <url> — <stack facts, verified once>
+- **A/B platform:** Varify (app.varify.io/varify.js) / Convert / ...
+- **Verified in:** <first test that proved the header facts>
+- **Site-wide gotchas:** auth/Cloudflare behaviour, framework quirks
+
+### navigation
+- header selectors, login/cart/search, mobile menu ...
+### product
+- PDP selectors, price/stock/add-to-cart ...
+### checkout
+- cart page, popup/AJAX flow, confirmation ...
+### section
+- the specific block + its child anchors (only what was redesigned) ...
+### form
+- form region, fields, validation, submit ...
+```
+
 ---
 
 ## AWG
@@ -104,34 +139,27 @@ Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky 
 - **A/B platform:** Varify (`app.varify.io/varify.js`), NOT Convert.
 - **Verified in:** `../ABTESTSWITHAI/PRAXINDO/SM25 Add-To-Cart Window` (SSR product-page + homepage dumps, Aug 2026).
 
-### Cloudflare / fetching gotchas
-- Headless Edge (`--dump-dom`, `--headless=new` + CDP) is BLOCKED on product pages by Cloudflare Turnstile ("Nur einen Moment…"). `webfetch` (the tool's fetcher) DOES get through and returns full SSR HTML.
-- Add-to-cart is JS-only (no form): `#product-addtocart-button` is `type="button"` handled by client JS. A real click is required to observe the post-add popup state — headless can't reach it → use live QA.
+### Site-wide gotchas (verified once)
+- Cloudflare: headless Edge (`--dump-dom`, `--headless=new` + CDP) is BLOCKED on product pages by Cloudflare Turnstile ("Nur einen Moment…"). `webfetch` DOES get through and returns full SSR HTML. Live QA must run HEADED with the persistent profile (`~/.ab-test-kit/browser-profiles/praxindo-edge`) — that passes Turnstile.
+- Add-to-cart is JS-only (no form): `#product-addtocart-button` is `type="button"` handled by client JS. A real click is required to observe the post-add popup state.
 
-### Add-to-cart popup (AW ACP — Aheadworks Advanced Product Options, Magnific Popup)
-- 3 popups are SSR'd in `#maincontent.wrapper`, each inside its own `.mfp-wrap` (`display:none` until shown), all carrying class `layer__checkout--active`: progress (`[data-role="progress"]`), **success**, choice ("Bitte wählen Sie eine Variante").
-- Success popup: `div.aw-acp-popup.layer__checkout--active` containing:
-  - `[data-role="update"]` → `.layer__checkout__close` (empty button), `.layer__checkout__title--success`, `.layer__checkout__product` with hidden `input[name="cart_net_sum"]` (`value="0"` until JS fills it) + `input[name="freeshipping"]` (`value="100"`), `.layer__checkout__product__image span` (background-image), `.layer__checkout__product__title a`, `.layer__checkout__product__info` ("Im Warenkorb befinden sich jetzt: N"), `.layer__checkout__product__price .final.final` (empty until JS fills it).
-  - `[data-role="content"]` = `.layer__checkout__action` (Weiter einkaufen + Zur Kasse links to `/checkout/cart` + `/checkout/onepage`).
-  - `[data-role="related"]` — EMPTY at SSR; populated by AW ACP via AJAX after add (no endpoint URL exposed in HTML; many products have `related_products:[]`).
-- Cart state after add: `#minicart-counter` (in `li.user_item--cart`), `#minicart-content-wrapper`. `cart_net_sum` net-vs-gross semantics UNVERIFIED (needs live add).
-- Guest state: `#userLayerTriggerB .user__text small` = "Anmelden" and `#loginLayer` present.
-
-### PDP selectors (verified)
+### product (PDP — verified)
 - Add button: `#product-addtocart-button` (`action primary tocart`); qty input `#teaser-qty`; VPE text `#teaser-qty + label .vpe_value`.
 - Final price: `.product-teaser__item__price__final .price` ("24,90 €"); old price: `.product-teaser__item__price__strike` ("statt 32,90 €"); per-unit: `.product-teaser__item__price__per_unit`; gross: `#price_hints .brutto_amount`.
 - Stock: `.product-details-eb__item__stock--green` with `.status-dot`, `.product-details-eb__item__date-text.status-text` (has `data-deliverytime="ca. 1-2 Werktage"`, text "Sofort verfügbar" + "Lieferung ca. 1-2 Werktage"). Slider variants: `.product-slider__item__stock--green/--orange`.
 - Cross-sell "Kunden kauften auch" = `.block.crosssell` (fed by RSC `customers_also_bought`, often 8 items); `related_products`/`upsell_products` usually empty.
+- Live QA detail: JS `.click()` on `#product-addtocart-button` opens the popup reliably; CDP synthetic mouse events do NOT trigger it (counter stays 0).
+
+### checkout (add-to-cart popup — AW ACP, Aheadworks Advanced Product Options + Magnific Popup)
+- 3 popups are SSR'd in `#maincontent.wrapper`, each inside its own `.mfp-wrap` (`display:none` until shown), all carrying class `layer__checkout--active`: progress (`[data-role="progress"]`), **success**, choice ("Bitte wählen Sie eine Variante").
+- **Popup disambiguation (LIVE-verified):** all 3 nodes match a naive `querySelector` — pick the SUCCESS node via `:has()`: `.aw-acp-popup:has([data-role="update"] .layer__checkout__title--success)`.
+- Success popup `[data-role="update"]` contains: `.layer__checkout__close` (empty button, site sprite X — keep it), `.layer__checkout__title--success` (green band + `:before` sprite check; override `background:#fff` + `:before{display:none}`), `.layer__checkout__product` with hidden `input[name="cart_net_sum"]` (`value="0"` until JS fills it) + `input[name="freeshipping"]` (`value="100"`), `.layer__checkout__product__image span` (background-image), `.layer__checkout__product__title a`, `.layer__checkout__product__info` ("Im Warenkorb befinden sich jetzt: N"), `.layer__checkout__product__price .final.final` (empty until JS fills it) — site renders its own `statt` + stock (`.final--hasstrike` + `.strike`), do not inject your own.
+- `[data-role="content"]` = `.layer__checkout__action` (Weiter einkaufen + Zur Kasse → `/checkout/cart` + `/checkout/onepage`).
+- **`[data-role="related"]` is a SIBLING of `[data-role="update"]`** (not a child), filled by late AJAX after add — poll innerHTML length > 50 (~9s). Markup: `.layer__checkout__upselling` > `__title` ("Kunden kauften auch") > `__list` > `__list__item.related-available` (DIVs, NOT `.swiper-slide`) > `__image`, `__wrapper`, `__title`, `__info` ("100 Stück"), `__price .final.final--hasstrike` + `.strike` ("statt 2,49 €"), `__button` ("In den Warenkorb").
+- Cart state after add: `#minicart-counter` (in `li.user_item--cart`), `#minicart-content-wrapper`.
+- **`cart_net_sum` = just-added item price, NOT full cart total** (adds 24.90 → "24.9" with 1 item). Free-shipping math is per-add, not per-cart.
+- **Site's final render wipes injected nodes** after early decorate → poll with `key !== lastKey || !hasMarkers` and re-decorate until stable (P28).
+- Guest state: `#userLayerTriggerB .user__text small` = "Anmelden" and `#loginLayer` present.
 
 ### Reusable tooling
 - `tools/qa_run.js` — **reusable headed CDP QA runner (Node >=22, zero deps).** Auto-detects installed Chromium (Chrome/Edge/Brave/Opera/Vivaldi), drives headed via `--remote-debugging-port=0`, injects a `variation1/` dir into the live page, clicks Add to Cart, settles, runs golden assertions, writes a JSON report. Actions: `navigate|login|atc|qa`; flags `--browser --profile --url --inject --screenshot --out --wait-ms --headless --fresh`. Verified 13/13 PASS on the SM25 variation (Aug 2026). Add new clients as entries in the `SITES` map. **Data-driven mode (recommended):** pass `--spec <spec.json>` — the spec lives in the test folder and holds `settle` + all `checks` (ops `exists|not|eq|match|count|countLte|css|js`, tokens `{popup} {title} {update} {related} {relatedTitle} {relatedTile} {counter}` resolve from the SITES profile; fields `profile`/`url`/`inject` override CLI). New tests then need NO qa_run.js edits — just a spec.json + variation files. Example: `node tools/qa_run.js qa --spec "…/TEST_NAME/spec.json"`.
-
-### Add-to-cart popup LIVE facts (verified via headed CDP QA run, `tools/qa_run.js`)
-- **Headless blocked but headed works:** persistent profile `~/.ab-test-kit/browser-profiles/praxindo-edge` passes Cloudflare headed; JS `.click()` on `#product-addtocart-button` opens the popup reliably (CDP synthetic mouse events do NOT trigger — counter stays 0).
-- **Popup disambiguation:** all 3 `.aw-acp-popup.layer__checkout--active` nodes match a naive `querySelector` (progress loader / success / choice). Pick the SUCCESS node via `:has()`: `.aw-acp-popup:has([data-role="update"] .layer__checkout__title--success)`.
-- **`[data-role="related"]` is a SIBLING of `[data-role="update"]`** (not a child), filled by late AJAX after add — poll innerHTML length > 50 (~9s). Markup: `.layer__checkout__upselling` > `__title` ("Kunden kauften auch") > `__list` > `__list__item.related-available` (DIVs, NOT `.swiper-slide`) > `__image`, `__wrapper`, `__title`, `__info` ("100 Stück"), `__price .final.final--hasstrike` + `.strike` ("statt 2,49 €"), `__button` ("In den Warenkorb").
-- **`cart_net_sum` = just-added item price, NOT full cart total** (adds 24.90 -> "24.9" with 1 item). Free-shipping math is per-add, not per-cart.
-- **Site renders `statt` + stock itself** in the popup (`.final--hasstrike` + `.strike`) — do not inject your own.
-- **Site's final render wipes injected nodes** after early decorate -> poll with `key !== lastKey || !hasMarkers` and re-decorate until stable.
-- **Success title `--success`:** site's green band is the title background + `:before` sprite check; override with `background:#fff` + `:before{display:none}`; keep the site's own `.layer__checkout__close` sprite X.
-- Product popup has hidden `input[name="cart_net_sum"]` (starts "0", JS fills after add) + `input[name="freeshipping"]` (`value="100"`); `.layer__checkout__product__info` text "Im Warenkorb befinden sich jetzt: N".

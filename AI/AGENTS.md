@@ -15,6 +15,11 @@ Read `AI/PROMPT_PARSING.md` and extract:
 - `TEST_NAME` — the full test name used as the subfolder (e.g. `SM22 Product Tile Optimization`)
 - `TEST_ID` — the short ID used for the body class `EG-<TEST-ID>` (e.g. `SM22`)
 - `WEBSITE_URL` — the target page URL(s)
+- `FOCUS_AREA` — the part of the page the test actually touches. Standard areas:
+  `navigation` (header, login, cart, search) | `product` (PDP, price, stock, add-to-cart) |
+  `checkout` (cart page, popups, payment, confirmation) | `section` (one block/section being
+  redesigned) | `form` (a form region, its fields, validation, submit) | `page` (full-page /
+  template-level redesign) | `search` (search bar, results, facets).
 
 If the brief is incomplete or ambiguous, **ask the user for the missing pieces before proceeding**. Do NOT guess and do NOT start writing code.
 
@@ -46,7 +51,7 @@ Create this structure:
 
 ---
 
-## STEP 1 — Research Before Writing Code
+## STEP 1 — Research Before Writing Code (AREA-SCOPED)
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
 2. Match the task against the Reusable Patterns Library (playbook §8, P1–P28). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
@@ -55,8 +60,12 @@ Create this structure:
    python scripts/search_tests.py "your test description"
    ```
    Study the returned examples, then **add the newly discovered technique to the playbook §8 as the next P-number (P26, P27, ...)**, with a short snippet, so the library grows. Then adapt the pattern for the current brief.
-4. **Check `AI/SITE_PROFILES.md` first** — it stores verified DOM facts per client (stable selectors, AJAX endpoints, theme gotchas). If the client is listed, go straight to targeted verification of what changed; skip the full page autopsy.
-5. Inspect the live website (live DOM) before writing any code. Identify stable selectors, check whether elements are rendered dynamically, lazy-loading, and SPA behaviour. Confirm the change will not break existing functionality, analytics, tracking, accessibility, or responsiveness. Never assume — verify against the actual page.
+4. **Verify ONLY the FOCUS_AREA, never the whole site.** `AI/SITE_PROFILES.md` stores verified DOM facts per client, grouped **by area** (each `### Area` subsection is verified once and reused forever).
+   - Start by reading the client's profile for the **current FOCUS_AREA only** (plus the client's site-wide gotchas section).
+   - If the area is already in the profile → **do not re-verify**; read the selectors and go straight to STEP 2. Re-verify only what the brief changes.
+   - If the area is NOT in the profile → inspect the live DOM for **that area only** (stable selectors, AJAX/lazy-loading/SPA behaviour), then record it area-wise in STEP 4. A navigation test verifies login/cart/search — nothing else. A section test verifies only that section's container + its anchors.
+   - Site-wide gotchas (Cloudflare/auth, A/B platform, theme framework) are verified ONCE per client and live in the client's profile header — do not re-derive them per test.
+5. Inspect the live website (live DOM) before writing any code — scoped to the focus area. Identify stable selectors, check whether elements are rendered dynamically, lazy-loading, and SPA behaviour. Confirm the change will not break existing functionality, analytics, tracking, accessibility, or responsiveness. Never assume — verify against the actual page.
 
 ---
 
@@ -139,6 +148,11 @@ verified, the test is NOT finished:
    ONLY facts you confirmed against the live DOM: stable selectors, AJAX endpoints, theme
    gotchas, and the working technique. Mark each fact with the test that proved it
    (`Verified in: ../ABTESTSWITHAI/<CLIENT>/<TEST_NAME>`). Never record assumptions.
+   **Record AREA-WISE:** the client header holds site-wide gotchas (auth/Cloudflare, A/B
+   platform, framework); everything else goes under the `### <FOCUS_AREA>` subsection
+   (`navigation` / `product` / `checkout` / `section` / `form` / `page` / `search`).
+   Only append the areas this test actually touched — never a full-site dump. Future tests
+   read only their own area + the header, and never re-verify what is already recorded.
 
 2. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
    pattern, append it as the next P-number (P28, P29, ...) with a short recipe + `Source:`
