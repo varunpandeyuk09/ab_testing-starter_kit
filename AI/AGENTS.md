@@ -51,6 +51,31 @@ Create this structure:
 
 ---
 
+## STEP 0c — Ask Test-Specific Questions Before Any Research (Q&A GATE)
+
+Read `AI/question_templates.md` FIRST. Then, before inspecting any site or writing
+code, turn the brief into the minimum set of questions the kit cannot already answer:
+
+1. **Gap-scan the brief** — mark every field the brief already answers
+   (design mockup, URLs, goal, constraints, audience, behavior). Never re-ask those.
+2. **Kit-lookup** — drop any question the kit already answers, in this order:
+   - `AI/SITE_PROFILES.md` → this client's header + `### <FOCUS_AREA>` (includes
+     `User-confirmed (Q&A, …)` bullets from past tests).
+   - Same-client previous tests → their `qa_prep.json` + readme "Knowledge added".
+   - `AI/AB_TESTING_PLAYBOOK.md` §8 → if the matching pattern documents the behavior.
+3. **Ask the user ONLY what's left** — max 6–8 questions, grouped, phrased for a
+   business person (never selector-speak). Highest-risk first: design intent >
+   behavior > scope > environment. If I can verify a behavior myself in one headed
+   run cheaply (e.g. minicart open trigger), verify it and record it — don't ask.
+4. **Record every answer** in `../ABTESTSWITHAI/CLIENT/TEST_NAME/qa_prep.json`
+   (schema in `question_templates.md` §5): `asked`, `skipped_known` (with reason),
+   and `verified`.
+
+This gate is what makes the kit faster per test: things the user once answered are
+never re-asked, and things the kit already verified are never re-verified.
+
+---
+
 ## STEP 1 — Research Before Writing Code (AREA-SCOPED)
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
@@ -124,6 +149,8 @@ The base `variation.js` contains ONLY `waitForElement` + `init()`. Do not add he
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/share.js                    ← tracking only, no DOM mutation
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/v1.json                     ← filled with real URLs and file paths
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/metadata.json               ← RAG metadata
+../ABTESTSWITHAI/CLIENT/TEST_NAME/qa_prep.json                ← Q&A gate record (STEP 0c)
+../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json                   ← data-driven QA checks (tools/qa_run.js)
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/readme.md                   ← brief summary
 ```
 
@@ -153,6 +180,9 @@ verified, the test is NOT finished:
    (`navigation` / `product` / `checkout` / `section` / `form` / `page` / `search`).
    Only append the areas this test actually touched — never a full-site dump. Future tests
    read only their own area + the header, and never re-verify what is already recorded.
+   **Add `User-confirmed (Q&A, <TEST_NAME>):` bullets** for facts the USER gave in the Q&A
+   gate (STEP 0c) — mark them as user-said, not DOM-verified, so future sessions trust but
+   may re-verify. This is what shrinks the Q&A gate over time.
 
 2. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
    pattern, append it as the next P-number (P28, P29, ...) with a short recipe + `Source:`
@@ -166,5 +196,9 @@ verified, the test is NOT finished:
 
 4. **Test folder `readme.md`** — add a short "Knowledge added" note listing which
    profiles / patterns / tools this test updated, so the loop stays traceable.
+
+5. **`AI/question_templates.md`** — if the Q&A gate needed a question that is NOT in the
+   templates, append it to the relevant area bank (or universal table). This keeps the
+   Q&A gate shrinking test after test.
 
 Rule of thumb: the kit should be strictly more capable after your test than before it.

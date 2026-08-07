@@ -7,11 +7,12 @@ Read the following files IN ORDER before doing anything else — before analyzin
 
 1. `AI/AGENTS.md`               — your complete step-by-step build instructions
 2. `AI/PROMPT_PARSING.md`       — how to extract CLIENT and TEST_NAME from any brief
-3. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards and reusable patterns library (P1–P28)
-4. `AI/examples/EG-EXAMPLE-SM01/readme.md`             — what correct output looks like
-5. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.js`  — reference JS (match this standard)
-6. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.css` — reference CSS (match this standard)
-7. `AI/examples/EG-EXAMPLE-SM01/share.js`              — reference tracking file
+3. `AI/question_templates.md`   — pre-code Q&A gate (ask only what the kit doesn't know)
+4. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards and reusable patterns library (P1–P28)
+5. `AI/examples/EG-EXAMPLE-SM01/readme.md`             — what correct output looks like
+6. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.js`  — reference JS (match this standard)
+7. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.css` — reference CSS (match this standard)
+8. `AI/examples/EG-EXAMPLE-SM01/share.js`              — reference tracking file
 
 Then, before inspecting a client's site, check `AI/SITE_PROFILES.md` — it stores verified
 DOM facts (selectors, AJAX endpoints, theme gotchas) per client so you don't re-autopsy
@@ -24,8 +25,11 @@ After reading the files above, state:
 - TEST_NAME subfolder (e.g. `SM22 Product Tile Optimization`)
 - Body class (e.g. `EG-TRO-SM22`)
 - Target URL(s)
+- FOCUS_AREA (e.g. `navigation` / `product` / `checkout` / `section` / `form` / `page` / `search`)
 
 If any of the above cannot be determined from the brief → ask the user before proceeding.
+Then run the **Q&A gate** (`AI/question_templates.md`, AGENTS.md STEP 0c) before researching
+or coding — ask only what the brief and the kit don't already answer, record it in `qa_prep.json`.
 
 ## Critical rule
 
