@@ -124,4 +124,14 @@ Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky 
 - Cross-sell "Kunden kauften auch" = `.block.crosssell` (fed by RSC `customers_also_bought`, often 8 items); `related_products`/`upsell_products` usually empty.
 
 ### Reusable tooling
-- `tools/acp_add_check.js` — headless-Edge CDP auditor that clicks Add to Cart and dumps the popup's live state (for sites where you must interact). BLOCKED on praxindo.de by Cloudflare; works on non-challenged sites.
+- `tools/qa_run.js` — **reusable headed CDP QA runner (Node >=22, zero deps).** Auto-detects installed Chromium (Chrome/Edge/Brave/Opera/Vivaldi), drives headed via `--remote-debugging-port=0`, injects a `variation1/` dir into the live page, clicks Add to Cart, settles, runs golden assertions, writes a JSON report. Actions: `navigate|login|atc|qa`; flags `--browser --profile --url --inject --screenshot --out --wait-ms --headless --fresh`. Verified 13/13 PASS on the SM25 variation (Aug 2026). Add new clients as entries in the `SITES` map.
+
+### Add-to-cart popup LIVE facts (verified via headed CDP QA run, `tools/qa_run.js`)
+- **Headless blocked but headed works:** persistent profile `~/.ab-test-kit/browser-profiles/praxindo-edge` passes Cloudflare headed; JS `.click()` on `#product-addtocart-button` opens the popup reliably (CDP synthetic mouse events do NOT trigger — counter stays 0).
+- **Popup disambiguation:** all 3 `.aw-acp-popup.layer__checkout--active` nodes match a naive `querySelector` (progress loader / success / choice). Pick the SUCCESS node via `:has()`: `.aw-acp-popup:has([data-role="update"] .layer__checkout__title--success)`.
+- **`[data-role="related"]` is a SIBLING of `[data-role="update"]`** (not a child), filled by late AJAX after add — poll innerHTML length > 50 (~9s). Markup: `.layer__checkout__upselling` > `__title` ("Kunden kauften auch") > `__list` > `__list__item.related-available` (DIVs, NOT `.swiper-slide`) > `__image`, `__wrapper`, `__title`, `__info` ("100 Stück"), `__price .final.final--hasstrike` + `.strike` ("statt 2,49 €"), `__button` ("In den Warenkorb").
+- **`cart_net_sum` = just-added item price, NOT full cart total** (adds 24.90 -> "24.9" with 1 item). Free-shipping math is per-add, not per-cart.
+- **Site renders `statt` + stock itself** in the popup (`.final--hasstrike` + `.strike`) — do not inject your own.
+- **Site's final render wipes injected nodes** after early decorate -> poll with `key !== lastKey || !hasMarkers` and re-decorate until stable.
+- **Success title `--success`:** site's green band is the title background + `:before` sprite check; override with `background:#fff` + `:before{display:none}`; keep the site's own `.layer__checkout__close` sprite X.
+- Product popup has hidden `input[name="cart_net_sum"]` (starts "0", JS fills after add) + `input[name="freeshipping"]` (`value="100"`); `.layer__checkout__product__info` text "Im Warenkorb befinden sich jetzt: N".
