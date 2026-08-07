@@ -167,3 +167,5 @@ python scripts/search_tests.py "test description"
 **Required once per machine:** Python 3 with `scikit-learn` (`pip install scikit-learn`). Pure-Python fallback is used if sklearn is missing.
 
 **Rule:** when the fallback is used, the newly learned technique MUST be appended to playbook §8 as the next P-number — the library is the lasting output, the search is only the teacher.
+
+<!-- end -->
