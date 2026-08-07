@@ -95,3 +95,33 @@ Use the reusable script `tools/ss_search_check.ps1` (headless Edge):
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/ss_search_check.ps1 -Terms "lead paint;oil tank;radon"
 ```
 Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky terms sequentially.
+
+---
+
+## PRAXINDO
+
+- **Site:** https://www.praxindo.de — German medical-supply shop. Next.js App Router SSR + Magento-flavoured markup (no `__NEXT_DATA__`; data in RSC flight payloads). Prices are plain text (no `data-price-amount`/`itemprop` on price spans).
+- **A/B platform:** Varify (`app.varify.io/varify.js`), NOT Convert.
+- **Verified in:** `../ABTESTSWITHAI/PRAXINDO/SM25 Add-To-Cart Window` (SSR product-page + homepage dumps, Aug 2026).
+
+### Cloudflare / fetching gotchas
+- Headless Edge (`--dump-dom`, `--headless=new` + CDP) is BLOCKED on product pages by Cloudflare Turnstile ("Nur einen Moment…"). `webfetch` (the tool's fetcher) DOES get through and returns full SSR HTML.
+- Add-to-cart is JS-only (no form): `#product-addtocart-button` is `type="button"` handled by client JS. A real click is required to observe the post-add popup state — headless can't reach it → use live QA.
+
+### Add-to-cart popup (AW ACP — Aheadworks Advanced Product Options, Magnific Popup)
+- 3 popups are SSR'd in `#maincontent.wrapper`, each inside its own `.mfp-wrap` (`display:none` until shown), all carrying class `layer__checkout--active`: progress (`[data-role="progress"]`), **success**, choice ("Bitte wählen Sie eine Variante").
+- Success popup: `div.aw-acp-popup.layer__checkout--active` containing:
+  - `[data-role="update"]` → `.layer__checkout__close` (empty button), `.layer__checkout__title--success`, `.layer__checkout__product` with hidden `input[name="cart_net_sum"]` (`value="0"` until JS fills it) + `input[name="freeshipping"]` (`value="100"`), `.layer__checkout__product__image span` (background-image), `.layer__checkout__product__title a`, `.layer__checkout__product__info` ("Im Warenkorb befinden sich jetzt: N"), `.layer__checkout__product__price .final.final` (empty until JS fills it).
+  - `[data-role="content"]` = `.layer__checkout__action` (Weiter einkaufen + Zur Kasse links to `/checkout/cart` + `/checkout/onepage`).
+  - `[data-role="related"]` — EMPTY at SSR; populated by AW ACP via AJAX after add (no endpoint URL exposed in HTML; many products have `related_products:[]`).
+- Cart state after add: `#minicart-counter` (in `li.user_item--cart`), `#minicart-content-wrapper`. `cart_net_sum` net-vs-gross semantics UNVERIFIED (needs live add).
+- Guest state: `#userLayerTriggerB .user__text small` = "Anmelden" and `#loginLayer` present.
+
+### PDP selectors (verified)
+- Add button: `#product-addtocart-button` (`action primary tocart`); qty input `#teaser-qty`; VPE text `#teaser-qty + label .vpe_value`.
+- Final price: `.product-teaser__item__price__final .price` ("24,90 €"); old price: `.product-teaser__item__price__strike` ("statt 32,90 €"); per-unit: `.product-teaser__item__price__per_unit`; gross: `#price_hints .brutto_amount`.
+- Stock: `.product-details-eb__item__stock--green` with `.status-dot`, `.product-details-eb__item__date-text.status-text` (has `data-deliverytime="ca. 1-2 Werktage"`, text "Sofort verfügbar" + "Lieferung ca. 1-2 Werktage"). Slider variants: `.product-slider__item__stock--green/--orange`.
+- Cross-sell "Kunden kauften auch" = `.block.crosssell` (fed by RSC `customers_also_bought`, often 8 items); `related_products`/`upsell_products` usually empty.
+
+### Reusable tooling
+- `tools/acp_add_check.js` — headless-Edge CDP auditor that clicks Add to Cart and dumps the popup's live state (for sites where you must interact). BLOCKED on praxindo.de by Cloudflare; works on non-challenged sites.

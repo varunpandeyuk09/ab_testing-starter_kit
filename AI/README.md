@@ -16,7 +16,7 @@ The AB test starter kit is at: D:\WORK_EXPOGROWTH\ab_testing-starter_kit
 Before writing a single line of code, read these files in order:
 1. AI/AGENTS.md               — your step-by-step instructions
 2. AI/PROMPT_PARSING.md       — how to extract CLIENT and TEST_NAME from the brief
-3. AI/AB_TESTING_PLAYBOOK.md  — coding standards and reusable patterns (P1–P27)
+3. AI/AB_TESTING_PLAYBOOK.md  — coding standards and reusable patterns (P1–P28)
 4. AI/examples/EG-EXAMPLE-SM01/readme.md    — what a correct test looks like
 5. AI/examples/EG-EXAMPLE-SM01/variation1/variation.js  — reference JS
 6. AI/examples/EG-EXAMPLE-SM01/variation1/variation.css — reference CSS
@@ -157,7 +157,7 @@ The AI follows this sequence automatically after reading `AGENTS.md`:
 
 ## RAG fallback search (`scripts/search_tests.py`)
 
-The patterns library (playbook §8, P1–P27) is the primary source. If no pattern fits a brief, the AI runs the fallback search against the agency's archive:
+The patterns library (playbook §8, P1–P28) is the primary source. If no pattern fits a brief, the AI runs the fallback search against the agency's archive:
 
 ```bash
 python scripts/search_tests.py "test description"

@@ -873,6 +873,22 @@ Remove-Item $prof -Recurse -Force -ErrorAction SilentlyContinue
 - Chrome on other machines: same flags, different `chrome.exe` path.
 - Reusable: `tools/ss_search_check.ps1` is the parameterized SMARTSIGN version (terms + count extractor); copy it, swap the selector, and it audits any site's search.
 
+### P28. Re-decorating a Reused Success Modal (ACP-style popup)
+
+**When:** the site shows a post-action modal (add-to-cart "success" popup, quick-view, coupon confirm) whose markup is a static skeleton hydrated by the site's own JS on every trigger. You must redesign it without fighting the site's fill-in logic, and survive multiple consecutive triggers reusing the SAME popup node. Source: PRAXINDO SM25 (AW ACP popup, Aug 2026).
+
+**Key ideas:**
+1. **Let the site keep its own nodes.** Restyle + insert around `.layer__checkout__title`, `.layer__checkout__product` etc. instead of copying their values into new nodes — the site JS keeps updating them and you never race it.
+2. **Activation signal = the skeleton being filled.** SSR skeletons have empty title links / empty price spans. Don't observe visibility toggles — poll cheaply for the success state (`selector + ':success title'`) AND a non-empty product title, then decorate. Poll re-runs on every activation.
+3. **Keyed re-decorate.** A reused popup's innerHTML may be updated in place (not replaced), so a one-time flag would skip the 2nd add. Track `key = productTitle + '|' + cartCounter`; re-decorate when the key changes, and remove your own `eg-*` pieces first (idempotent).
+4. **Late data → delayed refresh.** Hidden inputs (`cart_net_sum`) are filled a beat after the popup opens. Recompute the dynamic bits once ~800 ms later, but only if the same product is still active (re-check the title).
+5. **AJAX-filled siblings.** If a section (`[data-role="related"]`) is empty at SSR and populated by JS later, put a scoped MutationObserver on it with a `isRunning` guard (P5). If the tile markup is unknown, detect tiles structurally (elements containing a `.html` product link or a `.price`), dedupe parents/children, and limit to the required count.
+
+**Gotchas:**
+- Raw non-ASCII copy mangles in the injection pipeline — write German/umlauts as `\u00fc` escapes in JS.
+- Hide replaced original controls with `display:none` rather than removing them, so the site's JS (and its handlers) stay intact.
+- Don't read dynamic popup values at load time — read them at decorate time.
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -921,7 +937,7 @@ Remove-Item $prof -Recurse -Force -ErrorAction SilentlyContinue
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P27).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P28).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).
