@@ -190,3 +190,34 @@ Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky 
 
 ### Reusable tooling
 - `tools/qa_run.js` — `revivserums` SITES entry (empty `addToCart[]`). **Section-flow QA** is automatic for profiles with no add-to-cart: navigate → inject → settle → spec checks (no ATC/popup). `spec.settle.scrollTo` scrolls a below-the-fold section into view before screenshot. Verified 7/7 PASS on AB-06-HP (Aug 2026). Run: `node tools/qa_run.js qa --spec "…/AB-06-HP Best Sellers Image Refresh/spec.json"`.
+
+---
+
+## PCLIQUIDATIONS
+
+- **Site:** https://www.pcliquidations.com — refurbished computer/electronics reseller. Custom PHP storefront ("IsaacStore" markup) + `fullwlibs.js` (site-wide jQuery bundle, includes the `IsaacVariantSet` variant switcher). Google Tag Manager `GTM-K338VW` + `dataLayer` (listingId / listingCurPrice / ecommerce.detail on PDP).
+- **A/B platform:** Convert Experiences (`//cdn-4.convertexperiments.com/v1/js/100412892-100413810.js`) — Convert code already present on PLPs.
+- **Verified in:** `../ABTESTSWITHAI/PCLIQUIDATIONS/Product Listing Revamp` (PLP01, Aug 2026).
+- **Site-wide gotchas:** product URLs are `/p<id>-<slug>` (e.g. `/p151874-hp-elitedesk-800-g4`); images on `images.pcliquidations.com` with `/t200.jpg` thumbs. jQuery is available but the PLP test runs vanilla. Pages are server-rendered, no SPA routing. No Cloudflare challenge observed on PLP/PDP (headed + Invoke-WebRequest both fine).
+
+### page (PLP / category listings — verified)
+- Listing container: `.itemBrowser.itemTable` (flex wrap, desktop). Cards: `.item_square-medium` (also `.item_square-small`); desktop grid = 4–5 across (native width 260px, flex in `.itemTable`).
+- **Grade data lives on the card:** `x-all-types` (e.g. `"New, Grade A, Grade B, Grade C"`) and `x-in-types` (grades this card can sell, e.g. `"Grade A, Grade B"`). Desktops are A/B/C only; monitors add a `NEW` type (no "Grade X" on the live DOM despite Figma mockups).
+- Card inner markup: `.item_image` (a > lazy `<img src=.../t200.jpg>`), `.item_text` (`.brand_img`, `h3.item_title > a[href="/p<id>-slug"]`), `.price_box` (`.browseLinePrice` current, `.browsePriceStrike` strike, `.savings` "Save $xx.xx"), `.item_spec > .browse-spec` rows (`<div>` with `.spec-name` + text value), `.item_extra` (native CTA `.cartbtn.tocart`).
+- Specs per category: computers → Processor / Memory / Storage; monitors → Screen Size / Max Resolution / Aspect Ratio.
+- **Grid/list toggle:** `browseSetVert(true|false)` toggles `.itemTableVert` on `.itemBrowser` (cards become `div.itemLineVert` with CSS grid areas image/maintext/itemspec/pricebox/itemextra); layout choice persisted in a `browseLayout` cookie. The toggle is hidden on mobile (`is_mobile()` early-return).
+- Mobile (≤799px): cards collapse to a 2-col grid (`grid-template-columns:40% auto`; areas image/maintext, image/pricebox, image/itemspec); `.item_extra`, `.brand_img`, `.cartbtn` are `display:none` by the site CSS.
+- Pagination: "Results 1-24 of 554", next page = `?start=24`; sort + count via `listBrowseOrder`/`listResultCount` forms. Category filter checkboxes carry `x-url` of the brand's own PLP (e.g. `/dell-refurbished-desktops`).
+- Category PLPs share one template: `/refurbished-desktop-computers`, `/refurbished-laptops`, `/refurbished-monitors` + per-brand `/dell-…/hp-…/lenovo-…/…` + `/all-in-one-computers`, `/triple-monitor-setups`, `/monitor-stands-mounts`, `/electronics-deals`, `/closeout-sale`, `/c108---scratch-dent`.
+- User-confirmed (Q&A, PLP01): test is **sitewide across all PLPs**; CTA ("See Options") must navigate to the PDP; grade selector must replicate the PDP switcher (in-place image/price change, no refresh); price block = single price + strike + savings that updates on grade switch; applies to **grid + list view**; same card details on mobile.
+
+### product (PDP — variant mechanics, verified)
+- PDP embeds **every grade's variant block server-side** in the DOM as `.listing-variant` (one is `.listing-variant.listing-main`). Attributes: `x-id`, `x-baseprice` (current), `x-strikeprice` (strike), `x-master` (on the main block). E.g. Grade A `x-id=151874` $274.99/strike 299.99; Grade C `x-id=156094` $247.99/strike 336.99.
+- The site's `IsaacVariantSet` (defined in `https://stat.pcliquidations.com/fullwlibs.js`, cache-busted `?yyyyMMdd`) calls `load()` → collects all `.listing-variant` blocks → `change(id)` swaps innerHTML client-side (**no AJAX**). Non-master variant URL = `?variant=<id>`.
+- Grade label sources in a block: `#itemInfoBlock h1` ("… Grade A") or the selected button `.sub-variant-selected span`. Condition buttons: `.sub-variant-selected` (active) / `.sub-variant-non`; stock: `.pcl-grade-stock.statusGood` ("25+ in stock").
+- **Affirm 0% APR:** PDP shows `<p class="affirm-as-low-as" data-amount="27499" data-page-type="product">` (`data-amount` = price in cents, per variant) — this is the zero-interest source (client confirmed badge copy comes from here). `listingFinanceShowBtn()` updates `data-amount` = `store_getItemPrice()*100` and calls `affirm.ui.refresh()`.
+- User-confirmed (Q&A, PLP01): zero-interest badge = extract from PDP `.affirm-as-low-as` (0% APR + logo/icon).
+
+### Reusable tooling
+- `tools/qa_run.js` — `pcliq` SITES entry (empty `addToCart[]` → section flow). Spec-driven QA: `node tools/qa_run.js qa --spec "…/Product Listing Revamp/spec.json"`. Verified 10/10 PASS on PLP01 (Aug 2026). The spec's `js` checks click a grade button and assert the price changed (behavioral, no ATC needed).
+- `Invoke-WebRequest` + `[regex]` works for quick grade/markup checks (site does not block PowerShell UA).

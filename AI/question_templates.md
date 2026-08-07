@@ -87,6 +87,14 @@ it's cheaper/faster to ask; otherwise verify it and record the result.
 - H3: Zero/low-result states — is a fallback design required?
 - H4: Facets/filters in scope?
 
+### PLP / category listing (product cards)
+- L1: Scope — one category page or all listing pages sitewide (brand/filter/pagination views)?
+- L2: Grade/variant selector — must it replicate the PDP's own switcher behavior (click changes product image + price WITHOUT page refresh)?
+- L3: What happens when the user clicks the card CTA (e.g. "See Options") — navigate to PDP / open a quickview / trigger ATC?
+- L4: Where does each data point come from — is price/strike/spec already rendered on the card, or fetched from the PDP (verify markup first)?
+- L5: Does the redesign apply to grid view, list view, or both?
+- L6: Mobile — same card details as desktop, or a simplified variant?
+
 ---
 
 ## 4. Behavior questions worth verifying yourself (not asking)

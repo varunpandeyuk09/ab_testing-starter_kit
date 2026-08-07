@@ -121,6 +121,13 @@ const SITES = {
     label: "REVIVSERUMS",
     addToCart: [],
   },
+  // PLP card redesign (section flow) — no ATC popup. Cards carry x-in-types
+  // grades; PDP data is fetched same-origin from the product URL in the card.
+  pcliq: {
+    label: "PCLIQUIDATIONS",
+    addToCart: [],
+    counter: ".storeCartQty",
+  },
 };
 
 /* ------------------------------------------------------------------ */

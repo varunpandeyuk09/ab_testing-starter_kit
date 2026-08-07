@@ -924,6 +924,58 @@ function swapCardImages() {
 - Eager single-src `<img>` (Shopify custom sections) needs only `src`; use P1 for lazy-load/srcset/`<picture>` cases.
 - Ask the client at the Q&A gate where the creatives come from (Q: "where do the images come from?") — this pattern exists precisely because creatives usually aren't ready at build time.
 
+### P30. Client-Side Variant Switcher Powered by Fetched PDP Blocks (no AJAX, no refresh)
+
+**When:** the PLP card must show a grade/variant selector (A/B/C, size, condition) and switching a variant must update image + price + links IN PLACE exactly like the PDP's own switcher — but the PLP page itself exposes no AJAX endpoint. The PDP page embeds every variant's HTML server-side, so one fetch gives you all variant data for free. Source: PCLIQUIDATIONS PLP01 (PLP card revamp, Aug 2026).
+
+**Recipe:**
+```js
+function fetchPdpData(url) {
+  var id = (url.match(/\/p(\d+)/) || [])[1];
+  if (!id) return Promise.resolve(null);
+  var cacheKey = 'eg-test:' + id;
+  var hit = sessionStorage.getItem(cacheKey);
+  if (hit) return Promise.resolve(JSON.parse(hit).data);
+  return fetch(url, { credentials: 'same-origin' })
+    .then(function (r) { return r.text(); })
+    .then(function (html) {
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      var blocks = doc.querySelectorAll('.listing-variant');   // one per variant, embedded in PDP
+      var data = {};                                           // keyed by grade letter
+      for (var i = 0; i < blocks.length; i++) {
+        var b = blocks[i];
+        data[b.getAttribute('data-grade')] = {
+          id: b.getAttribute('data-id'),
+          price: parseFloat(b.getAttribute('data-price')),
+          strike: parseFloat(b.getAttribute('data-strike')) || 0,
+          img: (b.querySelector('img') || {}).getAttribute('src') || ''
+        };
+      }
+      sessionStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data: data }));
+      return data;
+    }).catch(function () { return null; });   // enhancement only — never gate on it
+}
+function swapVariant(card, v) {
+  card.querySelector('.eg-price').textContent = '$' + v.price.toFixed(2);
+  card.querySelector('.eg-strike').textContent = v.strike ? '$' + v.strike.toFixed(2) : '';
+  var img = card.querySelector('img');
+  if (v.img && img) { img.setAttribute('src', v.img); }
+}
+```
+
+**Key ideas:**
+1. **Parse the PDP's embedded variant blocks instead of finding an API.** If the PDP swaps variants client-side via a class like `variantSet.change(id)` (read the site's `fullwlibs.js`/global), the two/three variant HTML nodes are almost always already SSR'd in the PDP DOM — read them from the fetched HTML.
+2. **Lazy + queued + cached.** Don't fetch all 24 cards at once. Queue per-card fetches with a small concurrency limit (e.g. 3), trigger when cards scroll into view (`IntersectionObserver` + `rootMargin: '300px'`), cache in `sessionStorage` (key = product id, TTL ~1 day) so back/forward and page 2+ are instant.
+3. **Idempotent swap + restore.** Only mutate `src`/`textContent` when the value changes; keep the site's own price/strike/savings nodes (update their text, never replace them) so the site's JS still owns them.
+4. **Mirror the PDP's variant URL scheme.** If the PDP uses `?variant=<id>` for non-master variants, rebuild the card links the same way so "See Options"/card clicks land on the correct variant.
+5. **Default selection.** Preselect the first grade from the card's own `x-in-types`-style attribute; once PDP data arrives, re-derive the shown grade by matching the displayed price against the fetched variant prices (handles range-priced cards).
+
+**Gotchas:**
+- Same-origin only; silent-fail on error/404/redirect.
+- Match grade labels (`/Grade\s*([ABC])/i`) but expect site-specific extra types (e.g. `NEW`) — parse what you can, skip cleanly.
+- Detach the fetched `<doc>` after parsing; never touch the real PDP DOM (this runs on the PLP).
+- Finance/3rd-party badges (Affirm `data-amount` in cents) are often per-variant — read them from the same blocks.
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -972,7 +1024,7 @@ function swapCardImages() {
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P29).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P30).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).
