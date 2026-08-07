@@ -12,14 +12,23 @@
 // USAGE:
 //   node tools/qa_run.js --browser auto --profile praxindo --action login --url <url>
 //   node tools/qa_run.js --browser auto --profile praxindo --action atc --url <url> --screenshot popup.png
+//   node tools/qa_run.js qa --spec "<TEST>/spec.json"                <- data-driven QA (recommended)
 //   node tools/qa_run.js --browser auto --profile praxindo --action qa --url <url> --inject "path/to/variation1"
+//
+// DATA-DRIVEN SPECS:
+//   A spec.json lives in each test folder and holds settle + all golden checks,
+//   so new tests never require editing this file. ops: exists|not|eq|match|
+//   count|countLte|css|js; tokens {popup} {title} {update} {related}
+//   {relatedTitle} {relatedTile} {counter} resolve from the SITES profile.
+//   spec fields: profile, url, inject (relative to spec.json), settle, checks.
 //
 // FLAGS:
 //   --browser auto|chrome|edge|brave|opera|vivaldi   (default: auto = first found)
 //   --profile <site-key>                              site profile with selectors (default: praxindo)
 //   --action navigate|login|atc|qa                    (default: atc)
-//   --url <page-url>                                  required for login/atc/qa
-//   --inject <dir>                                    variation1 folder with variation.js/.css (for qa)
+//   --url <page-url>                                  required for login/atc/qa (or set spec.url)
+//   --inject <dir>                                    variation1 folder with variation.js/.css (for qa; or set spec.inject)
+//   --spec <spec.json | spec-dir>                     data-driven golden checks + settle
 //   --screenshot <file.png>                           save a screenshot of the popup (for atc/qa)
 //   --out <file.json>                                 save the full JSON result
 //   --headless                                        headless mode (Cloudflare may block!)
@@ -393,6 +402,104 @@ function injectVariationExpr(js, css) {
   })()`;
 }
 
+/* ------------------------------------------------------------------ */
+/* 5b. Data-driven QA spec engine                                       */
+/* ------------------------------------------------------------------ */
+// A spec.json lives in the test folder and drives ALL golden checks, so a new
+// test never needs qa_run.js edits. Tokens {popup} {title} {update} {related}
+// {relatedTitle} {relatedTile} {counter} resolve from the SITES profile.
+//
+// spec shape:
+//   { "settle": { "marker": "{popup} .eg-sm25-check", "markerTimeoutMs": 12000,
+//                 "related": "{popup} [data-role=\"related\"] .eg-sm25-tile",
+//                 "relatedTimeoutMs": 9000, "extraMs": 1500 },
+//     "checks": [
+//       { "check": "success title", "op": "eq", "selector": "{title}", "expect": "Artikel hinzugefügt" },
+//       { "check": "white header",  "op": "css", "selector": "{title}", "prop": "backgroundColor", "expect": "rgb(255, 255, 255)" },
+//       { "check": "two CTAs",      "op": "js",  "expr": "(function(){ var a=document.querySelectorAll({popup}+' .eg-sm25-actions a'); return { pass: a.length===2, detail: 'links='+a.length }; })()" }
+//     ] }
+//
+// ops: exists | not | eq | match | count | countLte | css | js
+//   css uses prop (and optional pseudo e.g. "::before"); js expr must return {pass, detail}.
+function resolveTokens(str, site, quote) {
+  const tok = {
+    popup: site.popup, title: site.title, update: site.update, related: site.related,
+    relatedTitle: site.relatedTitle, relatedTile: site.relatedTile, counter: site.counter,
+  };
+  return String(str).replace(/\{(\w+)\}/g, (m, k) => (tok[k] !== undefined ? (quote ? JSON.stringify(tok[k]) : tok[k]) : m));
+}
+
+function buildCheckExpr(c, site) {
+  const sel = resolveTokens(c.selector || "", site, false);
+  const selJ = JSON.stringify(sel);
+  const expJ = JSON.stringify(c.expect);
+  switch (c.op) {
+    case "exists":
+      return `(() => { var el = document.querySelector(${selJ}); return { pass: !!el, detail: el ? (el.tagName + '.' + String(el.className||'').slice(0,50)) : 'not found' }; })()`;
+    case "not":
+      return `(() => { var n = document.querySelectorAll(${selJ}).length; return { pass: n === 0, detail: 'found=' + n }; })()`;
+    case "eq":
+      return `(() => { var el = document.querySelector(${selJ}); var t = el ? (el.textContent||'').trim() : null; return { pass: t === ${expJ}, detail: String(t) }; })()`;
+    case "match":
+      return `(() => { var el = document.querySelector(${selJ}); var t = el ? (el.textContent||'').trim() : ''; try { var re = new RegExp(${expJ}); return { pass: re.test(t), detail: t.slice(0,120) }; } catch (e) { return { pass: false, detail: 'bad regex: ' + e.message }; } })()`;
+    case "count":
+      return `(() => { var n = document.querySelectorAll(${selJ}).length; return { pass: n === ${c.expect}, detail: 'count=' + n }; })()`;
+    case "countLte":
+      return `(() => { var n = document.querySelectorAll(${selJ}).length; return { pass: n <= ${c.expect}, detail: 'count=' + n }; })()`;
+    case "css": {
+      const propJ = JSON.stringify(c.prop);
+      const pseudo = c.pseudo ? JSON.stringify(c.pseudo) : null;
+      const access = pseudo
+        ? `(getComputedStyle(el, ${pseudo}).content || 'none')`
+        : `String(getComputedStyle(el)[${propJ}] || '')`;
+      return `(() => { var el = document.querySelector(${selJ}); if (!el) return { pass: false, detail: 'not found' }; var v = ${access}; return { pass: String(v).trim() === ${expJ}, detail: String(v) }; })()`;
+    }
+    case "js": {
+      const expr = resolveTokens(c.expr, site, true);
+      return `(function () { try { var __r = ${expr}; return { pass: !!__r.pass, detail: __r.detail != null ? String(__r.detail) : '' }; } catch (e) { return { pass: false, detail: 'JS ERR: ' + e.message }; } })()`;
+    }
+    default:
+      throw new Error("unknown check op: " + c.op);
+  }
+}
+
+async function runSpecChecks(cdp, site, spec) {
+  const checks = [];
+  for (const c of (spec.checks || [])) {
+    const row = { check: c.check || "?", pass: false, detail: "" };
+    try {
+      const r = await evaluate(cdp, buildCheckExpr(c, site));
+      row.pass = !!r.pass;
+      row.detail = String(r.detail != null ? r.detail : "");
+    } catch (e) {
+      row.detail = "ERR: " + e.message;
+    }
+    checks.push(row);
+  }
+  return checks;
+}
+
+async function settlePage(cdp, site, spec) {
+  const st = (spec && spec.settle) || {};
+  const marker = resolveTokens(st.marker || "{popup} .eg-sm25-check", site, false);
+  const mDeadline = Date.now() + (st.markerTimeoutMs || 12000);
+  while (Date.now() < mDeadline) {
+    const ok = await evaluate(cdp, `!!document.querySelector(${JSON.stringify(marker)})`);
+    if (ok) break;
+    await sleep(500);
+  }
+  if (st.related) {
+    const relSel = resolveTokens(st.related, site, false);
+    const rDeadline = Date.now() + (st.relatedTimeoutMs || 9000);
+    while (Date.now() < rDeadline) {
+      const n = await evaluate(cdp, `document.querySelectorAll(${JSON.stringify(relSel)}).length`);
+      if (n > 0) break;
+      await sleep(700);
+    }
+  }
+  await sleep(st.extraMs || 1500);
+}
+
 async function actQa(cdp, site, args) {
   const base = { action: "qa", site: site.label, url: args.url };
   if (!args.injectDir) return { ...base, error: "--inject <variation1-dir> is required for action qa" };
@@ -414,22 +521,46 @@ async function actQa(cdp, site, args) {
   // Settle: the site re-renders the update node after open, and the variation
   // poll re-decorates once markers are wiped. Wait for our markers, then let
   // the related-products AJAX fill in before asserting.
-  const checks = [];
-  const settleDeadline = Date.now() + 12000;
-  let markers = false;
-  while (Date.now() < settleDeadline) {
-    markers = await evaluate(cdp, `!!document.querySelector('${site.popup} .eg-sm25-check')`);
-    if (markers) break;
-    await sleep(500);
-  }
-  const relDeadline = Date.now() + 9000;
-  while (Date.now() < relDeadline) {
-    const items = await evaluate(cdp, `document.querySelectorAll('${site.popup} [data-role="related"] .layer__checkout__upselling__list__item').length`);
-    if (items > 0) break;
-    await sleep(700);
-  }
-  await sleep(1500);
+  await settlePage(cdp, site, args.spec);
 
+  // Assertions come from the test's spec.json (data-driven). If none was
+  // provided, fall back to the built-in PRAXINDO/SM25 checks.
+  const checks = args.spec ? await runSpecChecks(cdp, site, args.spec) : await sm25BuiltinChecks(cdp, site);
+
+  const result = { ...base, popupOpened, assertions: checks, passCount: checks.filter((c) => c.pass).length, total: checks.length };
+  result.domDiag = await evaluate(cdp, `(() => {
+    var out = {};
+    out.markers = {
+      check: document.querySelectorAll('.eg-sm25-check').length,
+      progress: document.querySelectorAll('.eg-sm25-progress').length,
+      actions: document.querySelectorAll('.eg-sm25-actions').length,
+      trust: document.querySelectorAll('.eg-sm25-trust').length,
+      login: document.querySelectorAll('.eg-sm25-login').length
+    };
+    out.popups = Array.prototype.map.call(document.querySelectorAll('.aw-acp-popup'), function (p) {
+      var t = p.querySelector('.layer__checkout__title');
+      return { cls: (p.className || '').toString().slice(0, 60), title: t ? t.textContent.slice(0, 40) : '', updateLen: (p.querySelector('[data-role="update"]') || { innerHTML: '' }).innerHTML.length };
+    });
+    var up = document.querySelector(${JSON.stringify(site.popup + " [data-role=\"update\"]")});
+    out.updateHTML = up ? up.innerHTML.slice(0, 2500) : null;
+    return out;
+  })()`);
+  if (args.screenshot) result.screenshot = await captureScreenshot(cdp, args.screenshot);
+  return result;
+}
+
+async function captureScreenshot(cdp, file) {
+  const res = await cdp.send("Page.captureScreenshot", { format: "png" });
+  const buf = Buffer.from(res.data, "base64");
+  fs.writeFileSync(file, buf);
+  return file + " (" + buf.length + " bytes)";
+}
+
+/* ------------------------------------------------------------------ */
+/* 5c. Built-in fallback checks (PRAXINDO SM25) — used when no spec.json */
+/* ------------------------------------------------------------------ */
+async function sm25BuiltinChecks(cdp, site) {
+  const checks = [];
   const titleText = await evaluate(cdp, `(() => { var t = document.querySelector(${JSON.stringify(site.title)}); return t ? t.textContent.trim() : null; })()`);
   checks.push({ check: "success title text", pass: titleText === "Artikel hinzugefügt", detail: String(titleText) });
 
@@ -445,10 +576,7 @@ async function actQa(cdp, site, args) {
   });
 
   // close X: site's own button present and NO custom pseudo cross
-  checks.push({
-    check: "close X present",
-    pass: await evaluate(cdp, `!!document.querySelector('${site.popup} .layer__checkout__close')`),
-  });
+  checks.push({ check: "close X present", pass: await evaluate(cdp, `!!document.querySelector('${site.popup} .layer__checkout__close')`) });
   checks.push({
     check: "no fake pseudo cross",
     pass: await evaluate(cdp, `(() => { var b = document.querySelector('${site.popup} .layer__checkout__close'); if (!b) return false; return (getComputedStyle(b, '::before').content || 'none') === 'none' && (getComputedStyle(b, '::after').content || 'none') === 'none'; })()`),
@@ -506,41 +634,14 @@ async function actQa(cdp, site, args) {
     pass: await evaluate(cdp, `/\\d+/.test((document.querySelector('${site.popup} .eg-sm25-count')||{}).textContent||'')`),
     detail: "counter=" + String(counter),
   });
-
-  const result = { ...base, popupOpened, assertions: checks, passCount: checks.filter((c) => c.pass).length, total: checks.length };
-  result.domDiag = await evaluate(cdp, `(() => {
-    var out = {};
-    out.markers = {
-      check: document.querySelectorAll('.eg-sm25-check').length,
-      progress: document.querySelectorAll('.eg-sm25-progress').length,
-      actions: document.querySelectorAll('.eg-sm25-actions').length,
-      trust: document.querySelectorAll('.eg-sm25-trust').length,
-      login: document.querySelectorAll('.eg-sm25-login').length
-    };
-    out.popups = Array.prototype.map.call(document.querySelectorAll('.aw-acp-popup'), function (p) {
-      var t = p.querySelector('.layer__checkout__title');
-      return { cls: (p.className || '').toString().slice(0, 60), title: t ? t.textContent.slice(0, 40) : '', updateLen: (p.querySelector('[data-role="update"]') || { innerHTML: '' }).innerHTML.length };
-    });
-    var up = document.querySelector(${JSON.stringify(site.popup + " [data-role=\"update\"]")});
-    out.updateHTML = up ? up.innerHTML.slice(0, 2500) : null;
-    return out;
-  })()`);
-  if (args.screenshot) result.screenshot = await captureScreenshot(cdp, args.screenshot);
-  return result;
-}
-
-async function captureScreenshot(cdp, file) {
-  const res = await cdp.send("Page.captureScreenshot", { format: "png" });
-  const buf = Buffer.from(res.data, "base64");
-  fs.writeFileSync(file, buf);
-  return file + " (" + buf.length + " bytes)";
+  return checks;
 }
 
 /* ------------------------------------------------------------------ */
 /* 6. Main                                                              */
 /* ------------------------------------------------------------------ */
 function parseArgs(argv) {
-  const out = { browser: "auto", profile: "praxindo", action: "atc", waitMs: 4000, screenshot: null, out: null, injectDir: null, url: null, headless: false, fresh: false };
+  const out = { browser: "auto", profile: "praxindo", action: "atc", waitMs: 4000, screenshot: null, out: null, injectDir: null, url: null, spec: null, headless: false, fresh: false };
   let first = true;
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -552,6 +653,7 @@ function parseArgs(argv) {
     else if (a === "--action") out.action = val();
     else if (a === "--url") out.url = val();
     else if (a === "--inject") out.injectDir = val();
+    else if (a === "--spec") out.spec = val();
     else if (a === "--screenshot") out.screenshot = val();
     else if (a === "--out") out.out = val();
     else if (a === "--wait-ms") out.waitMs = parseInt(val(), 10) || 4000;
@@ -565,9 +667,22 @@ async function main() {
   const args = parseArgs(process.argv);
   const browser = detectBrowser(args.browser);
   if (browser.error) { console.error("ERROR: " + browser.error); process.exit(2); }
+  if (args.spec) {
+    const specFile = fs.existsSync(args.spec) && fs.statSync(args.spec).isFile()
+      ? args.spec
+      : path.join(args.spec, "spec.json");
+    if (!fs.existsSync(specFile)) { console.error("ERROR: --spec file not found: " + specFile); process.exit(2); }
+    try { args.spec = JSON.parse(fs.readFileSync(specFile, "utf8")); }
+    catch (e) { console.error("ERROR: invalid spec JSON in " + specFile + " — " + e.message); process.exit(2); }
+    console.error(`[qa_run] spec loaded from ${specFile} (${(args.spec.checks || []).length} checks)`);
+    if (args.spec.profile) args.profile = args.spec.profile;
+    if (!args.url && args.spec.url) args.url = args.spec.url;
+    if (!args.injectDir && args.spec.inject) args.injectDir = path.resolve(path.dirname(specFile), args.spec.inject);
+  }
   const site = SITES[args.profile];
   if (!site) { console.error("ERROR: unknown profile \"" + args.profile + "\" (available: " + Object.keys(SITES).join(", ") + ")"); process.exit(2); }
   if (["login", "atc", "qa"].indexOf(args.action) !== -1 && !args.url) { console.error("ERROR: --url <page-url> is required for action " + args.action); process.exit(2); }
+  if (args.action === "qa" && !args.injectDir) { console.error("ERROR: --inject <variation1-dir> is required for action qa (or set spec.inject)"); process.exit(2); }
 
   const profileDir = path.join(os.homedir(), ".ab-test-kit", "browser-profiles", args.profile + "-" + browser.name);
   fs.mkdirSync(profileDir, { recursive: true });
