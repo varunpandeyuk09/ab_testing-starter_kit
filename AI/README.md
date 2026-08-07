@@ -30,7 +30,8 @@ After reading all files above, confirm:
 - Body class (EG-...)
 - Target URL(s)
 
-Then scaffold the folder structure and build the test.
+Then scaffold the folder structure and build the test. When the test is finished, write its
+verified learnings back into the kit (AI/AGENTS.md STEP 4): SITE_PROFILES.md, playbook §8, tools/.
 
 --- BRIEF START ---
 [PASTE YOUR BRIEF HERE]
@@ -108,6 +109,8 @@ ab_testing-starter_kit/
     README.md                 ← this file
   scripts/
     search_tests.py           ← RAG fallback search (auto-locates the AB-test archive)
+  tools/                      ← reusable scripts built during tests (see ss_search_check.ps1)
+    ss_search_check.ps1       ← headless-search-result checker (SMARTSIGN instance of P27)
   ../ABTESTSWITHAI/CLIENT/    ← actual test output lives here (outside starter kit)
     TEST_NAME/
       metadata.json
@@ -148,6 +151,7 @@ The AI follows this sequence automatically after reading `AGENTS.md`:
 4. **Research** → read playbook, inspect live DOM, match patterns
 5. **Code** → implement in `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.js` and `variation.css`
 6. **QA** → run the QA checklist (playbook §9) before finishing
+7. **Capture knowledge (STEP 4)** → write verified facts back into `AI/SITE_PROFILES.md`, new techniques as next P-pattern in playbook §8 (update `P1–Pxx` count), reusable scripts into `tools/` — the kit must be more capable after every test
 
 ---
 
@@ -167,5 +171,16 @@ python scripts/search_tests.py "test description"
 **Required once per machine:** Python 3 with `scikit-learn` (`pip install scikit-learn`). Pure-Python fallback is used if sklearn is missing.
 
 **Rule:** when the fallback is used, the newly learned technique MUST be appended to playbook §8 as the next P-number — the library is the lasting output, the search is only the teacher.
+
+---
+
+## Knowledge feedback loop (after every test)
+
+Every finished test must leave its verified learnings in the kit (AI/AGENTS.md STEP 4):
+- Verified DOM facts → `AI/SITE_PROFILES.md` (client section)
+- New technique → next P-pattern in `AI/AB_TESTING_PLAYBOOK.md` §8 + update `P1–Pxx` count
+- Reusable script → `tools/`
+
+The kit compounds: each test makes the next one faster.
 
 <!-- end -->

@@ -125,3 +125,32 @@ The base `variation.js` contains ONLY `waitForElement` + `init()`. Do not add he
 ## STEP 3 — Before Finishing
 
 Run the QA checklist (playbook section 9) and confirm every item. Re-check every selector against the forbidden-anchor list before delivering.
+
+---
+
+## STEP 4 — Capture Knowledge Back Into the Kit (MANDATORY before finishing)
+
+Every completed test must leave its verified learnings in the kit. This feedback loop is
+what makes the kit faster with every test. **Do all of the following that apply before you
+hand over a test** — if a future session would have to re-verify something you already
+verified, the test is NOT finished:
+
+1. **`AI/SITE_PROFILES.md`** — add a `## CLIENT` section (or update the existing one) with
+   ONLY facts you confirmed against the live DOM: stable selectors, AJAX endpoints, theme
+   gotchas, and the working technique. Mark each fact with the test that proved it
+   (`Verified in: ../ABTESTSWITHAI/<CLIENT>/<TEST_NAME>`). Never record assumptions.
+
+2. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
+   pattern, append it as the next P-number (P28, P29, ...) with a short recipe + `Source:`
+   line. Then update every `P1–Pxx` reference in `AGENTS.md` / `AB_TESTING_PLAYBOOK.md` /
+   `README.md` to the new max count (grep for `P1–P` before finishing).
+
+3. **`tools/`** — if you built a reusable script (verification, batch check, DOM inspect),
+   save it under `tools/` with site-specific parts parameterized (see
+   `tools/ss_search_check.ps1` for the pattern). Reference it from the client's profile so
+   future sessions find it.
+
+4. **Test folder `readme.md`** — add a short "Knowledge added" note listing which
+   profiles / patterns / tools this test updated, so the loop stays traceable.
+
+Rule of thumb: the kit should be strictly more capable after your test than before it.

@@ -32,6 +32,15 @@ If any of the above cannot be determined from the brief → ask the user before 
 All output files go into `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/` — NEVER into the root `variation1/` folder.
 The root `variation1/` is a read-only template. Do not touch it.
 
+## Knowledge feedback loop (after every test)
+
+The kit gets faster with every completed test. Before finishing a test, write its verified
+learnings back into the kit (see `AI/AGENTS.md` STEP 4):
+- Verified DOM facts → `AI/SITE_PROFILES.md` (client section)
+- New technique → next P-pattern in `AI/AB_TESTING_PLAYBOOK.md` §8
+- Reusable script → `tools/`
+- Update the `P1–Pxx` count in AGENTS.md / playbook / README when you add a pattern
+
 ## Templates (copy these, never edit them)
 
 Blank templates live at the kit ROOT and are the source of truth:

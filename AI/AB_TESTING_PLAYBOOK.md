@@ -898,6 +898,7 @@ Remove-Item $prof -Recurse -Force -ErrorAction SilentlyContinue
 - [ ] Site functionality untouched; no global side effects.
 - [ ] `v1.json` created (+ `share.js` where clicks are tracked).
 - [ ] Verified on desktop, tablet, mobile.
+- [ ] Knowledge capture done (AGENTS.md STEP 4): verified facts → `AI/SITE_PROFILES.md`, new technique → §8 next P-number + `P1–Pxx` count updated, reusable script → `tools/`.
 
 ---
 
@@ -941,3 +942,4 @@ These save the most time on every test, whatever the client. Source: lessons fro
    `node -e "..."` (single-quote the script in PowerShell to avoid `$` interpolation) or a scratch `.js` file. Fix bugs here, not in the test tool.
 6. **Fetch pages with `Invoke-WebRequest` and an explicit `User-Agent`** (some stores 404 default PowerShell's UA).
 7. **Keep the file-transfer pipeline in mind:** when you download a site asset, save it to the scratch folder with a clear name — re-downloading a 800 KB minified CSS to grep it twice is wasted time.
+8. **Write knowledge back AFTER every test (STEP 4).** The kit only compounds if each finished test updates `AI/SITE_PROFILES.md` (verified selectors/endpoints), playbook §8 (new P-pattern), and `tools/` (reusable scripts). A test that adds nothing to the kit leaves the next session re-doing your work. When a site's rendered content is JS/AJAX-driven, verify with pattern **P27** (headless Edge) and record the working command in the client's profile.
