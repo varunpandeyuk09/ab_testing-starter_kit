@@ -889,6 +889,41 @@ Remove-Item $prof -Recurse -Force -ErrorAction SilentlyContinue
 - Hide replaced original controls with `display:none` rather than removing them, so the site's JS (and its handlers) stay intact.
 - Don't read dynamic popup values at load time — read them at decorate time.
 
+### P29. Client-Editable Config Map for Creatives (handle-keyed)
+
+**When:** the brief replaces media (images/videos/copy) with creatives that are NOT final yet. Put every swap decision in ONE clearly-marked object the client edits post-launch, keyed by a stable per-item id (product handle / SKU), so updating assets never requires touching the swap logic. Source: REVIVSERUMS AB-06-HP (Best Sellers image refresh, Aug 2026).
+
+**Recipe:**
+```js
+// UPDATE HERE — key = product handle, value = new creative URL
+var EG_BS_EDITORIAL = {
+  'hair-stimulating-serum': 'https://.../reviv-ultimate-serum-1.jpg?v=...',
+  'ultimate-serum': 'https://.../reviv-ultimate-serum-1.jpg?v=...'
+};
+function normalizeImageUrl(url) {
+  return String(url || '').replace(/^https?:/, '').split('?')[0];
+}
+function swapCardImages() {
+  var cards = document.querySelectorAll('.c_best_seller_single_product');
+  for (var i = 0; i < cards.length; i++) {
+    var link = cards[i].querySelector('.c_bs_single_product_img a[href*="/products/"]');
+    var m = link && link.getAttribute('href').match(/\/products\/([^/?]+)/);
+    if (!m) continue;
+    var target = EG_BS_EDITORIAL[m[1]];
+    var img = cards[i].querySelector('img.c_product_main_image');
+    if (!target || !img) continue;
+    if (normalizeImageUrl(img.getAttribute('src')) === normalizeImageUrl(target)) continue; // idempotent
+    img.setAttribute('src', target);
+  }
+}
+```
+
+**Gotchas:**
+- Key by a stable id from the DOM (`/products/{handle}` in the card link), never by array index or image filename — the handle survives theme re-renders and collection reordering.
+- Normalize protocol (`http:`/`https:`) and query string before comparing srcs so re-runs are no-ops (works with protocol-relative site URLs).
+- Eager single-src `<img>` (Shopify custom sections) needs only `src`; use P1 for lazy-load/srcset/`<picture>` cases.
+- Ask the client at the Q&A gate where the creatives come from (Q: "where do the images come from?") — this pattern exists precisely because creatives usually aren't ready at build time.
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -937,7 +972,7 @@ Remove-Item $prof -Recurse -Force -ErrorAction SilentlyContinue
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P28).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P29).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).

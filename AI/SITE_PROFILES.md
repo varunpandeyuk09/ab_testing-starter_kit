@@ -163,3 +163,30 @@ Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky 
 
 ### Reusable tooling
 - `tools/qa_run.js` — **reusable headed CDP QA runner (Node >=22, zero deps).** Auto-detects installed Chromium (Chrome/Edge/Brave/Opera/Vivaldi), drives headed via `--remote-debugging-port=0`, injects a `variation1/` dir into the live page, clicks Add to Cart, settles, runs golden assertions, writes a JSON report. Actions: `navigate|login|atc|qa`; flags `--browser --profile --url --inject --screenshot --out --wait-ms --headless --fresh`. Verified 13/13 PASS on the SM25 variation (Aug 2026). Add new clients as entries in the `SITES` map. **Data-driven mode (recommended):** pass `--spec <spec.json>` — the spec lives in the test folder and holds `settle` + all `checks` (ops `exists|not|eq|match|count|countLte|css|js`, tokens `{popup} {title} {update} {related} {relatedTitle} {relatedTile} {counter}` resolve from the SITES profile; fields `profile`/`url`/`inject` override CLI). New tests then need NO qa_run.js edits — just a spec.json + variation files. Example: `node tools/qa_run.js qa --spec "…/TEST_NAME/spec.json"`.
+
+---
+
+## REVIVSERUMS
+
+- **Site:** https://revivserums.com/ — Shopify, Prestige 4.13.0 base heavily customised ("WeConvert 2.8.2026 Live Site | Bold | Feb.10.26", theme id 158476632317). Homepage sections are CUSTOM (`dv_*` section ids, `c_*` classes), NOT stock Prestige sections.
+- **A/B platform:** Varify (`app.varify.io/varify.js`, `iid 5955`).
+- **Verified in:** `../ABTESTSWITHAI/REVIVSERUMS/AB-06-HP Best Sellers Image Refresh` (homepage dump + headed CDP QA, Aug 2026).
+- **Stack (verified in header dump):** jQuery 3.6.4, slick.min.js + slick.css loaded but NOT used on homepage, lazySizes (`Image--lazyLoad`/`data-src`) used in Prestige sections (header megamenu, featured-product) but NOT in the Best Sellers cards, Judge.me reviews (`jdgm-*`), Bold options/upsell, LoyaltyLion, Clarity, GTM `GTM-PJG48N7`, Afterpay. Money format `${{amount}}` (`<span class=money>`).
+
+### Site-wide gotchas
+- Public storefront — homepage is readable via `webfetch` AND headed Edge CDP with no Cloudflare challenge and no login (fresh profile, first run). First-run may show a sign-up/newsletter modal overlay (does not block DOM QA).
+
+### section (Best Sellers homepage carousel — verified AB-06-HP)
+- **Container:** `div#shopify-section-dv_best_seller_grid_qkUN9a.c_section_dv_best_seller_grid`; inner `.c_section_bestselling` (inline `background-color:#65315f`); heading `.c_best_seller_top h2` ("Best Sellers"), eyebrow `.c_best_seller_top span` ("Featured collection").
+- **Carousel:** `.c_best_seller_product_grid`. Desktop (>768px) = static CSS grid. Mobile (≤768px) = inline vanilla-JS translateX slider (gap 24, dots `.c_pagination_wrapper`, prev/next `.c_bs_slider_prev`/`.c_bs_slider_next`). **No slick init, no data-slick, no lazy-load in this section.**
+- **Cards:** exactly 4 `.c_best_seller_single_product`. Structure:
+  - Image: `.c_bs_single_product_img > a[href="/products/{handle}"] > img.c_product_main_image` — plain eager single-src `<img src>` (literal `width="auto" height="auto"`, NO srcset/data-src/lazy).
+  - Title: `.c_product_content_top h3`; reviews: `.c_product_rating_wrapper .jdgm-preview-badge`; badge: `.c_icon_text_wraper .c_icon_text`; price: `.c_bst_product_price .money` (**`class=money` unquoted — do not "fix"**); CTA: `.c_product_content_bottom a.c_primary_button > span` ("VIEW DETAILS").
+  - Bottom link: `.c_bs_bottom_wrapper a.c_secondaty_button` ("VIEW ALL PRODUCTS" → `/collections/best-sellers`).
+- **Image URL pattern:** `//revivserums.com/cdn/shop/files/{file}.{ext}?v={ts}` — protocol-relative; **filename does NOT contain the product handle** (e.g. `hair-stimulating-serum` → `RevivHairMaxworchidgradient.jpg`).
+- **Ultimate Serum editorial creative** `reviv-ultimate-serum-1.jpg` = BEFORE/AFTER 8 WEEKS split-layout + "REAL RESULTS / IN 8 WEEKS." band + product-bottle overlay (verified by viewing the file) — this is the placeholder creative for the AB-06-HP image swap.
+- **`c_primary_button` is reused by the hero section** — always scope card CTA selectors inside `.c_best_seller_product_grid`/`.c_best_seller_single_product`.
+- User-confirmed (Q&A, AB-06-HP): only card images change (all other card data untouched); keep the live card count; per-product result claims live inside the future creative images; keep card/CTA links and track card + VIEW DETAILS clicks (share.js); placeholder URL for now — client updates the JS config map when real creatives arrive.
+
+### Reusable tooling
+- `tools/qa_run.js` — `revivserums` SITES entry (empty `addToCart[]`). **Section-flow QA** is automatic for profiles with no add-to-cart: navigate → inject → settle → spec checks (no ATC/popup). `spec.settle.scrollTo` scrolls a below-the-fold section into view before screenshot. Verified 7/7 PASS on AB-06-HP (Aug 2026). Run: `node tools/qa_run.js qa --spec "…/AB-06-HP Best Sellers Image Refresh/spec.json"`.

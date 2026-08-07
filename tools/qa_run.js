@@ -115,6 +115,12 @@ const SITES = {
     counter: "#minicart-counter",
     threshold: 100,
   },
+  // Homepage section test — NO add-to-cart / popup flow. Empty addToCart[]
+  // makes actQa take the "section flow": navigate → inject → settle → checks.
+  revivserums: {
+    label: "REVIVSERUMS",
+    addToCart: [],
+  },
 };
 
 /* ------------------------------------------------------------------ */
@@ -391,8 +397,12 @@ async function actAtc(cdp, site, args) {
 }
 
 function injectVariationExpr(js, css) {
+  // Generic idempotency guard: derive the variation's own body class from the
+  // injected JS instead of hardcoding a client's class here.
+  const m = js.match(/body\.classList\.add\(\s*['"]([^'"]+)['"]\s*\)/);
+  const cls = m ? m[1] : "EG-REV-AB06-HP";
   return `(function () {
-    if (document.body.classList.contains('EG-PXD-SM25')) return true;
+    if (document.body.classList.contains(${JSON.stringify(cls)})) return true;
     var st = document.createElement('style');
     st.textContent = ${JSON.stringify(css)};
     document.head.appendChild(st);
@@ -482,11 +492,15 @@ async function runSpecChecks(cdp, site, spec) {
 async function settlePage(cdp, site, spec) {
   const st = (spec && spec.settle) || {};
   const marker = resolveTokens(st.marker || "{popup} .eg-sm25-check", site, false);
-  const mDeadline = Date.now() + (st.markerTimeoutMs || 12000);
-  while (Date.now() < mDeadline) {
-    const ok = await evaluate(cdp, `!!document.querySelector(${JSON.stringify(marker)})`);
-    if (ok) break;
-    await sleep(500);
+  // Skip the marker poll for section flows with no spec marker (marker resolves
+  // to a "undefined ..." string that can never match).
+  if (marker && marker.indexOf("undefined") === -1) {
+    const mDeadline = Date.now() + (st.markerTimeoutMs || 12000);
+    while (Date.now() < mDeadline) {
+      const ok = await evaluate(cdp, `!!document.querySelector(${JSON.stringify(marker)})`);
+      if (ok) break;
+      await sleep(500);
+    }
   }
   if (st.related) {
     const relSel = resolveTokens(st.related, site, false);
@@ -496,6 +510,13 @@ async function settlePage(cdp, site, spec) {
       if (n > 0) break;
       await sleep(700);
     }
+  }
+  // Optional: bring the target section into view (useful for section-test
+  // screenshots of below-the-fold areas).
+  if (st.scrollTo) {
+    const sSel = resolveTokens(st.scrollTo, site, false);
+    await evaluate(cdp, `(() => { var el = document.querySelector(${JSON.stringify(sSel)}); if (el) el.scrollIntoView({ block: 'center' }); return true; })()`).catch(() => {});
+    await sleep(600);
   }
   await sleep(st.extraMs || 1500);
 }
@@ -514,9 +535,17 @@ async function actQa(cdp, site, args) {
   await waitFor(cdp, `!!document.body`, 10000, 500, "document.body");
   await evaluate(cdp, injectVariationExpr(js, css));
   await sleep(1500);
-  const btn = await waitFor(cdp, findATCExpr(site), 20000, 1000, "add-to-cart button");
-  const popupOpened = await openPopup(cdp, site, args.waitMs);
-  if (!popupOpened) return { ...base, popupOpened: false, assertions: [{ check: "popup opens", pass: false, detail: "no " + site.popup + " after ATC" }] };
+
+  // Section flow: sites with an empty addToCart[] have no ATC-popup to open
+  // (e.g. homepage section tests) — go straight to settle + spec checks.
+  const isSectionFlow = !(site.addToCart && site.addToCart.length);
+  let popupOpened = false;
+  if (isSectionFlow && !args.spec) return { ...base, error: "section flow requires --spec (spec.json with checks)" };
+  if (!isSectionFlow) {
+    const btn = await waitFor(cdp, findATCExpr(site), 20000, 1000, "add-to-cart button");
+    popupOpened = await openPopup(cdp, site, args.waitMs);
+    if (!popupOpened) return { ...base, popupOpened: false, assertions: [{ check: "popup opens", pass: false, detail: "no " + site.popup + " after ATC" }] };
+  }
 
   // Settle: the site re-renders the update node after open, and the variation
   // poll re-decorates once markers are wiped. Wait for our markers, then let
@@ -527,8 +556,10 @@ async function actQa(cdp, site, args) {
   // provided, fall back to the built-in PRAXINDO/SM25 checks.
   const checks = args.spec ? await runSpecChecks(cdp, site, args.spec) : await sm25BuiltinChecks(cdp, site);
 
-  const result = { ...base, popupOpened, assertions: checks, passCount: checks.filter((c) => c.pass).length, total: checks.length };
-  result.domDiag = await evaluate(cdp, `(() => {
+  const result = { ...base, assertions: checks, passCount: checks.filter((c) => c.pass).length, total: checks.length };
+  if (!isSectionFlow) {
+    result.popupOpened = popupOpened;
+    result.domDiag = await evaluate(cdp, `(() => {
     var out = {};
     out.markers = {
       check: document.querySelectorAll('.eg-sm25-check').length,
@@ -545,6 +576,7 @@ async function actQa(cdp, site, args) {
     out.updateHTML = up ? up.innerHTML.slice(0, 2500) : null;
     return out;
   })()`);
+  }
   if (args.screenshot) result.screenshot = await captureScreenshot(cdp, args.screenshot);
   return result;
 }

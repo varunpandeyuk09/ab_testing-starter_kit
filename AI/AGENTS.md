@@ -79,7 +79,7 @@ never re-asked, and things the kit already verified are never re-verified.
 ## STEP 1 — Research Before Writing Code (AREA-SCOPED)
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
-2. Match the task against the Reusable Patterns Library (playbook §8, P1–P28). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
+2. Match the task against the Reusable Patterns Library (playbook §8, P1–P29). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
 3. **Fallback (only when NO pattern in §8 fits the brief):** run the RAG search — it auto-locates the `AB-test` archive anywhere on this machine and prints the top 3 similar past tests with their code:
    ```bash
    python scripts/search_tests.py "your test description"
