@@ -29,7 +29,8 @@ After reading the files above, state:
 
 If any of the above cannot be determined from the brief → ask the user before proceeding.
 Then run the **Q&A gate** (`AI/question_templates.md`, AGENTS.md STEP 0c) before researching
-or coding — ask only what the brief and the kit don't already answer, record it in `qa_prep.json`.
+or coding — ask only what the brief and the kit don't already answer; collect the answers now
+and record them in `qa_prep.json` at STEP 4.
 
 ## Critical rule
 

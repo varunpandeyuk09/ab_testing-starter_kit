@@ -30,20 +30,23 @@ Create this structure:
 ```
 ../ABTESTSWITHAI/CLIENT/
   TEST_NAME/
-    metadata.json
-    v1.json
-    share.js
-    readme.md
+    v1.json                    ← STEP 2
+    share.js                   ← STEP 2
+    spec.json                  ← STEP 2 (QA input — MUST exist before STEP 3)
+    qa_prep.json               ← STEP 4 (Q&A record, answers collected in STEP 0c)
+    metadata.json              ← STEP 4 (RAG metadata)
+    readme.md                  ← STEP 4 (brief summary)
     variation1/
-      variation.js
-      variation.css
+      variation.js             ← STEP 2
+      variation.css            ← STEP 2
 ```
 
 - Copy content from `variation1/variation.js` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.js`
 - Copy content from `variation1/variation.css` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.css`
 - Copy content from `share.js` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/share.js`
 - Copy content from `v1.json` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/v1.json`
-- Fill in `metadata.json` and `readme.md` with test details
+- Do NOT fill in `metadata.json`, `readme.md` or `qa_prep.json` yet — they are written in
+  STEP 4 (they don't affect whether the test runs, so they wait).
 
 > **Template source of truth:** the blank templates live at the kit ROOT — `variation1/variation.js`, `variation1/variation.css`, `share.js`, `v1.json`. The copies under `AI/` are backups of the same templates. Always copy from the ROOT versions. The filled `AI/examples/EG-EXAMPLE-SM01/` files are reference examples ONLY — never copy those values into a real test.
 
@@ -67,9 +70,10 @@ code, turn the brief into the minimum set of questions the kit cannot already an
    business person (never selector-speak). Highest-risk first: design intent >
    behavior > scope > environment. If I can verify a behavior myself in one headed
    run cheaply (e.g. minicart open trigger), verify it and record it — don't ask.
-4. **Record every answer** in `../ABTESTSWITHAI/CLIENT/TEST_NAME/qa_prep.json`
-   (schema in `question_templates.md` §5): `asked`, `skipped_known` (with reason),
-   and `verified`.
+4. **Collect every answer now** — `asked`, `skipped_known` (with reason), and `verified`
+   (schema in `question_templates.md` §5). Keep them in-session; write them into
+   `../ABTESTSWITHAI/CLIENT/TEST_NAME/qa_prep.json` in STEP 4 (the file is not needed
+   before the test runs).
 
 This gate is what makes the kit faster per test: things the user once answered are
 never re-asked, and things the kit already verified are never re-verified.
@@ -94,7 +98,13 @@ never re-asked, and things the kit already verified are never re-verified.
 
 ---
 
-## STEP 2 — Write the Code
+## STEP 2 — Write the Code (minimum to get QA-ready)
+
+**Write ONLY what the test needs to run and be QA'd:** `variation1/variation.js`,
+`variation1/variation.css`, `share.js`, `v1.json` — and **`spec.json`** (the data-driven
+QA input, `tools/qa_run.js`). `metadata.json`, `readme.md` and `qa_prep.json` are written
+in STEP 4; they are docs, not runtime, so they wait. `spec.json` does NOT wait — golden
+assertions are the test plan and STEP 3 QA runs against them.
 
 ### Study the Reference Example First
 Before writing any code, read `AI/examples/EG-EXAMPLE-SM01/` — all 6 files.
@@ -143,14 +153,18 @@ The base `variation.js` contains ONLY `waitForElement` + `init()`. Do not add he
 
 ## Output files (full paths relative to starter kit)
 
+Written in STEP 2 (runtime + QA inputs):
 ```
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.js     ← main implementation
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.css    ← scoped styles
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/share.js                    ← tracking only, no DOM mutation
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/v1.json                     ← filled with real URLs and file paths
+../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json                   ← data-driven QA checks (tools/qa_run.js) — REQUIRED before STEP 3
+```
+Written in STEP 4 (docs, after the test is ready to share):
+```
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/metadata.json               ← RAG metadata
-../ABTESTSWITHAI/CLIENT/TEST_NAME/qa_prep.json                ← Q&A gate record (STEP 0c)
-../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json                   ← data-driven QA checks (tools/qa_run.js)
+../ABTESTSWITHAI/CLIENT/TEST_NAME/qa_prep.json                ← Q&A gate record (answers from STEP 0c)
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/readme.md                   ← brief summary
 ```
 
@@ -158,9 +172,18 @@ The base `variation.js` contains ONLY `waitForElement` + `init()`. Do not add he
 
 ---
 
-## STEP 3 — Before Finishing
+## STEP 3 — QA & Ready-to-Share
 
-Run the QA checklist (playbook section 9) and confirm every item. Re-check every selector against the forbidden-anchor list before delivering.
+1. Run the data-driven QA against the spec written in STEP 2 — every check must PASS:
+   ```bash
+   node tools/qa_run.js qa --spec "../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json"
+   ```
+2. Quick visual check (screenshot vs mockup) — desktop and mobile.
+3. Re-check every selector against the forbidden-anchor list (playbook §9 checklist).
+4. ✅ Declare **"Test completed — ready to share"**.
+
+Then run STEP 4 before handover — a test is not finished until its learnings are
+captured back into the kit.
 
 ---
 
@@ -171,7 +194,14 @@ what makes the kit faster with every test. **Do all of the following that apply 
 hand over a test** — if a future session would have to re-verify something you already
 verified, the test is NOT finished:
 
-1. **`AI/SITE_PROFILES.md`** — add a `## CLIENT` section (or update the existing one) with
+1. **Write the deferred docs** (they were held back in STEP 0b/STEP 2 on purpose):
+   - `metadata.json` — RAG metadata for this test.
+   - `readme.md` — brief summary + a short "Knowledge added" note listing which
+     profiles / patterns / tools this test updated, so the loop stays traceable.
+   - `qa_prep.json` — the Q&A gate answers collected in STEP 0c (`asked`,
+     `skipped_known`, `verified`).
+
+2. **`AI/SITE_PROFILES.md`** — add a `## CLIENT` section (or update the existing one) with
    ONLY facts you confirmed against the live DOM: stable selectors, AJAX endpoints, theme
    gotchas, and the working technique. Mark each fact with the test that proved it
    (`Verified in: ../ABTESTSWITHAI/<CLIENT>/<TEST_NAME>`). Never record assumptions.
@@ -184,18 +214,15 @@ verified, the test is NOT finished:
    gate (STEP 0c) — mark them as user-said, not DOM-verified, so future sessions trust but
    may re-verify. This is what shrinks the Q&A gate over time.
 
-2. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
-   pattern, append it as the next P-number (P28, P29, ...) with a short recipe + `Source:`
+3. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
+   pattern, append it as the next P-number (P29, P30, ...) with a short recipe + `Source:`
    line. Then update every `P1–Pxx` reference in `AGENTS.md` / `AB_TESTING_PLAYBOOK.md` /
    `README.md` to the new max count (grep for `P1–P` before finishing).
 
-3. **`tools/`** — if you built a reusable script (verification, batch check, DOM inspect),
+4. **`tools/`** — if you built a reusable script (verification, batch check, DOM inspect),
    save it under `tools/` with site-specific parts parameterized (see
    `tools/ss_search_check.ps1` for the pattern). Reference it from the client's profile so
    future sessions find it.
-
-4. **Test folder `readme.md`** — add a short "Knowledge added" note listing which
-   profiles / patterns / tools this test updated, so the loop stays traceable.
 
 5. **`AI/question_templates.md`** — if the Q&A gate needed a question that is NOT in the
    templates, append it to the relevant area bank (or universal table). This keeps the
