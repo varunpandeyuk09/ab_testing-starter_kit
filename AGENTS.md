@@ -7,7 +7,7 @@ Read the following files IN ORDER before doing anything else — before analyzin
 
 1. `AI/AGENTS.md`               — your complete step-by-step build instructions
 2. `AI/PROMPT_PARSING.md`       — how to extract CLIENT and TEST_NAME from any brief
-3. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards and reusable patterns library (P1–P25)
+3. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards and reusable patterns library (P1–P27)
 4. `AI/examples/EG-EXAMPLE-SM01/readme.md`             — what correct output looks like
 5. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.js`  — reference JS (match this standard)
 6. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.css` — reference CSS (match this standard)

@@ -59,3 +59,39 @@ re-autopsy a site. Check this file BEFORE inspecting the live page (AGENTS.md ST
   `[regex]::Match` on the raw file content instead.
 - Quick submenu DOM check without a browser:
   `Invoke-WebRequest -Uri "https://www.awg-mode.de/widgets/menu/offcanvas?navigationId=<uuid>"`.
+
+---
+
+## SMARTSIGN
+
+- **Site:** https://www.smartsign.com — US sign retailer, ASP.NET (Razor), Bootstrap 4, jQuery. Convert Experiences A/B platform already loaded.
+- **Verified in:** research session (Aug 2026) — live DOM + headless Edge checks of `/search/*` pages.
+
+### Search — the important parts
+- Search URL pattern: `/search/{term}` — spaces become underscores (`/search/stop_sign`), canonical uses dashes (`/search/stop-sign`). BOTH forms are served; both return the same page.
+- Header search input: `#search_box` (name `txtsearch`), inside `<form name="productsearchbar">` (POST + `validatesearch('header')` — definition lives in `/js/ui-xp5_search_ultra.js`).
+- Live search is AJAX-driven (keyup → `getdata()` → re-render). Products load client-side via Azure Search API:
+  `POST https://smartsign.azure-api.net/indexes/al-sku/docs/search`
+  Body: `{"skip":0,"top":50,"filter":"","facets":[],"search":"<term>","orderby":"search.score() desc, RelevanceScore desc, SKU asc"}`
+  Header: `custid: a7K3RXzbnrCbt1oM6V1Zv9WZyQOHQWokfMRdR6H18Bc/5P5bNUyTXLhkTrvNEWrEmRHU5EX0DDCrewwbbKToAw==` (static, embedded in page JS).
+  ⚠️ Direct non-browser calls to this API return 500 — the gateway rejects them. Use headless Edge (P27) instead.
+- Live search term source of truth: `#my-search` (hidden input). Static term: `#txtsearch`.
+
+### Search result page selectors (verified)
+- Result count: `<span id="total_result" class="ss_subcategory_result_count">` — text like `1 result`, `48 results`, `300 + results`, `1,000+ results`. JS writes raw count into `#txtresultcount`.
+- Product grid container: `.products_grid` (empty on page load; filled by AJAX).
+- Product item: `.products_grid_item.ss-product-box`.
+- Filter sidebar: `#facets` (`.products_filter_body`); "Explore More Products" = `#whatelse .department_grid` (NOT search results).
+- Page routing: hybrid — AJAX + hash (`window.location.hash`), no framework SPA.
+
+### Verified low/zero-result search terms (for fallback testing)
+- 1 result: `lead paint`, `oil tank`, `wetland`, `generator room`
+- 6 results: `recycling bin`, `gutter`; 7: `janitor closet`
+- 0 results (no-results page with tips + contact CTA): `radon`, `tritium`
+
+### Checking result counts for any term
+Use the reusable script `tools/ss_search_check.ps1` (headless Edge):
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/ss_search_check.ps1 -Terms "lead paint;oil tank;radon"
+```
+Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky terms sequentially.

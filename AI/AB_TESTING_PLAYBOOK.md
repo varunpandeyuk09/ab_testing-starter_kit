@@ -223,7 +223,7 @@ waitForElement('html body', init, 50, 15000);
 
 ## 8. Reusable Patterns Library
 
-This library is the primary source of implementation recipes. Before writing any code, find the pattern(s) below that match the test and adapt them. It is distilled from the shipped tests in the archive (MONASH CRO, REVIVSERUMS, PRAXINDO, JUVIA, BELLA & DUKE, GUARDIAN FUNERALS, RIGID HITCH, AAPL and more). No external RAG search is required.
+This library is the primary source of implementation recipes. Before writing any code, find the pattern(s) below that match the test and adapt them. It is distilled from the shipped tests in the archive (MONASH CRO, REVIVSERUMS, PRAXINDO, JUVIA, BELLA & DUKE, GUARDIAN FUNERALS, RIGID HITCH, AAPL and more) and verified live research (SMARTSIGN, AWG). No external RAG search is required.
 
 Every recipe assumes the base script from §2 and follows the rules from §4–§6. All patterns must stay idempotent (guard against duplicate insertion), use only stable selectors, and never break existing functionality.
 
@@ -804,6 +804,75 @@ new MutationObserver(function (mutations) {
 - If the container may be re-created entirely, observe `document.body` subtree but bail out fast unless an added node contains your anchor.
 - Keep a `DEFAULT` state for the first render before any content loads.
 
+### P26. Low / No-Result Search Fallback
+
+**When:** the site's search returns very few results (0–5) for legitimate queries, leaving users with a dead-end SERP. Add related products, popular searches, or department links to recover the session. Source: SMARTSIGN (research Aug 2026).
+
+**Research first — prove the failing state exists:**
+1. Find the search URL pattern (`/search/{term}`, `?q=`, etc.) and the result-count element. On SMARTSIGN: `#total_result`, grid `.products_grid`, item `.ss-product-box`.
+2. Batch-test candidate niche terms with the headless tool (P27) and record which terms return 0, 1, 5, 6, ... results. Pick trigger threshold from real data (e.g. `count <= 5`).
+3. Verify the page renders results client-side (AJAX) vs server-side — this decides whether you read a count element or count grid items.
+
+**Recipe (AJAX-loaded count, e.g. SMARTSIGN):**
+```js
+function readResultCount() {
+  var el = document.querySelector('#total_result');
+  if (!el) return -1;
+  var m = (el.textContent || '').trim().match(/([\d,]+)\+?\s*results?/i);
+  if (!m) return -1;                       // "1 result" / "48 results" / "300 + results"
+  return parseInt(m[1].replace(/,/g, ''), 10);
+}
+function applyFallback() {
+  var count = readResultCount();
+  if (count === -1 || count > 5) return;   // healthy SERP, or count not rendered yet
+  var grid = document.querySelector('.products_grid');
+  if (!grid || document.querySelector('.eg-search-fallback')) return; // idempotent
+  // insert fallback block (related depts / popular searches) after the grid
+  grid.insertAdjacentHTML('afterend', buildFallbackHtml(count));
+}
+// re-apply when AJAX finishes re-rendering the count (MO scoped to the count element)
+var mo = new MutationObserver(function (mutations) {
+  for (var i = 0; i < mutations.length; i++) {
+    if (mutations[i].type === 'childList' || mutations[i].type === 'characterData') {
+      applyFallback(); break;
+    }
+  }
+});
+var countEl = document.querySelector('#total_result');
+if (countEl) mo.observe(countEl, { childList: true, characterData: true, subtree: true });
+```
+
+**Gotchas:**
+- The count text format varies (`1 result`, `6 results`, `300 + results`, `1,000+ results`) — normalize before comparing. Prefer the raw hidden input (`#txtresultcount`) when the site exposes one.
+- Server-rendered SERPs: read the count once in `init()`, no observer needed.
+- Fallback content must be enhancement-only: if the count element never renders (page error), do nothing.
+- Guard against duplicate insertion and observer re-trigger loops (debounce / `isRunning` flag).
+
+### P27. Headless Browser Verification (JS-rendered content)
+
+**When:** a page renders its real content via AJAX/JS (search results, product grids, lazy sections), so `Invoke-WebRequest`/`webfetch` only returns the empty shell. You need the post-render DOM to verify selectors, count results, or read dynamic text — on ANY site, no per-site automation code. Source: SMARTSIGN research (Aug 2026).
+
+**Recipe (Edge headless dump):**
+```powershell
+# Edge headless + virtual-time-budget makes the page run its JS (incl. AJAX) then dumps the DOM
+$edge = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+$out  = "$env:TEMP\page.html"
+$prof = "$env:TEMP\profile_$([guid]::NewGuid().ToString('N'))"
+$proc = Start-Process -FilePath $edge -ArgumentList "--headless","--disable-gpu","--no-sandbox",
+  "--user-data-dir=$prof","--dump-dom","--virtual-time-budget=10000","--timeout=25000",$url `
+  -RedirectStandardOutput $out -RedirectStandardError "$env:TEMP\edge_err.txt" -PassThru -NoNewWindow
+if (-not $proc.WaitForExit(30000)) { $proc.Kill() }
+Remove-Item $prof -Recurse -Force -ErrorAction SilentlyContinue
+# then grep the dump for the rendered selector, e.g. id="total_result">N results<
+```
+
+**Gotchas:**
+- `--dump-dom` needs a long-enough `--virtual-time-budget` for the page's AJAX to land (10s is a good start); the process may not exit cleanly — enforce a `WaitForExit` timeout + `Kill()`.
+- Use a unique `--user-data-dir` per run or concurrent Edge instances conflict.
+- Runs are flaky when many run in parallel (0-byte dumps) — rerun failed terms sequentially.
+- Chrome on other machines: same flags, different `chrome.exe` path.
+- Reusable: `tools/ss_search_check.ps1` is the parameterized SMARTSIGN version (terms + count extractor); copy it, swap the selector, and it audits any site's search.
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -851,7 +920,7 @@ new MutationObserver(function (mutations) {
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P25).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P27).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).
