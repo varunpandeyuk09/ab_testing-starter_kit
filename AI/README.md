@@ -22,6 +22,7 @@ Before writing a single line of code, read these files in order:
 6. AI/examples/EG-EXAMPLE-SM01/variation1/variation.js  — reference JS
 7. AI/examples/EG-EXAMPLE-SM01/variation1/variation.css — reference CSS
 8. AI/examples/EG-EXAMPLE-SM01/share.js                 — reference tracking
+9. flow.md                    — end-to-end flow of the kit (single source of truth; kept updated on every change)
 
 Note: the blank templates to copy are at the kit ROOT (`variation1/`, `share.js`, `v1.json`, `metadata.json`) — see AI/AGENTS.md Step 0b. The AI/examples files are reference only.
 
@@ -93,6 +94,7 @@ ab_testing-starter_kit/
   share.js                    ← goals/tracking template (blank)
   v1.json                     ← platform config template (blank)
   metadata.json               ← RAG metadata template (blank)
+  flow.md                     ← end-to-end flow of the kit (SINGLE SOURCE OF TRUTH — update on every kit change)
   AGENTS.md                   ← entry-point instructions (read these files first)
   AI/                         ← everything the AI needs to know / reuse
     AGENTS.md                 ← step-by-step instructions the AI follows automatically
@@ -145,16 +147,14 @@ The base `variation.js` contains **only** `waitForElement` + `init()`.
 
 ## AI Workflow (automatic — no manual steps needed)
 
-The AI follows this sequence automatically after reading `AGENTS.md`:
+The exact end-to-end flow is documented in `flow.md` (kit root) — **the single source of
+truth for HOW this kit works**. It is kept updated on every kit change, so read it, don't
+re-derive it. The short version of the pipeline is STEP 0 (parse + scaffold) → STEP 0c
+(Q&A gate) → STEP 1 (area-scoped research) → STEP 2 (code + spec.json) → STEP 3 (QA) →
+STEP 4 (knowledge loop back into the kit).
 
-1. **Parse brief** → read `AI/PROMPT_PARSING.md` to extract `CLIENT`, `TEST_NAME`, `TEST_ID`, `WEBSITE_URL`, `FOCUS_AREA`
-2. **Confirm** → state the extracted values to the user before creating anything
-3. **Q&A gate (STEP 0c)** → read `AI/question_templates.md`, gap-scan the brief, kit-lookup, ask the user ONLY what the kit doesn't know (max 6–8), record in `qa_prep.json`
-4. **Scaffold** → create `../ABTESTSWITHAI/CLIENT/TEST_NAME/` with all required files (copied from templates)
-5. **Research (area-scoped)** → read playbook, verify ONLY the focus area live, match patterns
-6. **Code** → implement in `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.js` and `variation.css`
-7. **QA** → write `spec.json`, run `tools/qa_run.js qa --spec "…/spec.json"`, confirm PASS
-8. **Capture knowledge (STEP 4)** → write verified facts + user-confirmed Q&A back into `AI/SITE_PROFILES.md`, new techniques as next P-pattern in playbook §8 (update `P1–Pxx` count), new questions into `question_templates.md`, reusable scripts into `tools/` — the kit must be more capable after every test
+> ⚠️ If you change anything about the kit (a step, file, folder, tool, flag, or pattern
+> count), update `flow.md` in the SAME commit — see `AI/AGENTS.md` STEP 4 item 6.
 
 ---
 
@@ -179,11 +179,13 @@ python scripts/search_tests.py "test description"
 
 ## Knowledge feedback loop (after every test)
 
-Every finished test must leave its verified learnings in the kit (AI/AGENTS.md STEP 4):
+Every finished test must leave its verified learnings in the kit. The full checklist lives
+in `AI/AGENTS.md` STEP 4 and the pipeline is mirrored in `flow.md` (kit root). In short:
 - Verified DOM facts + user-confirmed Q&A → `AI/SITE_PROFILES.md` (client section, area-wise)
 - New technique → next P-pattern in `AI/AB_TESTING_PLAYBOOK.md` §8 + update `P1–Pxx` count
 - New question the templates missed → `AI/question_templates.md` (relevant area bank)
 - Reusable script → `tools/`
+- Any kit change → update `flow.md` (root) in the SAME commit
 
 The kit compounds: each test makes the next one faster.
 
