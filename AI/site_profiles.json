@@ -29,5 +29,9 @@
   "trooper": {
     "label": "TROOPER",
     "addToCart": []
+  },
+  "monash": {
+    "label": "MONASH",
+    "addToCart": []
   }
 }

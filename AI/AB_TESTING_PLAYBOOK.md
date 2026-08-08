@@ -1025,6 +1025,27 @@ function ensure(card, cb) {
 2. **Keep the same spec for both runs** — this also QAs pagination on mobile, catching "works on desktop, breaks on tap-sized layout".
 3. **The runner stays client-agnostic** — `--viewport` is a generic flag, no site-specific code added.
 
+### P33. Bootstrap `.row` flex-wrap gotcha — 2-col desktop redesigns need `flex-wrap: nowrap`
+
+**When:** the variation restyles a Bootstrap-grid container (`.container > .row > .col-*`) into a fixed 2-column desktop layout (sidebar + main). Bootstrap's `.row` default is `flex-wrap: wrap`, so a `width:40%` sidebar + `width:100%` form **wrap onto separate lines and stack vertically** — the redesign silently looks like a mobile layout on desktop.
+
+**How (MONASH MOL 10.01, Aug 2026):**
+1. Probe the layout first: a `js` spec check comparing `getBoundingClientRect().top` (or `x`) of the two columns reveals the stack — same `x`, different `y` = wrapped.
+2. Fix in the scoped variation CSS, not the site:
+   ```css
+   body.EG-MOL1001 .forms-layout .container > .row {
+     flex-wrap: nowrap;
+   }
+   ```
+3. Re-probe and re-QA at both viewports — the desktop run must show sidebar and form at the same `y`; the mobile run must still show the stacked layout.
+
+**Key ideas:**
+1. Never target `.row`/`.col-*` utility classes in JS (forbidden anchors) — but scoping the CSS override with the body class + a layout-section parent (`.forms-layout`) is safe and survives theme updates.
+2. A viewport probe (`top`/`x` comparison) turns "looks wrong in the screenshot" into a deterministic PASS/FAIL check — add it to the spec so future QA catches the regression.
+3. Always verify the mobile run still passes after the fix — `nowrap` must be applied only where the redesign intends it.
+
+Source: `../ABTESTSWITHAI/MONASH/MOL 10.01 Contact Us Page Redesign` (layout bug found during QA, fixed in `variation1/variation.css`, 33/33 re-verified).
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -1074,7 +1095,7 @@ function ensure(card, cb) {
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P32).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P33).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).

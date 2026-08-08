@@ -17,7 +17,7 @@ Before writing a single line of code, read these files in order:
 1. AI/AGENTS.md               — your step-by-step instructions
 2. AI/PROMPT_PARSING.md       — how to extract CLIENT and TEST_NAME from the brief
 3. AI/question_templates.md   — pre-code Q&A gate (STEP 0c): ask only what the kit doesn't know
-4. AI/AB_TESTING_PLAYBOOK.md  — coding standards and reusable patterns (P1–P32)
+4. AI/AB_TESTING_PLAYBOOK.md  — coding standards and reusable patterns (P1–P33)
 5. AI/examples/EG-EXAMPLE-SM01/readme.md    — what a correct test looks like
 6. AI/examples/EG-EXAMPLE-SM01/variation1/variation.js  — reference JS
 7. AI/examples/EG-EXAMPLE-SM01/variation1/variation.css — reference CSS
@@ -160,7 +160,7 @@ STEP 4 (knowledge loop back into the kit).
 
 ## RAG fallback search (`scripts/search_tests.py`)
 
-The patterns library (playbook §8, P1–P32) is the primary source. If no pattern fits a brief, the AI runs the fallback search against the agency's archive:
+The patterns library (playbook §8, P1–P33) is the primary source. If no pattern fits a brief, the AI runs the fallback search against the agency's archive:
 
 ```bash
 python scripts/search_tests.py "test description"

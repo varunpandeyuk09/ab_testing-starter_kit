@@ -212,6 +212,20 @@ Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky 
 ### Reusable tooling
 - `tools/qa_run.js` — **`--viewport WxH`** flag (e.g. `390x844`) emulates a mobile/tablet viewport via CDP `Emulation.setDeviceMetricsOverride`, so ONE viewport-aware spec.json QAs both desktop AND mobile (runner stays client-agnostic). Verified **17/17 desktop + 17/17 mobile + 5/5 pagination each** on SM22 (Aug 2026). Run: `node tools/qa_run.js qa --spec "…/SM22 Product Tile Optimization/spec.json"` (+ `--viewport 390x844` for mobile).
 
+## MONASH
+
+- **Site:** https://online.monash.edu/contact/ — Monash University Online (online.monash.edu). WordPress (page template `wp-singular page-template-default page page-id-517`), forms-layout section markup, Bootstrap `.container > .row > .col-md-8` grid. **A/B platform: Evolution** (`metadata.json`), `website_type: WordPress`.
+- **Verified in:** `../ABTESTSWITHAI/MONASH/MOL 10.01 Contact Us Page Redesign` (form wizard redesign, Aug 2026).
+- **Site-wide gotchas:** **Cloudflare managed challenge** — raw Invoke-WebRequest is blocked (serves `Just a moment...` + `_cf_chl_*`). Headed browser + persistent profile passes; repeated rapid QA runs re-trigger the challenge → use `--fresh` + the `login` action to clear it. Contact page sections are `section.block.*` (`.block.header.bg-gradient` hero, `.block.forms-layout`), forms wrapped in `.contact-form.white` > `.contact-form__form` (`#contactForm`).
+
+### form (Contact Us enquiry — verified)
+- Form: `#contactForm`; student radios `input[name="current_student"]` (values `yes`/`no`); detail area `#student-no-answer` (shown by default, hidden on yes), student-hub message `#student-yes-answer` (hidden by default, shown on yes).
+- Step-1 fields (all `required`, `.form-control` inside `.eg-step1-col`): `#first_name`, `#last_name`, `#email` (type=email), `#mobile` (text, placeholder "Mobile*").
+- Step-2 required selects: `select[name="reason_for_enquiry"]` (id `00N2v00000VhUGp`), `select.select2__selectCourse` (no name/id), `select[name="study_timeframe"]` (id `00N2v00000Y7jGD`). Salesforce `00N…` ids are forbidden anchors — use name/class. `.g-recaptcha` + `.disclaimer` present in step 2. Submit: `#contactForm button[type="submit"]` (class `btn btn-primary`, text "Submit").
+- **Layout gotcha (bug found in QA):** Bootstrap `.row` default `flex-wrap: wrap` — a desktop 2-col redesign MUST set `flex-wrap: nowrap` on `.forms-layout .container > .row`, else a 40% sidebar + 100% form wrap onto separate lines and stack vertically. Fixed in MOL 10.01-era CSS (`variation1/variation.css`).
+- **MOL 10.01 design contract (Q&A-confirmed):** AI QA desktop + mobile; tracking (share.js) included in QA. Wizard = CSS-tagged steps (`.eg-step1-col` / `.eg-step2`, shown/hidden via `#student-no-answer.eg-on-step2`); no inputs cloned/moved; step 1 validated before hiding. Mobile: benefit cards move out of the sidebar into a tiny-slider carousel (`.tns-outer`, 4 `.tns-item`, no dots/arrows; `.eg-usp-carousel` on body). Continue enabled only when all required step-1 fields pass `checkValidity()`; magenta `rgb(230,0,40)` when active.
+- **QA results (MOL 10.01, Aug 2026):** desktop 33/33 + mobile 33/33, `noPageErrors: true` both, after the flex-wrap fix. Spec is viewport-aware (P32): benefit-card placement + heading size branch on `window.innerWidth < 992`.
+
 ---
 
 - **Site:** https://www.pcliquidations.com — refurbished computer/electronics reseller. Custom PHP storefront ("IsaacStore" markup) + `fullwlibs.js` (site-wide jQuery bundle, includes the `IsaacVariantSet` variant switcher). Google Tag Manager `GTM-K338VW` + `dataLayer` (listingId / listingCurPrice / ecommerce.detail on PDP).
