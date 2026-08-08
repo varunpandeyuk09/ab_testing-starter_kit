@@ -174,10 +174,13 @@ Written in STEP 4 (docs, after the test is ready to share):
 
 ## STEP 3 — QA & Ready-to-Share
 
-0. **Ask before running QA (user-confirmed, PCLIQUIDATIONS PLP01):** when code + spec are
-   ready, ASK the user whether they want the AI to run QA now, or they'll run it
-   themselves (`node tools/qa_run.js qa --spec "<test>/spec.json"`). Do NOT auto-run QA
-   without asking first — the user may prefer to QA the build themselves.
+0. **Ask BEFORE any QA runs (user-confirmed, PCLIQUIDATIONS PLP01):** when code + spec are
+   ready, and BEFORE running/starting QA, ASK the user exactly:
+   **"QA aap khud chalenge (manual), ya main chala dun (AI)?"**
+   Wait for their answer. Do NOT run QA yourself unless they say so — the user may prefer
+   to QA the build manually. If they choose manual, give them the command and wait for
+   their output:
+   `node tools/qa_run.js qa --spec "<test>/spec.json"`
 1. Run the data-driven QA against the spec written in STEP 2 — every check must PASS:
    ```bash
    node tools/qa_run.js qa --spec "../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json"
