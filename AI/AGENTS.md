@@ -176,7 +176,7 @@ Written in STEP 4 (docs, after the test is ready to share):
 
 0. **Ask BEFORE any QA runs (user-confirmed, PCLIQUIDATIONS PLP01):** when code + spec are
    ready, and BEFORE running/starting QA, ASK the user exactly:
-   **"QA aap khud chalenge (manual), ya main chala dun (AI)?"**
+   **"QA chahiye (manual ya AI), ya skip karna hai?"**
    Wait for their answer. Do NOT run QA yourself unless they say so.
    - **AI QA:** run the data-driven QA yourself (steps 1–4 below).
    - **Manual QA (AI-directed):** you do NOT just wait — you give the user a concrete
@@ -194,6 +194,9 @@ Written in STEP 4 (docs, after the test is ready to share):
         screenshots + observations come back to you; YOU analyze them (compare vs
         mockup, check selectors/states), decide pass or fix, and if something needs a
         code change, fix it and re-run this loop.
+   - **Skip QA:** no QA at all — the user takes the build as-is. Go straight to STEP 4
+     (knowledge loop) and hand over; say clearly that the test is UNVERIFIED so the
+     user knows what they're shipping.
 1. Run the data-driven QA against the spec written in STEP 2 — every check must PASS:
    ```bash
    node tools/qa_run.js qa --spec "../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json"
