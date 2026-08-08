@@ -96,6 +96,7 @@ ab_testing-starter_kit/
   metadata.json               ← RAG metadata template (blank)
   flow.md                     ← end-to-end flow of the kit (SINGLE SOURCE OF TRUTH — update on every kit change)
   AGENTS.md                   ← entry-point instructions (read these files first)
+  README.md                   ← this file — onboarding: session starter prompt, brief formats, structure
   AI/                         ← everything the AI needs to know / reuse
     AGENTS.md                 ← step-by-step instructions the AI follows automatically
     PROMPT_PARSING.md         ← teaches AI to extract CLIENT/TEST_NAME from any brief
@@ -110,7 +111,6 @@ ab_testing-starter_kit/
     share.js / v1.json        ← backups of the root blank templates
     examples/
       EG-EXAMPLE-SM01/        ← REFERENCE ONLY — correct, complete output to study
-    README.md                 ← this file
   scripts/
     search_tests.py           ← RAG fallback search (auto-locates the AB-test archive)
   tools/                      ← reusable scripts built during tests (see ss_search_check.ps1)

@@ -117,6 +117,7 @@ The kit must be **strictly more capable after the test than before it**. Before 
 | Kit location | Role |
 |---|---|
 | `AGENTS.md` (root) | Entry point — mandatory reading order, critical rules, knowledge loop |
+| `README.md` (root) | Onboarding — session starter prompt, brief formats, kit structure (how-to-use; flow.md = how-it-works) |
 | `AI/AGENTS.md` | Full step-by-step build instructions (STEP 0–4) |
 | `AI/PROMPT_PARSING.md` | Extracting CLIENT / TEST_NAME / body class from any brief |
 | `AI/question_templates.md` | Pre-code Q&A gate + question banks (U1–U19, L1–L13, N/P/C/S/F/G/H) |
@@ -134,5 +135,6 @@ The kit must be **strictly more capable after the test than before it**. Before 
 ---
 
 ## 5. Version history
-- **Current:** STEP 0–4 flow with Q&A gate (STEP 0c), area-scoped research, generic spec-driven QA runner, mandatory STEP 4 knowledge loop including flow.md sync.
+- **Current:** README moved from `AI/README.md` → root `README.md` (onboarding/how-to-use; flow.md stays the how-it-works single source of truth).
+- **Previous:** STEP 0–4 flow with Q&A gate (STEP 0c), area-scoped research, generic spec-driven QA runner, mandatory STEP 4 knowledge loop including flow.md sync.
 - Update this section every time `flow.md` changes (one line: what changed + when).
