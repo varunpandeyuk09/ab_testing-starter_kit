@@ -424,8 +424,14 @@ function injectVariationExpr(js, css) {
 //       { "check": "two CTAs",      "op": "js",  "expr": "(function(){ var a=document.querySelectorAll({popup}+' .eg-sm25-actions a'); return { pass: a.length===2, detail: 'links='+a.length }; })()" }
 //     ] }
 //
-// ops: exists | not | eq | match | count | countLte | css | js
-//   css uses prop (and optional pseudo e.g. "::before"); js expr must return {pass, detail}.
+// ops: exists | not | eq | match | count | countLte | css | js | batch
+//   css uses prop (and optional pseudo e.g. "::before"); js expr must return {pass, detail};
+//   batch expr returns { "<sub-check>": {pass, detail}, ... } expanded into one row each
+//   (use it to fold many DOM-only assertions into a single round-trip).
+// optional spec fields:
+//   "noPageErrors": true   -> adds a check that no uncaught exception fired after injection
+//   "pagination": { "click": "<next-page selector>", "maxWaitMs": 15000, "checks": [...] }
+//     -> after main checks, clicks next page, re-injects + settles, runs the subset.
 //
 // VACUOUS-PASS RULE (learned from PCLIQUIDATIONS PLP01): a behavioral js check that
 // cannot exercise its own claim (e.g. "price changed on grade click" but the page had
@@ -474,6 +480,13 @@ function buildCheckExpr(c, site) {
       // probes of dynamic/data URLs.
       return `(function () { try { var __r = ${expr}; if (__r && typeof __r.then === 'function') return __r; return { pass: !!__r.pass, detail: __r.detail != null ? String(__r.detail) : '' }; } catch (e) { return { pass: false, detail: 'JS ERR: ' + e.message }; } })()`;
     }
+    case "batch": {
+      // Batch op: ONE round-trip evaluates a map of { <sub-check>: {pass,detail} }
+      // and the runner expands each key into its own result row. Use it to fold
+      // many independent DOM-only assertions into a single CDP call (faster runs).
+      const expr = resolveTokens(c.expr, site, true);
+      return `(function () { try { return ${expr}; } catch (e) { return { "__error": { pass: false, detail: "JS ERR: " + e.message } }; } })()`;
+    }
     default:
       throw new Error("unknown check op: " + c.op);
   }
@@ -482,6 +495,25 @@ function buildCheckExpr(c, site) {
 async function runSpecChecks(cdp, site, spec) {
   const checks = [];
   for (const c of (spec.checks || [])) {
+    if (c.op === "batch") {
+      let rows;
+      try {
+        rows = await evaluate(cdp, buildCheckExpr(c, site));
+      } catch (e) {
+        checks.push({ check: c.check || "?", pass: false, detail: "ERR: " + e.message });
+        continue;
+      }
+      const keys = rows && typeof rows === "object" ? Object.keys(rows) : [];
+      if (!keys.length) {
+        checks.push({ check: c.check || "?", pass: false, detail: "batch returned nothing (vacuous pass blocked)" });
+        continue;
+      }
+      for (const k of keys) {
+        const row = rows[k] || {};
+        checks.push({ check: (c.check ? c.check + " | " : "") + k, pass: !!row.pass, detail: String(row.detail != null ? row.detail : "") });
+      }
+      continue;
+    }
     const row = { check: c.check || "?", pass: false, detail: "" };
     try {
       const r = await evaluate(cdp, buildCheckExpr(c, site));
@@ -528,22 +560,79 @@ async function settlePage(cdp, site, spec) {
   // rootMargin-based queues) fire for every card BEFORE checks run. Reusable for
   // any listing/section test whose data loads on scroll into view. Steps through
   // the page (an instant jump to the bottom makes middle cards never intersect).
+  // Configurable: "scrollAll": true (defaults) or { "stepMs": 120, "maxMs": 12000 }.
   if (st.scrollAll) {
+    const sConf = typeof st.scrollAll === "object" ? st.scrollAll : {};
+    const stepDelay = sConf.stepMs || 120;
+    const maxMs = sConf.maxMs || 12000;
     await evaluate(cdp, `(async () => {
       var step = Math.max(400, Math.floor(window.innerHeight * 0.7));
       var max = document.body.scrollHeight;
-      for (var y = step; y < max; y += step) {
+      var t0 = Date.now();
+      for (var y = step; y < max && (Date.now() - t0) < ${maxMs}; y += step) {
         window.scrollTo(0, y);
-        await new Promise(function (r) { setTimeout(r, 220); });
+        await new Promise(function (r) { setTimeout(r, ${stepDelay}); });
       }
       window.scrollTo(0, max);
       return true;
     })()`).catch(() => {});
-    await sleep(1800);
+    await sleep(Math.min(1800, maxMs / 2));
     await evaluate(cdp, `(() => { window.scrollTo(0, 0); return true; })()`).catch(() => {});
     await sleep(600);
   }
+  // Optional data-ready wait: polls a boolean js expr until true (bounded by
+  // timeoutMs). Lets a data-driven test settle as soon as its data is in
+  // (e.g. "a card has PDP variant data") instead of a fixed extraMs — the
+  // common case exits early, the slow case is capped. Reusable for any test
+  // whose checks need AJAX/fetch results before they can assert.
+  if (st.waitJs) {
+    const wj = typeof st.waitJs === "object" ? st.waitJs : {};
+    const expr = resolveTokens(wj.expr || "", site, true);
+    const wDeadline = Date.now() + (wj.timeoutMs || 10000);
+    let ready = false;
+    while (Date.now() < wDeadline) {
+      ready = await evaluate(cdp, expr).catch(() => false);
+      if (ready) break;
+      await sleep(700);
+    }
+    if (!ready) await sleep(1200); // give a last burst of time for in-flight data
+  }
   await sleep(st.extraMs || 1500);
+}
+
+// Optional spec.pagination block: clicks the next-page link (server-rendered
+// pagination does a full page reload, which wipes the injected variation), waits
+// for the new URL, re-injects, settles, then runs the pagination.checks subset.
+//   "pagination": { "click": "a.next", "maxWaitMs": 15000, "checks": [ ... ] }
+async function runPagination(cdp, site, js, css, spec) {
+  const pg = spec.pagination || {};
+  const base = { clicked: false };
+  const sel = resolveTokens(pg.click || "", site, false);
+  if (!sel) return { ...base, error: "pagination.click selector missing" };
+  const before = await evaluate(cdp, "location.href");
+  const ok = await evaluate(cdp, `(function () { var el = document.querySelector(${JSON.stringify(sel)}); if (!el) return false; el.click(); return true; })()`);
+  if (!ok) return { ...base, error: "pagination element not found: " + sel };
+  base.clicked = true;
+  const deadline = Date.now() + (pg.maxWaitMs || 15000);
+  let url = before;
+  while (Date.now() < deadline) {
+    await sleep(700);
+    url = await evaluate(cdp, "location.href").catch(() => "");
+    const cardsSel = resolveTokens(pg.waitCards || ".itemBrowser .item_square-medium", site, false) || "body";
+    const cards = await evaluate(cdp, `document.querySelectorAll(${JSON.stringify(cardsSel)}).length`).catch(() => 0);
+    const rs = await evaluate(cdp, "document.readyState").catch(() => "");
+    if (url !== before && rs === "complete" && cards > 0) break;
+  }
+  base.url = url;
+  if (url === before) return { ...base, error: "URL did not change after pagination click" };
+  await waitFor(cdp, `!!document.body`, 10000, 500, "document.body");
+  await evaluate(cdp, injectVariationExpr(js, css));
+  await sleep(1200);
+  await settlePage(cdp, site, spec);
+  base.assertions = await runSpecChecks(cdp, site, { ...spec, checks: pg.checks || [] });
+  base.passCount = base.assertions.filter((c) => c.pass).length;
+  base.total = base.assertions.length;
+  return base;
 }
 
 async function actQa(cdp, site, args) {
@@ -559,6 +648,9 @@ async function actQa(cdp, site, args) {
   await navigate(cdp, args.url);
   await waitFor(cdp, `!!document.body`, 10000, 500, "document.body");
   await evaluate(cdp, injectVariationExpr(js, css));
+  // Baseline: count only exceptions raised AFTER injection (site boot errors on
+  // a fresh page load are pre-existing noise, not variation failures).
+  cdp.errors.length = 0;
   await sleep(1500);
 
   // Section flow: sites with an empty addToCart[] have no ATC-popup to open
@@ -582,7 +674,21 @@ async function actQa(cdp, site, args) {
   if (!args.spec) return { ...base, error: "qa requires --spec <spec.json> (data-driven checks)" };
   const checks = await runSpecChecks(cdp, site, args.spec);
 
+  // Optional spec.noPageErrors: fail if any uncaught exception happened after
+  // injection (generic regression gate — site JS or the variation can throw).
+  if (args.spec.noPageErrors) {
+    checks.push({
+      check: "no uncaught page errors after injection",
+      pass: cdp.errors.length === 0,
+      detail: cdp.errors.length ? cdp.errors.slice(0, 3).join(" || ") : "0 errors",
+    });
+  }
+
+  // Optional spec.pagination: click next page, re-inject + re-verify a checks subset.
+  const pagination = args.spec.pagination ? await runPagination(cdp, site, js, css, args.spec) : null;
+
   const result = { ...base, assertions: checks, passCount: checks.filter((c) => c.pass).length, total: checks.length };
+  if (pagination) result.pagination = pagination;
   if (!isSectionFlow) {
     result.popupOpened = popupOpened;
     result.domDiag = await evaluate(cdp, `(() => {
