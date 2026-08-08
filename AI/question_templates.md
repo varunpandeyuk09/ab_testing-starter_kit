@@ -31,6 +31,29 @@ it's cheaper/faster to ask; otherwise verify it and record the result.
 
 ---
 
+## 1.5 INPUT gate (AGENTS.md STEP 0b.5 — BEFORE this workflow)
+
+Ask where the user's material lives before doing anything else. Nothing here is a
+Q&A *question* — it is a material-location check:
+
+```
+📁 AI_DATA/user_inputs/ ban gaya — apna saara data yahan daal do:
+   • Images (Figma/control/screenshots) → user_inputs/test_images/
+   • PDF/DOCX (brief, requirements, research) → seedha user_inputs/ me
+   • Aur kuch (fonts, old variation, CSV) → apna folder bana ke daal do
+
+⚠️ File names meaningful rakho (figma_desktop.png, brief_v2.docx) —
+   isse AI ko samajhne me direct help milti hai.
+   (a) Sab daal diya   (b) Kuch daala hai   (c) Abhi kuch nahi hai — data baad me aa jayega
+```
+
+- **(a)/(b):** scan `user_inputs/` now — images → design contract (STEP 1b); PDF/DOCX →
+  read for brief/requirements and fold the facts into the Q&A gate below.
+- **(c):** proceed on the brief text; re-scan if material arrives later.
+- Missing material never blocks the flow.
+
+---
+
 ## 2. Universal questions (every test — ask only if not in the brief)
 
 | # | Question | Why it matters |

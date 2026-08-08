@@ -1,8 +1,8 @@
 {
   "test": "TEST_NAME — fill me in STEP 1b",
   "source_images": {
-    "figma": ["test_images/figma_desktop.png", "test_images/figma_mobile.png"],
-    "control": ["test_images/control_desktop.png", "test_images/control_mobile.png"]
+    "figma": ["user_inputs/test_images/figma_desktop.png", "user_inputs/test_images/figma_mobile.png"],
+    "control": ["user_inputs/test_images/control_desktop.png", "user_inputs/test_images/control_mobile.png"]
   },
   "tokens": [
     {

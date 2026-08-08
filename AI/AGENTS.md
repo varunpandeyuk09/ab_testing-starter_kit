@@ -42,7 +42,8 @@ Create this structure:
       readme.md                  ← STEP 4 (brief summary)
       design_contract.json       ← STEP 1b (build-time design understanding)
       design_tokens.json         ← STEP 4 (client-reusable design tokens)
-      test_images/               ← STEP 1 (figma / control / variation reference images)
+      user_inputs/               ← STEP 0b.5 (EVERYTHING the user pastes: images, PDF, DOCX)
+        test_images/             ← figma / control / variation reference images
       vision_cache/              ← STEP 1b (per-test vision output cache, hash-keyed)
       qa_result.json, qa_*.png … ← STEP 3 (QA outputs)
 ```
@@ -54,10 +55,34 @@ Create this structure:
   (paths inside `v1.json` are relative to `variation1/`, so the template reads `./variation.css` etc.)
 - Do NOT fill in `metadata.json`, `readme.md` or `qa_prep.json` yet — they are written in
   STEP 4 (they don't affect whether the test runs, so they wait).
-- `AI_DATA/test_images/` is where the user's Figma mockups + control captures land; reference
-  them from `AI_DATA/design_contract.json` (STEP 1b), never from the variation.
+- `AI_DATA/user_inputs/` is where the USER drops their raw material (Figma mockups, control
+  captures, PDF/DOCX briefs, anything else). The AI creates `user_inputs/test_images/` for
+  images. Reference files from `AI_DATA/design_contract.json` (STEP 1b), never from the
+  variation. If the user shares files elsewhere, copy them into `user_inputs/` first.
 - Every QA run writes its outputs (`qa_result.json`, screenshots, probe files) into `AI_DATA/`
   so the test folder root stays clean: two folders only — `variation1/` + `AI_DATA/`.
+
+### 0b.5 — INPUT GATE (ask BEFORE any research/code)
+
+Right after scaffolding, ask the user where their material lives — do NOT start STEP 0c/1
+until they answer. Prompt (adapt wording, keep the three parts):
+
+```
+📁 AI_DATA/user_inputs/ ban gaya — apna saara data yahan daal do:
+   • Images (Figma/control/screenshots) → user_inputs/test_images/
+   • PDF/DOCX (brief, requirements, research) → seedha user_inputs/ me
+   • Aur kuch (fonts, old variation, CSV) → apna folder bana ke daal do
+
+⚠️ File names meaningful rakho (figma_desktop.png, brief_v2.docx) —
+   isse AI ko samajhne me direct help milti hai.
+   (a) Sab daal diya   (b) Kuch daala hai   (c) Abhi kuch nahi hai — data baad me aa jayega
+```
+
+- **(a) / (b):** scan `user_inputs/` NOW — images → STEP 1b cache/contract; PDF/DOCX → read
+  them for brief/requirements and fold their facts into the Q&A gate + design understanding.
+- **(c):** proceed with the brief text only; if material arrives later, re-run STEP 0b.5
+  scan (and re-open the Q&A gate only if new facts contradict what was asked).
+- Missing material NEVER blocks the flow — it just means fewer inputs now.
 
 > **Template source of truth:** the blank templates live at the kit ROOT — `variation1/variation.js`, `variation1/variation.css`, `share.js`, `v1.json`. The copies under `AI/` are backups of the same templates. Always copy from the ROOT versions. The filled `AI/examples/EG-EXAMPLE-SM01/` files are reference examples ONLY — never copy those values into a real test.
 
@@ -126,7 +151,7 @@ against the contract — never re-look at the mockup for facts.** This removes t
 ### How (run inside the test's `AI_DATA/` folder)
 1. **Vision cache lookup** — for each static reference image (Figma/variation design):
    ```
-   node <kit>/tools/cache_vision.js --image test_images/figma_desktop.png --cache vision_cache --model <model-id> --prompt-v 1
+   node <kit>/tools/cache_vision.js --image user_inputs/test_images/figma_desktop.png --cache vision_cache --model <model-id> --prompt-v 1
    ```
    HIT → reuse the cached output (do NOT re-process). MISS → look at the image, write the
    output to a temp file, then `--save <out.json>` to store it under the computed key.

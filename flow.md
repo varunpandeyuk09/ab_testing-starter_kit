@@ -34,7 +34,16 @@
         → ../ABTESTSWITHAI/CLIENT/TEST_NAME/  (⛔ NEVER touch root variation1/)
           TEST_NAME/ = TWO folders: variation1/ (deploy: variation.js/css + v1.json
           + share.js + metadata.json) + AI_DATA/ (all AI/QA data: spec.json, qa_prep,
-          readme, design_contract, design_tokens, test_images/, vision_cache/, results)
+          readme, design_contract, design_tokens, user_inputs/ (test_images/ sub),
+          vision_cache/, results)
+                                        ▼
+   STEP 0b.5 📥 INPUT GATE  ASK where the user's material lives (BEFORE research):
+          "AI_DATA/user_inputs/ ban gaya — images → user_inputs/test_images/,
+           PDF/DOCX/anything → seedha user_inputs/; file names meaningful rakho."
+          (a) sab daala → scan images (STEP 1b) + read PDF/DOCX (folds into 0c/1b)
+          (b) kuch daala → same, with what's there
+          (c) abhi kuch nahi → proceed with brief text; re-scan if material arrives
+          Missing material NEVER blocks — fewer inputs now.
                                         ▼
    STEP 0c 🗣️ Q&A GATE  AI/question_templates.md (U1–U19, L1–L13, N/P/C/S/F/G/H banks)
         1. gap-scan the brief          2. kit-lookup (drop what's already known:
@@ -93,6 +102,7 @@
 |:---:|---|---|---|
 | **0** | Parse | Extract `CLIENT`, `TEST_NAME`, `TEST_ID`, `URL(s)`, `FOCUS_AREA` | Never guess → ask |
 | **0b** | Scaffold | Copy root templates → `../ABTESTSWITHAI/CLIENT/TEST_NAME/` | Root `variation1/` is read-only |
+| **0b.5** | Input gate | Ask where the user's material lives → images into `user_inputs/test_images/`, PDF/DOCX etc. into `user_inputs/`, meaningful file names | (a) all / (b) partial / (c) none → never blocks |
 | **0c** | Q&A gate | Ask only what the kit doesn't know (U/L/N/P/C/S/F/G/H banks) | Max 6–8 questions |
 | **1** | Research | Playbook §8 (P1–P35) → no match? **ask run-or-skip RAG search** → verify only the FOCUS_AREA live → save selectors | Area-scoped only |
 | **1b** | Design contract | Cache static refs (`cache_vision.js`) → write `design_contract.json` → generate design checks (`contract_to_spec.js`) → append behavioral checks | Figma = ground truth, contract = cache |
@@ -105,6 +115,7 @@
 ## ⚠️ Golden rules
 
 - 🏗️ **Templates** — root `variation1/`, `share.js`, `v1.json`, `metadata.json`, `design_contract.json` are the source of truth. Copy, never edit.
+- 📥 **User material lives in `AI_DATA/user_inputs/`** (images → `test_images/`, everything else → loose/own folders). Never reference files the user pasted anywhere else — copy them into `user_inputs/` first.
 - 🧩 **QA runner is client-agnostic** — reads site facts from `AI/site_profiles.json`, checks from the test's `spec.json`. No runner edits per client/test.
 - 🚫 **No weak/vacuous passes** — spec checks must actually exercise their claim, or they *fail*.
 - 🔄 **Keep this file in sync** — any step/file/tool/count change → update `flow.md` in the same commit (rule in `AGENTS.md` / `AI/AGENTS.md` STEP 4).

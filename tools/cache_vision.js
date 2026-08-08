@@ -14,11 +14,11 @@
 // new key → automatic re-process (nothing stale silently reused).
 //
 // USAGE (run from the test's AI_DATA/ folder):
-//   node <kit>/tools/cache_vision.js --image test_images/figma_desktop.png --cache vision_cache --model vision-x --prompt-v 1
+//   node <kit>/tools/cache_vision.js --image user_inputs/test_images/figma_desktop.png --cache vision_cache --model vision-x --prompt-v 1
 //     → HIT: prints the cached output path (reuse it, do NOT re-process)
 //     → MISS: prints the exact path to process + save
 //   on MISS the AI processes the image, writes its output JSON to a temp file, then:
-//   node <kit>/tools/cache_vision.js --image test_images/figma_desktop.png --cache vision_cache --model vision-x --prompt-v 1 --save out.json
+//   node <kit>/tools/cache_vision.js --image user_inputs/test_images/figma_desktop.png --cache vision_cache --model vision-x --prompt-v 1 --save out.json
 //     → stores the output under the computed key
 //
 // FLAGS:

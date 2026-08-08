@@ -132,7 +132,8 @@ ab_testing-starter_kit/
         readme.md
         design_contract.json  ← build-time design understanding (STEP 1b)
         design_tokens.json
-        test_images/          ← figma / control / variation reference images
+        user_inputs/          ← EVERYTHING the user pastes (STEP 0b.5 gate)
+          test_images/        ← figma / control / variation reference images
         vision_cache/         ← per-test vision output cache (STEP 1b)
         qa_result.json, qa_*.png ← QA outputs
 ```

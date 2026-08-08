@@ -39,7 +39,7 @@ and record them in `qa_prep.json` at STEP 4.
 
 All output goes into `../ABTESTSWITHAI/CLIENT/TEST_NAME/` — NEVER into the root `variation1/` folder (read-only template). Every test folder has exactly TWO subfolders:
 - `variation1/` — the DEPLOY PACKAGE (everything the platform runs): `variation.js`, `variation.css`, `v1.json`, `share.js`, `metadata.json`
-- `AI_DATA/` — ALL AI/QA working data (never touched by the platform): `spec.json`, `qa_prep.json`, `readme.md`, `design_contract.json`, `design_tokens.json`, `test_images/`, `vision_cache/`, QA outputs
+- `AI_DATA/` — ALL AI/QA working data (never touched by the platform): `spec.json`, `qa_prep.json`, `readme.md`, `design_contract.json`, `design_tokens.json`, `user_inputs/` (images → `test_images/`, everything else loose), `vision_cache/`, QA outputs
 
 ## Knowledge feedback loop (after every test)
 
