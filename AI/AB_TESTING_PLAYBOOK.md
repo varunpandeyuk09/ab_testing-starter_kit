@@ -1046,6 +1046,30 @@ function ensure(card, cb) {
 
 Source: `../ABTESTSWITHAI/MONASH/MOL 10.01 Contact Us Page Redesign` (layout bug found during QA, fixed in `variation1/variation.css`, 33/33 re-verified).
 
+### P34. `geom` spec op — deterministic layout QA (no screenshots/vision for facts)
+
+**When:** the QA needs to assert HOW things are placed relative to each other — "sidebar and form are on the same row", "tiles are equal size with a consistent gap", "the block is centered / inside the viewport". Previously this forced a screenshot + eyeball (or a per-test hand-rolled `js` probe like P33 step 1); now it's a first-class spec op.
+
+**How (MONASH MOL 10.01 + TROOPER SM22, Aug 2026):** add `geom` to `tools/qa_run.js` — a generic relation vocabulary, every test supplies its OWN selectors + relation (config, never code):
+```json
+{ "check": "sidebar+form same row", "op": "geom", "selectors": [".eg-sidebar", ".forms-layout__form"], "relation": "same-top", "tol": 1 },
+{ "check": "sidebar width",         "op": "geom", "selectors": [".eg-sidebar"], "relation": "width-pct", "between": [35, 45] },
+{ "check": "tiles equal + even",    "op": "geom", "selectors": [".tile"], "relation": "equal-size", "each": true },
+{ "check": "tile gap",              "op": "geom", "selectors": [".tile"], "relation": "x-gap", "each": true, "between": [12, 20] },
+{ "check": "CTA centered",          "op": "geom", "selectors": [".eg-cta"], "relation": "centered", "tol": 2 }
+```
+Runner reads `getBoundingClientRect()` per selector and computes the relation → `{pass, detail}` with the real numbers in `detail` (e.g. `gap=40.0`, `w%=25.0`) so a failure says exactly what was measured. Two modes: binary/unary (selector pairs, optional `index` for nth match) and `each:true` (one selector, ALL matches — grids/lists).
+
+**Relations:** `same-top` `same-left` `left-of` `right-of` `above` `below` `x-gap` `y-gap` `within` `width-pct` `height-pct` `aspect-ratio` `centered` `inside-viewport` `equal-size`.
+
+**Key ideas:**
+1. **Deterministic** — pure JS + `getBoundingClientRect`, zero screenshots/vision for these facts; runs in the same generic spec run as every other check. This is the "Level 1" fix for vision-model dependency (see MONASH readme): geometry facts leave the eyeball, vision stays only for edge-case judgment.
+2. **Catch real layout**, not just presence — `exists` only proves the element is there; `geom` proves it is placed correctly (the P33 flex-wrap bug would have been caught by a `same-top` check with zero manual probing).
+3. **`each:true` handles grids** — one op asserts every tile matches (size, gap, width%) instead of hand-rolling loops per test.
+4. **Sane failures** — always include a negative-control check in a redesign spec (e.g. `below` where it must NOT be below) so a PASS run also proves the check would catch a regression.
+
+Source: `../ABTESTSWITHAI/MONASH/MOL 10.01 Contact Us Page Redesign` (op added during knowledge loop; validated on a synthetic grid — detected real inline-block whitespace gap 16→20.5px).
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -1095,7 +1119,7 @@ Source: `../ABTESTSWITHAI/MONASH/MOL 10.01 Contact Us Page Redesign` (layout bug
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P33).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P34).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).

@@ -39,7 +39,7 @@
         → answers recorded → later saved to qa_prep.json
                                         ▼
    STEP 1  🔍 RESEARCH  (area-scoped ONLY, never whole site)
-        AB_TESTING_PLAYBOOK.md §8 (P1–P33) = primary source
+        AB_TESTING_PLAYBOOK.md §8 (P1–P34) = primary source
         no match? 🙋 ASK "RAG search (archive) chalaun, ya library se chalaun?"
         → run python scripts/search_tests.py (takes time) → save new technique
           as next P-pattern; or skip → build from existing patterns
@@ -59,7 +59,7 @@
       click states)     runner is GENERIC —
       → what to verify  site facts from site_profiles.json,
       → user sends      checks from spec.json (batch/noPageErrors/
-        screenshots +   pagination/waitJs/scrollAll) → ✅ all PASS →
+        screenshots +   pagination/waitJs/scrollAll/geom) → ✅ all PASS →
         bug reports →   screenshot vs mockup → selector audit
         AI analyzes →   (forbidden anchors) → "Ready to share"
         pass or fix (loop)   + --viewport WxH (mobile/tablet emulation)
@@ -83,7 +83,7 @@
 | **0** | Parse | Extract `CLIENT`, `TEST_NAME`, `TEST_ID`, `URL(s)`, `FOCUS_AREA` | Never guess → ask |
 | **0b** | Scaffold | Copy root templates → `../ABTESTSWITHAI/CLIENT/TEST_NAME/` | Root `variation1/` is read-only |
 | **0c** | Q&A gate | Ask only what the kit doesn't know (U/L/N/P/C/S/F/G/H banks) | Max 6–8 questions |
-| **1** | Research | Playbook §8 (P1–P33) → no match? **ask run-or-skip RAG search** → verify only the FOCUS_AREA live → save selectors | Area-scoped only |
+| **1** | Research | Playbook §8 (P1–P34) → no match? **ask run-or-skip RAG search** → verify only the FOCUS_AREA live → save selectors | Area-scoped only |
 | **2** | Write code | `variation.js`/`variation.css` + `share.js` + `v1.json` + **`spec.json`** | `spec.json` must exist |
 | **3** | QA | Ask **manual / AI / skip**. **AI:** run `qa_run.js` + visual check + audit. **Manual:** AI gives shot-list + what-to-verify; user sends screenshots + bug reports; AI analyzes → pass or fix. **Skip:** no QA, hand over as UNVERIFIED | All checks PASS |
 | **4** | Knowledge loop | Profiles, P-pattern, questions, tools → back into the kit | Update `flow.md` too |

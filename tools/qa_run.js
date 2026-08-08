@@ -22,7 +22,7 @@
 // DATA-DRIVEN SPECS:
 //   A spec.json lives in each test folder and holds settle + all golden checks,
 //   so new tests never require editing this file. ops: exists|not|eq|match|
-//   count|countLte|css|js; tokens {popup} {title} {update} {related}
+//   count|countLte|css|js|geom|batch; tokens {popup} {title} {update} {related}
 //   {relatedTitle} {relatedTile} {counter} resolve from the SITES profile
 //   (loaded from AI/site_profiles.json). spec fields: profile, url, inject
 //   (relative to spec.json), settle, checks.
@@ -425,7 +425,7 @@ function injectVariationExpr(js, css) {
 //       { "check": "two CTAs",      "op": "js",  "expr": "(function(){ var a=document.querySelectorAll({popup}+' .eg-sm25-actions a'); return { pass: a.length===2, detail: 'links='+a.length }; })()" }
 //     ] }
 //
-// ops: exists | not | eq | match | count | countLte | css | js | batch
+// ops: exists | not | eq | match | count | countLte | css | js | geom | batch
 //   css uses prop (and optional pseudo e.g. "::before"); js expr must return {pass, detail};
 //   batch expr returns { "<sub-check>": {pass, detail}, ... } expanded into one row each
 //   (use it to fold many DOM-only assertions into a single round-trip).
@@ -488,9 +488,134 @@ function buildCheckExpr(c, site) {
       const expr = resolveTokens(c.expr, site, true);
       return `(function () { try { return ${expr}; } catch (e) { return { "__error": { pass: false, detail: "JS ERR: " + e.message } }; } })()`;
     }
+    case "geom":
+      return buildGeomExpr(c, site);
     default:
       throw new Error("unknown check op: " + c.op);
   }
+}
+
+// ---------------------------------------------------------------------------
+// geom op — geometry assertions on element bounding boxes (deterministic layout
+// QA, no screenshots/vision needed for facts). The RELATIONS below are a generic
+// vocabulary; every test supplies its OWN selectors + relation (config, never
+// code), so the runner stays client-agnostic. Two modes:
+//   default    — selectors[0] vs selectors[1] (binary) or selectors[0] alone
+//                (unary); "index" picks the nth match (default 0).
+//   each:true  — ONE selector, ALL matches checked (grids/lists, e.g. tile rows).
+// { "op":"geom", "selectors":[".a",".b"], "relation":"same-top", "tol":2 }
+// { "op":"geom", "selectors":[".sidebar"], "relation":"width-pct", "between":[35,45] }
+// { "op":"geom", "selectors":[".tile"], "relation":"equal-size", "each":true }
+// relations:
+//   same-top|same-left   | [0].top/left ≈ [1].top/left (±tol)
+//   left-of|right-of     | [0] entirely left/right of [1]
+//   above|below          | [0] entirely above/below [1]
+//   x-gap|y-gap          | horizontal/vertical gap [0]→[1] in [between]
+//   within               | [0] fully inside [1]
+//   width-pct|height-pct | [0] size as % of viewport in [between]
+//   aspect-ratio         | [0].width/[0].height in [between]
+//   centered             | [0] horizontally centered in viewport (±tol)
+//   inside-viewport      | [0] fully visible in the viewport
+//   equal-size           | [0] same width+height as [1] (±tol)
+const GEOM_BINARY = ["same-top", "same-left", "left-of", "right-of", "above", "below", "x-gap", "y-gap", "within", "equal-size"];
+const GEOM_UNARY = ["width-pct", "height-pct", "aspect-ratio", "centered", "inside-viewport"];
+const GEOM_NEED_BETWEEN = ["x-gap", "y-gap", "width-pct", "height-pct", "aspect-ratio"];
+const GEOM_ALL_RELATIONS = GEOM_BINARY.concat(GEOM_UNARY);
+
+function geomBinBody(rel) {
+  const checks = {
+    "same-top": `ok = Math.abs(r0.top - r1.top) <= tol; d = "top0=" + r0.top.toFixed(1) + " top1=" + r1.top.toFixed(1);`,
+    "same-left": `ok = Math.abs(r0.left - r1.left) <= tol; d = "left0=" + r0.left.toFixed(1) + " left1=" + r1.left.toFixed(1);`,
+    "left-of": `ok = r0.right <= r1.left + tol; d = "right0=" + r0.right.toFixed(1) + " left1=" + r1.left.toFixed(1);`,
+    "right-of": `ok = r0.left >= r1.right - tol; d = "left0=" + r0.left.toFixed(1) + " right1=" + r1.right.toFixed(1);`,
+    "above": `ok = r0.bottom <= r1.top + tol; d = "bottom0=" + r0.bottom.toFixed(1) + " top1=" + r1.top.toFixed(1);`,
+    "below": `ok = r0.top >= r1.bottom - tol; d = "top0=" + r0.top.toFixed(1) + " bottom1=" + r1.bottom.toFixed(1);`,
+    "x-gap": `var g = r1.left - r0.right; ok = g >= between[0] && g <= between[1]; d = "gap=" + g.toFixed(1) + " (" + between[0] + "-" + between[1] + ")";`,
+    "y-gap": `var g = r1.top - r0.bottom; ok = g >= between[0] && g <= between[1]; d = "gap=" + g.toFixed(1) + " (" + between[0] + "-" + between[1] + ")";`,
+    "within": `ok = r0.left >= r1.left - tol && r0.right <= r1.right + tol && r0.top >= r1.top - tol && r0.bottom <= r1.bottom + tol; d = "0:" + [r0.left, r0.top, r0.right, r0.bottom].map(function (x) { return x.toFixed(0); }).join(",") + " in 1:" + [r1.left, r1.top, r1.right, r1.bottom].map(function (x) { return x.toFixed(0); }).join(",");`,
+    "equal-size": `ok = Math.abs(r0.width - r1.width) <= tol && Math.abs(r0.height - r1.height) <= tol; d = "0=" + r0.width.toFixed(1) + "x" + r0.height.toFixed(1) + " 1=" + r1.width.toFixed(1) + "x" + r1.height.toFixed(1);`,
+  };
+  return checks[rel];
+}
+
+function geomUnaryBody(rel) {
+  const checks = {
+    "width-pct": `var p = r0.width / vw * 100; ok = p >= between[0] && p <= between[1]; d = "w%=" + p.toFixed(1) + " (" + between[0] + "-" + between[1] + ")";`,
+    "height-pct": `var p = r0.height / vh * 100; ok = p >= between[0] && p <= between[1]; d = "h%=" + p.toFixed(1) + " (" + between[0] + "-" + between[1] + ")";`,
+    "aspect-ratio": `var a = r0.width / r0.height; ok = a >= between[0] && a <= between[1]; d = "ar=" + a.toFixed(2) + " (" + between[0] + "-" + between[1] + ")";`,
+    "centered": `ok = Math.abs((r0.left + r0.right) / 2 - vw / 2) <= tol; d = "cx=" + ((r0.left + r0.right) / 2).toFixed(1) + " vw/2=" + (vw / 2).toFixed(1);`,
+    "inside-viewport": `ok = r0.left >= -tol && r0.right <= vw + tol && r0.top >= -tol && r0.bottom <= vh + tol; d = "L" + r0.left.toFixed(0) + " R" + r0.right.toFixed(0) + " T" + r0.top.toFixed(0) + " B" + r0.bottom.toFixed(0) + " vw" + vw + " vh" + vh;`,
+  };
+  return checks[rel];
+}
+
+function geomEachBody(rel) {
+  const checks = {
+    "equal-size": `var r0 = all[0]; var bad = []; for (var i = 1; i < all.length; i++) { if (Math.abs(all[i].width - r0.width) > tol || Math.abs(all[i].height - r0.height) > tol) bad.push(i); } ok = bad.length === 0; d = bad.length ? "size mismatch idx " + bad.join(",") + " (n=" + all.length + ")" : "n=" + all.length + " all " + r0.width.toFixed(1) + "x" + r0.height.toFixed(1);`,
+    "x-gap": `var bad = []; for (var i = 1; i < all.length; i++) { var g = all[i].left - all[i - 1].right; if (g < between[0] || g > between[1]) bad.push(i + ":" + g.toFixed(1)); } ok = bad.length === 0; d = bad.length ? "x-gap out of range " + bad.join(",") : "n=" + all.length + " x-gaps in " + between[0] + "-" + between[1];`,
+    "y-gap": `var bad = []; for (var i = 1; i < all.length; i++) { var g = all[i].top - all[i - 1].bottom; if (g < between[0] || g > between[1]) bad.push(i + ":" + g.toFixed(1)); } ok = bad.length === 0; d = bad.length ? "y-gap out of range " + bad.join(",") : "n=" + all.length + " y-gaps in " + between[0] + "-" + between[1];`,
+    "width-pct": `var bad = []; for (var i = 0; i < all.length; i++) { var p = all[i].width / vw * 100; if (p < between[0] || p > between[1]) bad.push(i + ":" + p.toFixed(1)); } ok = bad.length === 0; d = bad.length ? "width% out of range " + bad.join(",") : "n=" + all.length + " widths in " + between[0] + "-" + between[1] + "%";`,
+    "height-pct": `var bad = []; for (var i = 0; i < all.length; i++) { var p = all[i].height / vh * 100; if (p < between[0] || p > between[1]) bad.push(i + ":" + p.toFixed(1)); } ok = bad.length === 0; d = bad.length ? "height% out of range " + bad.join(",") : "n=" + all.length + " heights in " + between[0] + "-" + between[1] + "%";`,
+    "aspect-ratio": `var bad = []; for (var i = 0; i < all.length; i++) { var a = all[i].width / all[i].height; if (a < between[0] || a > between[1]) bad.push(i + ":" + a.toFixed(2)); } ok = bad.length === 0; d = bad.length ? "ar out of range " + bad.join(",") : "n=" + all.length + " ar in " + between[0] + "-" + between[1];`,
+    "inside-viewport": `var bad = []; for (var i = 0; i < all.length; i++) { if (all[i].left < -tol || all[i].right > vw + tol || all[i].top < -tol || all[i].bottom > vh + tol) bad.push(i); } ok = bad.length === 0; d = bad.length ? "out of viewport idx " + bad.join(",") : "n=" + all.length + " inside";`,
+  };
+  return checks[rel];
+}
+
+function buildGeomExpr(c, site) {
+  const rel = String(c.relation || "");
+  const between = c.between || null;
+  const tol = c.tol != null ? c.tol : 1;
+  const idx = c.index != null ? c.index : 0;
+  const each = !!c.each;
+  const sels = (c.selectors || []).map((s) => JSON.stringify(resolveTokens(s, site, false)));
+  const sel0 = sels[0];
+  const sel1 = sels[1];
+  const fail = (msg) => `(function () { return { pass: false, detail: "geom: " + ${JSON.stringify(msg)} }; })()`;
+  if (!sel0) return fail("selectors[0] required");
+  if (GEOM_NEED_BETWEEN.indexOf(rel) !== -1 && !between) return fail("between [min,max] required for relation '" + rel + "'");
+  if (GEOM_ALL_RELATIONS.indexOf(rel) === -1) return fail("unknown relation '" + rel + "' (relations: " + GEOM_ALL_RELATIONS.join(", ") + ")");
+  if (each) {
+    const body = geomEachBody(rel);
+    if (!body) return fail("relation '" + rel + "' not supported with each:true (use equal-size, x-gap, y-gap, width-pct, height-pct, aspect-ratio, inside-viewport)");
+    return `(function () {
+  try {
+    var vw = window.innerWidth, vh = window.innerHeight, tol = ${JSON.stringify(tol)};
+    var between = ${JSON.stringify(between)};
+    var all = Array.prototype.map.call(document.querySelectorAll(${sel0}), function (n) {
+      var r = n.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+    });
+    if (!all.length) return { pass: false, detail: "not found: " + ${sel0} };
+    var ok = false, d = "";
+    ${body}
+    return { pass: ok, detail: d };
+  } catch (e) { return { pass: false, detail: "JS ERR: " + e.message }; }
+})()`;
+  }
+  const isBin = GEOM_BINARY.indexOf(rel) !== -1;
+  if (isBin && !sel1) return fail("relation '" + rel + "' needs selectors[1]");
+  const body = isBin ? geomBinBody(rel) : geomUnaryBody(rel);
+  let rectCode = `var r0 = rectOf(${sel0});\n    if (!r0) return { pass: false, detail: "not found: " + ${sel0} };`;
+  if (isBin) {
+    rectCode += `\n    var r1 = rectOf(${sel1});\n    if (!r1) return { pass: false, detail: "not found: " + ${sel1} };`;
+  }
+  return `(function () {
+  try {
+    var vw = window.innerWidth, vh = window.innerHeight, tol = ${JSON.stringify(tol)};
+    var between = ${JSON.stringify(between)};
+    var rectOf = function (s) {
+      var n = document.querySelectorAll(s)[${JSON.stringify(idx)}];
+      if (!n) return null;
+      var r = n.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+    };
+    ${rectCode}
+    var ok = false, d = "";
+    ${body}
+    return { pass: ok, detail: d };
+  } catch (e) { return { pass: false, detail: "JS ERR: " + e.message }; }
+})()`;
 }
 
 async function runSpecChecks(cdp, site, spec) {

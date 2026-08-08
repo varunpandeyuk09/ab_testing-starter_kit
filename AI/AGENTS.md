@@ -83,7 +83,7 @@ never re-asked, and things the kit already verified are never re-verified.
 ## STEP 1 — Research Before Writing Code (AREA-SCOPED)
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
-2. Match the task against the Reusable Patterns Library (playbook §8, P1–P33). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
+2. Match the task against the Reusable Patterns Library (playbook §8, P1–P34). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
 3. **Fallback (only when NO pattern in §8 fits the brief):** before running the RAG search, ASK the user:
    **"RAG search (archive se similar past tests) chalaun, ya pattern library se kaam chalaun?"**
    Wait for their answer — the search takes time, so never auto-run it.
@@ -243,7 +243,7 @@ verified, the test is NOT finished:
    one before its spec.json can run.
 
 3. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
-   pattern, append it as the next P-number (P33, P34, ...) with a short recipe + `Source:`
+   pattern, append it as the next P-number (P34, P35, ...) with a short recipe + `Source:`
    line. Then update every `P1–Pxx` reference in `AGENTS.md` / `AB_TESTING_PLAYBOOK.md` /
    `README.md` to the new max count (grep for `P1–P` before finishing).
 
