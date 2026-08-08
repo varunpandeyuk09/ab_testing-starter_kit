@@ -969,12 +969,16 @@ function swapVariant(card, v) {
 3. **Idempotent swap + restore.** Only mutate `src`/`textContent` when the value changes; keep the site's own price/strike/savings nodes (update their text, never replace them) so the site's JS still owns them.
 4. **Mirror the PDP's variant URL scheme.** If the PDP uses `?variant=<id>` for non-master variants, rebuild the card links the same way so "See Options"/card clicks land on the correct variant.
 5. **Default selection.** Preselect the first grade from the card's own `x-in-types`-style attribute; once PDP data arrives, re-derive the shown grade by matching the displayed price against the fetched variant prices (handles range-priced cards).
+6. **Swap EVERY field the PDP's switcher changes — including the title — and write the FULL per-variant title.** When a PDP swaps variants it often also swaps the page `h1`. The visible difference between two variant titles is frequently ONLY the variant suffix (e.g. `… Windows 11 - Grade A` vs `… Windows 11 - Grade C`) — so write the entire per-variant h1 (suffix included) into the card title. Stripping the suffix makes both variants map to one identical title and the swap becomes a visual no-op (PLP01 round-2 fix). Fallback when a variant block has no h1: base card title + ` - Grade <letter>`.
+7. **Render the DESIGN's fixed option set, not the DOM's available set.** If the mockup fixes A/B/C on every card, always render 3 buttons and mark unavailable ones `disabled` + `aria-disabled` + greyed-out (`cursor: not-allowed`) + click no-op. Building buttons from `x-in-types` skips the unavailable options the design explicitly wants shown. Bug: PLP01 report #2 (buttons built only from available grades).
 
 **Gotchas:**
 - Same-origin only; silent-fail on error/404/redirect.
 - Match grade labels (`/Grade\s*([ABC])/i`) but expect site-specific extra types (e.g. `NEW`) — parse what you can, skip cleanly.
 - Detach the fetched `<doc>` after parsing; never touch the real PDP DOM (this runs on the PLP).
 - Finance/3rd-party badges (Affirm `data-amount` in cents) are often per-variant — read them from the same blocks.
+- **Keep prices OUT of the option buttons unless the mockup puts them there.** If the design shows bare "A/B/C" pills, don't inject per-grade prices into them (PLP01 report #3). The card's main price line already swaps on click.
+- **Spec the swap behavior against a multi-grade card.** A "price changed on click" check that runs on a single-grade card passes vacuously. In `spec.json` make the check FAIL (`{pass:false, detail:'... (vacuous pass blocked)'}`) when it cannot find a card that actually exercises the claim — see `tools/qa_run.js` vacuous-pass note and playbook §9.
 
 ### Other techniques observed in the archive (use when a brief needs them)
 
@@ -1000,6 +1004,7 @@ function swapVariant(card, v) {
 - [ ] No `!important` unless required; no unscoped CSS.
 - [ ] Site functionality untouched; no global side effects.
 - [ ] `v1.json` created (+ `share.js` where clicks are tracked).
+- [ ] **Behavioral checks must actually exercise the behavior** (vacuous-pass rule, PLP01): a `spec.json` js check that can't find a case to test must FAIL with `{pass:false, detail:'... (vacuous pass blocked)'}`, never pass with "nothing to test". Loop to the strongest card (multi-option card, card with a disabled control) so the interaction is genuinely proven.
 - [ ] Verified on desktop, tablet, mobile.
 - [ ] Knowledge capture done (AGENTS.md STEP 4): verified facts → `AI/SITE_PROFILES.md`, new technique → §8 next P-number + `P1–Pxx` count updated, reusable script → `tools/`.
 

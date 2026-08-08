@@ -438,6 +438,13 @@ function injectVariationExpr(js, css) {
 //
 // ops: exists | not | eq | match | count | countLte | css | js
 //   css uses prop (and optional pseudo e.g. "::before"); js expr must return {pass, detail}.
+//
+// VACUOUS-PASS RULE (learned from PCLIQUIDATIONS PLP01): a behavioral js check that
+// cannot exercise its own claim (e.g. "price changed on grade click" but the page had
+// no multi-grade card) must FAIL — return { pass:false, detail:'... (vacuous pass blocked)' }
+// and pick the STRONGEST case first (e.g. loop to a card with >=2 available grades, or
+// a card with a disabled control). Never pass with a "nothing to test" detail: a green
+// check that did nothing is worse than a red one — the red one gets fixed.
 function resolveTokens(str, site, quote) {
   const tok = {
     popup: site.popup, title: site.title, update: site.update, related: site.related,
@@ -473,7 +480,11 @@ function buildCheckExpr(c, site) {
     }
     case "js": {
       const expr = resolveTokens(c.expr, site, true);
-      return `(function () { try { var __r = ${expr}; return { pass: !!__r.pass, detail: __r.detail != null ? String(__r.detail) : '' }; } catch (e) { return { pass: false, detail: 'JS ERR: ' + e.message }; } })()`;
+      // js checks may be sync (return {pass,detail}) or async (return a Promise
+      // that resolves to {pass,detail}) — a thenable is returned as-is so the
+      // runner's awaitPromise resolves it. Async checks enable in-page fetch
+      // probes of dynamic/data URLs.
+      return `(function () { try { var __r = ${expr}; if (__r && typeof __r.then === 'function') return __r; return { pass: !!__r.pass, detail: __r.detail != null ? String(__r.detail) : '' }; } catch (e) { return { pass: false, detail: 'JS ERR: ' + e.message }; } })()`;
     }
     default:
       throw new Error("unknown check op: " + c.op);
@@ -523,6 +534,25 @@ async function settlePage(cdp, site, spec) {
   if (st.scrollTo) {
     const sSel = resolveTokens(st.scrollTo, site, false);
     await evaluate(cdp, `(() => { var el = document.querySelector(${JSON.stringify(sSel)}); if (el) el.scrollIntoView({ block: 'center' }); return true; })()`).catch(() => {});
+    await sleep(600);
+  }
+  // Optional: walk the page to the bottom so lazy fetches (IntersectionObserver,
+  // rootMargin-based queues) fire for every card BEFORE checks run. Reusable for
+  // any listing/section test whose data loads on scroll into view. Steps through
+  // the page (an instant jump to the bottom makes middle cards never intersect).
+  if (st.scrollAll) {
+    await evaluate(cdp, `(async () => {
+      var step = Math.max(400, Math.floor(window.innerHeight * 0.7));
+      var max = document.body.scrollHeight;
+      for (var y = step; y < max; y += step) {
+        window.scrollTo(0, y);
+        await new Promise(function (r) { setTimeout(r, 220); });
+      }
+      window.scrollTo(0, max);
+      return true;
+    })()`).catch(() => {});
+    await sleep(1800);
+    await evaluate(cdp, `(() => { window.scrollTo(0, 0); return true; })()`).catch(() => {});
     await sleep(600);
   }
   await sleep(st.extraMs || 1500);

@@ -94,6 +94,8 @@ it's cheaper/faster to ask; otherwise verify it and record the result.
 - L4: Where does each data point come from — is price/strike/spec already rendered on the card, or fetched from the PDP (verify markup first)?
 - L5: Does the redesign apply to grid view, list view, or both?
 - L6: Mobile — same card details as desktop, or a simplified variant?
+- L7: Grade selector — does the design fix the full option set on every card (e.g. always show A/B/C) with unavailable options greyed out and disabled, or only show available options?
+- L8: Do the option buttons carry prices (e.g. "A — $299") or just the bare grade label? (Only show prices if the mockup puts them there — otherwise keep them out.)
 
 ---
 
