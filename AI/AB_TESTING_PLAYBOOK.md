@@ -1070,6 +1070,27 @@ Runner reads `getBoundingClientRect()` per selector and computes the relation �
 
 Source: `../ABTESTSWITHAI/MONASH/MOL 10.01 Contact Us Page Redesign` (op added during knowledge loop; validated on a synthetic grid — detected real inline-block whitespace gap 16→20.5px).
 
+### P35. Design contract + vision cache — look at Figma ONCE, QA from the contract
+
+**When:** the brief ships a mockup (Figma) or reference design, and the variation must match it. Without a contract, every QA pass re-compares the render against the mockup by eye (slow, model-dependent, non-reproducible) — or the design understanding lives only in this session's context and is lost next session.
+
+**How (kit-wide, Aug 2026):** split design QA into three layers so vision is needed at most twice per test:
+1. **Build-time (ONCE):** process each STATIC reference image (Figma mockup + approved variation-design targets) through `tools/cache_vision.js` — it hashes the image (SHA-256) + model + prompt-version into `hash@model@v<n>.json` inside the test's `AI_DATA/vision_cache/`. MISS → the AI looks at the image once and `--save`s the understanding; HIT → reuse, never re-process. **Never cache control captures or live variation renders** — those change as code evolves and must be freshly checked.
+2. **Contract:** distill that one-time understanding into `AI_DATA/design_contract.json` (tokens → `css` ops, layout relations → `geom` ops, copy → `eq` ops). It is reviewable JSON the user can vet — the cheapest catch. Generate the spec:
+   ```
+   node tools/contract_to_spec.js --contract AI_DATA/design_contract.json --out AI_DATA/spec.json --profile <key> --url <page-url>
+   ```
+   then append behavioral checks (settle.*, js interactions) by hand — a design can't encode those.
+3. **Safety net:** QA keeps ONE final holistic vision pass vs the mockup ("does it look right"), so a wrong contract still surfaces.
+
+**Key ideas:**
+1. **Ground truth stays the Figma/control images** — the contract is a CACHE, never a replacement; if the two disagree, the image wins and the contract is fixed.
+2. **Cache keying is model-agnostic** (`sha256@model@prompt-v`) — any AI/tool can read or write the same cache, so the per-test folder remains portable across whoever runs it.
+3. **Facts never re-looked-up** — "same image + same question = same answer" is now a cache hit instead of a fresh vision call every QA run.
+4. **Vision is still needed** — but only for edge-case judgment (final pass), not for geometry/color facts (`geom`/`css` ops own those, P34).
+
+Source: kit knowledge-loop upgrade (Aug 2026); tools `tools/cache_vision.js` + `tools/contract_to_spec.js`, template at kit ROOT `design_contract.json`. See STEP 1b in `AI/AGENTS.md`.
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -1119,7 +1140,7 @@ Source: `../ABTESTSWITHAI/MONASH/MOL 10.01 Contact Us Page Redesign` (op added d
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P34).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P35).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).

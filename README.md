@@ -17,14 +17,14 @@ Before writing a single line of code, read these files in order:
 1. AI/AGENTS.md               — your step-by-step instructions
 2. AI/PROMPT_PARSING.md       — how to extract CLIENT and TEST_NAME from the brief
 3. AI/question_templates.md   — pre-code Q&A gate (STEP 0c): ask only what the kit doesn't know
-4. AI/AB_TESTING_PLAYBOOK.md  — coding standards and reusable patterns (P1–P34)
+4. AI/AB_TESTING_PLAYBOOK.md  — coding standards and reusable patterns (P1–P35)
 5. AI/examples/EG-EXAMPLE-SM01/readme.md    — what a correct test looks like
 6. AI/examples/EG-EXAMPLE-SM01/variation1/variation.js  — reference JS
 7. AI/examples/EG-EXAMPLE-SM01/variation1/variation.css — reference CSS
 8. AI/examples/EG-EXAMPLE-SM01/share.js                 — reference tracking
 9. flow.md                    — end-to-end flow of the kit (single source of truth; kept updated on every change)
 
-Note: the blank templates to copy are at the kit ROOT (`variation1/`, `share.js`, `v1.json`, `metadata.json`) — see AI/AGENTS.md Step 0b. The AI/examples files are reference only.
+Note: the blank templates to copy are at the kit ROOT (`variation1/`, `share.js`, `v1.json`, `metadata.json`, `design_contract.json`) — see AI/AGENTS.md Step 0b. The AI/examples files are reference only.
 
 After reading all files above, confirm:
 - CLIENT folder name
@@ -94,6 +94,7 @@ ab_testing-starter_kit/
   share.js                    ← goals/tracking template (blank)
   v1.json                     ← platform config template (blank)
   metadata.json               ← RAG metadata template (blank)
+  design_contract.json        ← design-understanding contract template (STEP 1b)
   flow.md                     ← end-to-end flow of the kit (SINGLE SOURCE OF TRUTH — update on every kit change)
   AGENTS.md                   ← entry-point instructions (read these files first)
   README.md                   ← this file — onboarding: session starter prompt, brief formats, structure
@@ -115,24 +116,34 @@ ab_testing-starter_kit/
     search_tests.py           ← RAG fallback search (auto-locates the AB-test archive)
   tools/                      ← reusable scripts built during tests (see ss_search_check.ps1)
     ss_search_check.ps1       ← headless-search-result checker (SMARTSIGN instance of P27)
+    cache_vision.js           ← per-test vision output cache (sha256@model@prompt-v; static refs only)
+    contract_to_spec.js       ← design_contract.json → spec.json generator (tokens/layout/copy → css/geom/eq ops)
   ../ABTESTSWITHAI/CLIENT/    ← actual test output lives here (outside starter kit)
-    TEST_NAME/
-      metadata.json
-      v1.json
-      share.js
-      readme.md
-      variation1/
+    TEST_NAME/                ← exactly TWO folders
+      variation1/             ← DEPLOY PACKAGE (everything the platform runs)
         variation.js
         variation.css
+        v1.json               ← platform config (paths relative to variation1/)
+        share.js
+        metadata.json
+      AI_DATA/                ← ALL AI/QA working data (never touched by the platform)
+        spec.json             ← data-driven QA checks (tools/qa_run.js) — REQUIRED before STEP 3
+        qa_prep.json          ← Q&A gate record
+        readme.md
+        design_contract.json  ← build-time design understanding (STEP 1b)
+        design_tokens.json
+        test_images/          ← figma / control / variation reference images
+        vision_cache/         ← per-test vision output cache (STEP 1b)
+        qa_result.json, qa_*.png ← QA outputs
 ```
 
-> **Template source of truth:** the blank templates live at the kit ROOT — `variation1/`, `share.js`, `v1.json`. The copies under `AI/` are backups. `AI/examples/EG-EXAMPLE-SM01/` is a filled reference example ONLY — never copy its values into a real test.
+> **Template source of truth:** the blank templates live at the kit ROOT — `variation1/`, `share.js`, `v1.json`, `design_contract.json`. The copies under `AI/` are backups. `AI/examples/EG-EXAMPLE-SM01/` is a filled reference example ONLY — never copy its values into a real test.
 
 ---
 
 ## ⚠️ Root `variation1/` is a READ-ONLY template
 
-The `variation1/` folder at the repo root is the **blank starting template**. The AI copies it when scaffolding a new test. **Never write test code directly into it.** All test output goes into `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/`.
+The `variation1/` folder at the repo root is the **blank starting template**. The AI copies it when scaffolding a new test. **Never write test code directly into it.** All test output goes into `../ABTESTSWITHAI/CLIENT/TEST_NAME/` — exactly TWO folders: `variation1/` (the deploy package) + `AI_DATA/` (all AI/QA working data).
 
 ---
 
@@ -150,7 +161,9 @@ The base `variation.js` contains **only** `waitForElement` + `init()`.
 The exact end-to-end flow is documented in `flow.md` (kit root) — **the single source of
 truth for HOW this kit works**. It is kept updated on every kit change, so read it, don't
 re-derive it. The short version of the pipeline is STEP 0 (parse + scaffold) → STEP 0c
-(Q&A gate) → STEP 1 (area-scoped research) → STEP 2 (code + spec.json) → STEP 3 (QA) →
+(Q&A gate) → STEP 1 (area-scoped research) → STEP 1b (design contract: cache static
+refs once via `tools/cache_vision.js`, write `design_contract.json`, generate design
+checks with `tools/contract_to_spec.js`) → STEP 2 (code + spec.json) → STEP 3 (QA) →
 STEP 4 (knowledge loop back into the kit).
 
 > ⚠️ If you change anything about the kit (a step, file, folder, tool, flag, or pattern
@@ -160,7 +173,7 @@ STEP 4 (knowledge loop back into the kit).
 
 ## RAG fallback search (`scripts/search_tests.py`)
 
-The patterns library (playbook §8, P1–P34) is the primary source. If no pattern fits a brief, the AI runs the fallback search against the agency's archive:
+The patterns library (playbook §8, P1–P35) is the primary source. If no pattern fits a brief, the AI runs the fallback search against the agency's archive:
 
 ```bash
 python scripts/search_tests.py "test description"

@@ -8,7 +8,7 @@ Read the following files IN ORDER before doing anything else — before analyzin
 1. `AI/AGENTS.md`               — your complete step-by-step build instructions
 2. `AI/PROMPT_PARSING.md`       — how to extract CLIENT and TEST_NAME from any brief
 3. `AI/question_templates.md`   — pre-code Q&A gate (ask only what the kit doesn't know)
-4. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards and reusable patterns library (P1–P34)
+4. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards and reusable patterns library (P1–P35)
 5. `AI/examples/EG-EXAMPLE-SM01/readme.md`             — what correct output looks like
 6. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.js`  — reference JS (match this standard)
 7. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.css` — reference CSS (match this standard)
@@ -37,8 +37,9 @@ and record them in `qa_prep.json` at STEP 4.
 
 ## Critical rule
 
-All output files go into `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/` — NEVER into the root `variation1/` folder.
-The root `variation1/` is a read-only template. Do not touch it.
+All output goes into `../ABTESTSWITHAI/CLIENT/TEST_NAME/` — NEVER into the root `variation1/` folder (read-only template). Every test folder has exactly TWO subfolders:
+- `variation1/` — the DEPLOY PACKAGE (everything the platform runs): `variation.js`, `variation.css`, `v1.json`, `share.js`, `metadata.json`
+- `AI_DATA/` — ALL AI/QA working data (never touched by the platform): `spec.json`, `qa_prep.json`, `readme.md`, `design_contract.json`, `design_tokens.json`, `test_images/`, `vision_cache/`, QA outputs
 
 ## Knowledge feedback loop (after every test)
 
@@ -56,5 +57,6 @@ Blank templates live at the kit ROOT and are the source of truth:
 - `variation1/variation.js` and `variation1/variation.css` — base wrapper + CSS
 - `share.js` and `v1.json` — tracking + platform config
 - `metadata.json` — RAG metadata (fill in per test)
+- `design_contract.json` — design-understanding contract (tokens/layout/copy; fill in per test at STEP 1b)
 
 The `AI/` copies of `share.js`/`v1.json` are backups. `AI/examples/EG-EXAMPLE-SM01/` is a filled reference example ONLY — never copy its values into a real test.

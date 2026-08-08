@@ -30,23 +30,34 @@ Create this structure:
 ```
 ../ABTESTSWITHAI/CLIENT/
   TEST_NAME/
-    v1.json                    ← STEP 2
-    share.js                   ← STEP 2
-    spec.json                  ← STEP 2 (QA input — MUST exist before STEP 3)
-    qa_prep.json               ← STEP 4 (Q&A record, answers collected in STEP 0c)
-    metadata.json              ← STEP 4 (RAG metadata)
-    readme.md                  ← STEP 4 (brief summary)
-    variation1/
-      variation.js             ← STEP 2
-      variation.css            ← STEP 2
+    variation1/                  ← DEPLOY PACKAGE (everything the platform runs)
+      variation.js               ← STEP 2
+      variation.css              ← STEP 2
+      v1.json                    ← STEP 2 (platform config; file paths relative to variation1/)
+      share.js                   ← STEP 2 (tracking)
+      metadata.json              ← STEP 4 (RAG metadata)
+    AI_DATA/                     ← ALL AI/QA working data (never touched by the platform)
+      spec.json                  ← STEP 2 (QA input — MUST exist before STEP 3)
+      qa_prep.json               ← STEP 4 (Q&A record, answers collected in STEP 0c)
+      readme.md                  ← STEP 4 (brief summary)
+      design_contract.json       ← STEP 1b (build-time design understanding)
+      design_tokens.json         ← STEP 4 (client-reusable design tokens)
+      test_images/               ← STEP 1 (figma / control / variation reference images)
+      vision_cache/              ← STEP 1b (per-test vision output cache, hash-keyed)
+      qa_result.json, qa_*.png … ← STEP 3 (QA outputs)
 ```
 
 - Copy content from `variation1/variation.js` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.js`
 - Copy content from `variation1/variation.css` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.css`
-- Copy content from `share.js` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/share.js`
-- Copy content from `v1.json` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/v1.json`
+- Copy content from `share.js` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/share.js`
+- Copy content from `v1.json` (root template) → `../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/v1.json`
+  (paths inside `v1.json` are relative to `variation1/`, so the template reads `./variation.css` etc.)
 - Do NOT fill in `metadata.json`, `readme.md` or `qa_prep.json` yet — they are written in
   STEP 4 (they don't affect whether the test runs, so they wait).
+- `AI_DATA/test_images/` is where the user's Figma mockups + control captures land; reference
+  them from `AI_DATA/design_contract.json` (STEP 1b), never from the variation.
+- Every QA run writes its outputs (`qa_result.json`, screenshots, probe files) into `AI_DATA/`
+  so the test folder root stays clean: two folders only — `variation1/` + `AI_DATA/`.
 
 > **Template source of truth:** the blank templates live at the kit ROOT — `variation1/variation.js`, `variation1/variation.css`, `share.js`, `v1.json`. The copies under `AI/` are backups of the same templates. Always copy from the ROOT versions. The filled `AI/examples/EG-EXAMPLE-SM01/` files are reference examples ONLY — never copy those values into a real test.
 
@@ -83,7 +94,7 @@ never re-asked, and things the kit already verified are never re-verified.
 ## STEP 1 — Research Before Writing Code (AREA-SCOPED)
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
-2. Match the task against the Reusable Patterns Library (playbook §8, P1–P34). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
+2. Match the task against the Reusable Patterns Library (playbook §8, P1–P35). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
 3. **Fallback (only when NO pattern in §8 fits the brief):** before running the RAG search, ASK the user:
    **"RAG search (archive se similar past tests) chalaun, ya pattern library se kaam chalaun?"**
    Wait for their answer — the search takes time, so never auto-run it.
@@ -95,6 +106,46 @@ never re-asked, and things the kit already verified are never re-verified.
    - If the area is NOT in the profile → inspect the live DOM for **that area only** (stable selectors, AJAX/lazy-loading/SPA behaviour), then record it area-wise in STEP 4. A navigation test verifies login/cart/search — nothing else. A section test verifies only that section's container + its anchors.
    - Site-wide gotchas (Cloudflare/auth, A/B platform, theme framework) are verified ONCE per client and live in the client's profile header — do not re-derive them per test.
 5. Inspect the live website (live DOM) before writing any code — scoped to the focus area. Identify stable selectors, check whether elements are rendered dynamically, lazy-loading, and SPA behaviour. Confirm the change will not break existing functionality, analytics, tracking, accessibility, or responsiveness. Never assume — verify against the actual page.
+
+---
+
+## STEP 1b — Design Understanding → Contract (look at Figma ONCE, make it reusable)
+
+The mockup (Figma) and control are the design ground truth. **Look at each of them ONCE at
+build time, extract the understanding into a machine-readable contract, and let QA assert
+against the contract — never re-look at the mockup for facts.** This removes the
+"repeated comparison" time-sink; vision stays only for edge-case judgment (final
+"does it look right" pass).
+
+### Rule of what gets cached vs freshly checked
+- **Cache (static, hash-keyed):** Figma mockups + approved variation-design targets. Same
+  image + same model + same prompt = same understanding → process ONCE, reuse forever.
+- **Never cache:** control captures + live variation renders — these change as code
+  evolves and MUST be freshly checked each run.
+
+### How (run inside the test's `AI_DATA/` folder)
+1. **Vision cache lookup** — for each static reference image (Figma/variation design):
+   ```
+   node <kit>/tools/cache_vision.js --image test_images/figma_desktop.png --cache vision_cache --model <model-id> --prompt-v 1
+   ```
+   HIT → reuse the cached output (do NOT re-process). MISS → look at the image, write the
+   output to a temp file, then `--save <out.json>` to store it under the computed key.
+   (Any model can use this — the cache layout is model-agnostic, so the SAME structure
+   works when another AI works on the kit.)
+2. **Write `AI_DATA/design_contract.json`** from that understanding — tokens (color/typography
+   per selector), layout (geom relations), copy, responsive rules, deviations. Template: the
+   kit ROOT `design_contract.json` is the source of truth (copy it, never edit).
+3. **Generate the QA spec** from the contract:
+   ```
+   node <kit>/tools/contract_to_spec.js --contract AI_DATA/design_contract.json --out AI_DATA/spec.json --profile <key> --url <page-url>
+   ```
+   (layout → `geom` ops, tokens → `css` ops, copy → `eq` ops). Then **append behavioral
+   checks by hand** (settle.*, js interactions, noPageErrors) — a design can't encode those.
+4. **Safety layers (so the contract can never silently corrupt the kit):**
+   - Contract is reviewable JSON — the user can vet it at build time (cheapest catch).
+   - Figma/control images remain the ground truth — the contract is a CACHE, not a replacement.
+   - QA keeps a final one-shot vision pass vs the mockup (holistic "looks right"), so a
+     wrong contract still surfaces.
 
 ---
 
@@ -157,15 +208,22 @@ Written in STEP 2 (runtime + QA inputs):
 ```
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.js     ← main implementation
 ../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/variation.css    ← scoped styles
-../ABTESTSWITHAI/CLIENT/TEST_NAME/share.js                    ← tracking only, no DOM mutation
-../ABTESTSWITHAI/CLIENT/TEST_NAME/v1.json                     ← filled with real URLs and file paths
-../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json                   ← data-driven QA checks (tools/qa_run.js) — REQUIRED before STEP 3
+../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/share.js         ← tracking only, no DOM mutation
+../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/v1.json          ← platform config (paths relative to variation1/)
+../ABTESTSWITHAI/CLIENT/TEST_NAME/AI_DATA/spec.json           ← data-driven QA checks (tools/qa_run.js) — REQUIRED before STEP 3
+../ABTESTSWITHAI/CLIENT/TEST_NAME/AI_DATA/design_contract.json← build-time design understanding (STEP 1b)
 ```
 Written in STEP 4 (docs, after the test is ready to share):
 ```
-../ABTESTSWITHAI/CLIENT/TEST_NAME/metadata.json               ← RAG metadata
-../ABTESTSWITHAI/CLIENT/TEST_NAME/qa_prep.json                ← Q&A gate record (answers from STEP 0c)
-../ABTESTSWITHAI/CLIENT/TEST_NAME/readme.md                   ← brief summary
+../ABTESTSWITHAI/CLIENT/TEST_NAME/variation1/metadata.json    ← RAG metadata
+../ABTESTSWITHAI/CLIENT/TEST_NAME/AI_DATA/qa_prep.json        ← Q&A gate record (answers from STEP 0c)
+../ABTESTSWITHAI/CLIENT/TEST_NAME/AI_DATA/readme.md           ← brief summary
+../ABTESTSWITHAI/CLIENT/TEST_NAME/AI_DATA/design_tokens.json  ← client-reusable design tokens
+```
+
+QA invocation (spec lives in AI_DATA, inject points back to variation1/):
+```
+node tools/qa_run.js qa --spec "../ABTESTSWITHAI/CLIENT/TEST_NAME/AI_DATA/spec.json"
 ```
 
 ⚠️ **NEVER write to `variation1/variation.js` or `variation1/variation.css` at the repo root. Those are read-only templates.**
@@ -182,7 +240,7 @@ Written in STEP 4 (docs, after the test is ready to share):
    - **Manual QA (AI-directed):** you do NOT just wait — you give the user a concrete
      QA checklist and collect their findings. In order:
      1. Hand them the command so they can run the automated checks too:
-        `node tools/qa_run.js qa --spec "<test>/spec.json"`
+        `node tools/qa_run.js qa --spec "<test>/AI_DATA/spec.json"`
      2. **Give a short shot-list** — the specific screenshots you need from LIVE:
         desktop + mobile, the changed component in context, hover/click states, before
         and after an interaction (e.g. grade click), the paginated/next view if in scope.
@@ -199,7 +257,7 @@ Written in STEP 4 (docs, after the test is ready to share):
      user knows what they're shipping.
 1. Run the data-driven QA against the spec written in STEP 2 — every check must PASS:
    ```bash
-   node tools/qa_run.js qa --spec "../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json"
+   node tools/qa_run.js qa --spec "../ABTESTSWITHAI/CLIENT/TEST_NAME/AI_DATA/spec.json"
    ```
 2. Quick visual check (screenshot vs mockup) — desktop and mobile.
 3. Re-check every selector against the forbidden-anchor list (playbook §9 checklist).
@@ -243,7 +301,7 @@ verified, the test is NOT finished:
    one before its spec.json can run.
 
 3. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
-   pattern, append it as the next P-number (P34, P35, ...) with a short recipe + `Source:`
+   pattern, append it as the next P-number (P35, P36, ...) with a short recipe + `Source:`
    line. Then update every `P1–Pxx` reference in `AGENTS.md` / `AB_TESTING_PLAYBOOK.md` /
    `README.md` to the new max count (grep for `P1–P` before finishing).
 
