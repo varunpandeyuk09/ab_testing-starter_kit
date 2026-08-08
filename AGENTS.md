@@ -13,6 +13,7 @@ Read the following files IN ORDER before doing anything else — before analyzin
 6. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.js`  — reference JS (match this standard)
 7. `AI/examples/EG-EXAMPLE-SM01/variation1/variation.css` — reference CSS (match this standard)
 8. `AI/examples/EG-EXAMPLE-SM01/share.js`              — reference tracking file
+9. `flow.md`                    — the end-to-end flow of the kit (single source of truth; update it whenever any step/file/tool/count changes)
 
 Then, before inspecting a client's site, check `AI/SITE_PROFILES.md` — it stores verified
 DOM facts (selectors, AJAX endpoints, theme gotchas) per client so you don't re-autopsy
@@ -47,6 +48,7 @@ learnings back into the kit (see `AI/AGENTS.md` STEP 4):
 - New technique → next P-pattern in `AI/AB_TESTING_PLAYBOOK.md` §8
 - Reusable script → `tools/`
 - Update the `P1–Pxx` count in AGENTS.md / playbook / README when you add a pattern
+- **If any step, file, folder, tool, flag, or count changed → update `flow.md` (root) in the SAME commit.** `flow.md` is the single source of truth for how the kit works; it goes stale the moment a change isn't mirrored there.
 
 ## Templates (copy these, never edit them)
 

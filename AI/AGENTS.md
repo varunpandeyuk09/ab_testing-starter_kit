@@ -240,4 +240,9 @@ verified, the test is NOT finished:
    templates, append it to the relevant area bank (or universal table). This keeps the
    Q&A gate shrinking test after test.
 
+6. **`flow.md` (root)** — if ANY step, file, folder, tool, flag, or count changed, update
+   `flow.md` in the SAME commit. It is the single source of truth for how the kit works
+   and goes stale the moment a change isn't mirrored there. (New P-count, new bank item,
+   new spec feature, new tool, changed folder layout — all land in flow.md too.)
+
 Rule of thumb: the kit should be strictly more capable after your test than before it.
