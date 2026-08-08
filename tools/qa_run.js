@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 // tools/qa_run.js - browser-agnostic (Chromium family) A/B QA runner via CDP
 // --------------------------------------------------------------------------
+// GENERIC ENGINE — no client-specific code lives here. Site facts come from
+// AI/site_profiles.json (data), and every golden check comes from the test's
+// spec.json (also data). Adding a client or a test NEVER requires editing this
+// file. Goal: AI-driven AB testing for any client at ~95% accuracy.
+//
 // Detects the developer's installed Chromium browser (Chrome / Edge / Brave /
 // Opera / Vivaldi), launches it with a PERSISTENT profile, and drives it over
 // CDP using only Node built-ins (fetch + native WebSocket, Node >= 22).
@@ -12,23 +17,23 @@
 // USAGE:
 //   node tools/qa_run.js --browser auto --profile praxindo --action login --url <url>
 //   node tools/qa_run.js --browser auto --profile praxindo --action atc --url <url> --screenshot popup.png
-//   node tools/qa_run.js qa --spec "<TEST>/spec.json"                <- data-driven QA (recommended)
-//   node tools/qa_run.js --browser auto --profile praxindo --action qa --url <url> --inject "path/to/variation1"
+//   node tools/qa_run.js qa --spec "<TEST>/spec.json"                <- data-driven QA (recommended, spec REQUIRED)
 //
 // DATA-DRIVEN SPECS:
 //   A spec.json lives in each test folder and holds settle + all golden checks,
 //   so new tests never require editing this file. ops: exists|not|eq|match|
 //   count|countLte|css|js; tokens {popup} {title} {update} {related}
-//   {relatedTitle} {relatedTile} {counter} resolve from the SITES profile.
-//   spec fields: profile, url, inject (relative to spec.json), settle, checks.
+//   {relatedTitle} {relatedTile} {counter} resolve from the SITES profile
+//   (loaded from AI/site_profiles.json). spec fields: profile, url, inject
+//   (relative to spec.json), settle, checks.
 //
 // FLAGS:
 //   --browser auto|chrome|edge|brave|opera|vivaldi   (default: auto = first found)
-//   --profile <site-key>                              site profile with selectors (default: praxindo)
+//   --profile <site-key>                              site profile key in AI/site_profiles.json (default: praxindo)
 //   --action navigate|login|atc|qa                    (default: atc)
 //   --url <page-url>                                  required for login/atc/qa (or set spec.url)
 //   --inject <dir>                                    variation1 folder with variation.js/.css (for qa; or set spec.inject)
-//   --spec <spec.json | spec-dir>                     data-driven golden checks + settle
+//   --spec <spec.json | spec-dir>                     data-driven golden checks + settle (REQUIRED for qa)
 //   --screenshot <file.png>                           save a screenshot of the popup (for atc/qa)
 //   --out <file.json>                                 save the full JSON result
 //   --headless                                        headless mode (Cloudflare may block!)
@@ -91,44 +96,19 @@ function detectBrowser(name) {
 /* ------------------------------------------------------------------ */
 /* 2. Site profiles (selectors + QA expectations per client)            */
 /* ------------------------------------------------------------------ */
-const SITES = {
-  praxindo: {
-    label: "PRAXINDO",
-    addToCart: [
-      "#product-addtocart-button",
-      ".action.tocart",
-      'button[data-role="addtocart"]',
-      'form[data-role="tocart-form"] button',
-      ".box-tocart button",
-    ],
-    // All three ACP popup nodes carry layer__checkout--active; the first is
-    // the loader. :has() picks the SUCCESS node (which is what we redesign).
-    popup: '.aw-acp-popup:has([data-role="update"] .layer__checkout__title--success)',
-    title: '.aw-acp-popup:has([data-role="update"] .layer__checkout__title--success) .layer__checkout__title--success',
-    update: '[data-role="update"]',
-    related: '[data-role="related"]',
-    // Verified live markup (2026-08-07): related block is .layer__checkout__upselling
-    // with title .layer__checkout__upselling__title ("Kunden kauften auch") and tiles
-    // .layer__checkout__upselling__list__item (divs, price .final.final--hasstrike + .strike).
-    relatedTitle: ".layer__checkout__upselling__title",
-    relatedTile: ".layer__checkout__upselling__list__item",
-    counter: "#minicart-counter",
-    threshold: 100,
-  },
-  // Homepage section test — NO add-to-cart / popup flow. Empty addToCart[]
-  // makes actQa take the "section flow": navigate → inject → settle → checks.
-  revivserums: {
-    label: "REVIVSERUMS",
-    addToCart: [],
-  },
-  // PLP card redesign (section flow) — no ATC popup. Cards carry x-in-types
-  // grades; PDP data is fetched same-origin from the product URL in the card.
-  pcliq: {
-    label: "PCLIQUIDATIONS",
-    addToCart: [],
-    counter: ".storeCartQty",
-  },
-};
+// GENERIC ARCHITECTURE (kit vision, 2026-08): qa_run.js is 100% client-agnostic.
+// Site facts (selectors, tokens, counter, threshold) are DATA, not code — they
+// live in AI/site_profiles.json (see AI/SITE_PROFILES.md for the verified
+// per-area knowledge). To support a new client you ONLY add a JSON entry; the
+// runner never needs an edit. Verified facts flow in via STEP 4 of the kit.
+function loadProfiles() {
+  const file = path.join(__dirname, "..", "AI", "site_profiles.json");
+  if (!fs.existsSync(file)) {
+    throw new Error("site profiles not found: " + file + " (expected AI/site_profiles.json)");
+  }
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+const SITES = loadProfiles();
 
 /* ------------------------------------------------------------------ */
 /* 3. Tiny CDP client (Node built-in WebSocket)                         */
@@ -179,6 +159,17 @@ class CDP {
 /* 4. Helpers                                                           */
 /* ------------------------------------------------------------------ */
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Deterministic content hash (FNV-1a) so the generic inject guard yields the
+// same class for the same JS — no client-specific fallback strings needed.
+function hashStr(s) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return ("00000000" + (h >>> 0).toString(16)).slice(-8);
+}
 const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
 
 async function evaluate(cdp, expression) {
@@ -352,17 +343,12 @@ async function openPopup(cdp, site, waitMs) {
 const popupDumpExpr = (site) => `(() => {
   var p = document.querySelector(${JSON.stringify(site.popup)});
   if (!p) return null;
-  var u = p.querySelector('[data-role="update"]') || p;
-  var rel = p.querySelector('[data-role="related"]');
+  // Generic diagnostic: dump the profile-scoped popup node + related block.
+  // No client-specific field names — real assertions come from spec.json.
+  var rel = p.querySelector(${JSON.stringify(site.related)});
   return {
-    title: (u.querySelector('.layer__checkout__title') || {}).innerText || '',
-    cart_net_sum: (u.querySelector('input[name="cart_net_sum"]') || {}).value || null,
-    freeshipping: (u.querySelector('input[name="freeshipping"]') || {}).value || null,
-    productTitle: (u.querySelector('.layer__checkout__product__title, .layer__checkout__product .product__title a') || {}).innerText || '',
-    productInfo: (u.querySelector('.layer__checkout__product__info, .layer__checkout__product .product__info') || {}).innerText || '',
-    finalPrice: (u.querySelector('.final, .layer__checkout__product__price .final') || {}).innerText || '',
     relatedHTMLlen: rel ? rel.innerHTML.length : -1,
-    relatedTiles: rel ? Array.prototype.map.call(rel.querySelectorAll('li, .product-item, .product__item, .swiper-slide, .eg-sm25-tile'), function (t) {
+    relatedTiles: rel ? Array.prototype.map.call(rel.querySelectorAll('li, .product-item, .product__item, .swiper-slide'), function (t) {
       return { cls: (t.className || '').toString().slice(0, 100), txt: (t.innerText || '').replace(/\\s+/g, ' ').slice(0, 160) };
     }) : [],
     relatedFirstHTML: rel ? rel.innerHTML.slice(0, 1500) : null,
@@ -392,8 +378,8 @@ async function actAtc(cdp, site, args) {
     popupOpened,
     popup: popupOpened ? await evaluate(cdp, popupDumpExpr(site)) : null,
     popupStuckHTML: !popupOpened ? await evaluate(cdp, `(() => { var p = document.querySelector(${JSON.stringify(site.popup)}); return p ? p.outerHTML.slice(0, 1500) : null; })()`) : null,
-    popupsAll: !popupOpened ? await evaluate(cdp, `(() => Array.prototype.map.call(document.querySelectorAll('.aw-acp-popup'), function (p) {
-      return { cls: (p.className || '').toString(), update: !!p.querySelector('[data-role="update"]'), len: (p.querySelector('[data-role="update"]') || { innerHTML: '' }).innerHTML.length, first: (p.innerHTML || '').slice(0, 200) };
+    popupsAll: !popupOpened ? await evaluate(cdp, `(() => Array.prototype.map.call(document.querySelectorAll(${JSON.stringify(site.popup)}), function (p) {
+      return { cls: (p.className || '').toString(), len: (p.innerHTML || '').length, first: (p.innerHTML || '').slice(0, 200) };
     }))()`) : null,
     counter: await evaluate(cdp, `(() => { var c = document.querySelector(${JSON.stringify(site.counter)}); return c ? c.innerText.trim() : null; })()`),
   };
@@ -405,9 +391,11 @@ async function actAtc(cdp, site, args) {
 
 function injectVariationExpr(js, css) {
   // Generic idempotency guard: derive the variation's own body class from the
-  // injected JS instead of hardcoding a client's class here.
+  // injected JS. If the JS adds no body class, fall back to a stable hash of
+  // the JS itself (same JS -> same class -> re-inject is a no-op). Never a
+  // hardcoded client class — this file is client-agnostic.
   const m = js.match(/body\.classList\.add\(\s*['"]([^'"]+)['"]\s*\)/);
-  const cls = m ? m[1] : "EG-REV-AB06-HP";
+  const cls = m ? m[1] : "eg-qa-" + hashStr(js).slice(0, 10);
   return `(function () {
     if (document.body.classList.contains(${JSON.stringify(cls)})) return true;
     var st = document.createElement('style');
@@ -509,7 +497,7 @@ async function runSpecChecks(cdp, site, spec) {
 
 async function settlePage(cdp, site, spec) {
   const st = (spec && spec.settle) || {};
-  const marker = resolveTokens(st.marker || "{popup} .eg-sm25-check", site, false);
+  const marker = resolveTokens(st.marker || "", site, false);
   // Skip the marker poll for section flows with no spec marker (marker resolves
   // to a "undefined ..." string that can never match).
   if (marker && marker.indexOf("undefined") === -1) {
@@ -589,25 +577,19 @@ async function actQa(cdp, site, args) {
   // the related-products AJAX fill in before asserting.
   await settlePage(cdp, site, args.spec);
 
-  // Assertions come from the test's spec.json (data-driven). If none was
-  // provided, fall back to the built-in PRAXINDO/SM25 checks.
-  const checks = args.spec ? await runSpecChecks(cdp, site, args.spec) : await sm25BuiltinChecks(cdp, site);
+  // Assertions ALWAYS come from the test's spec.json (data-driven). There is
+  // no built-in fallback — qa_run.js is client-agnostic, so a spec is required.
+  if (!args.spec) return { ...base, error: "qa requires --spec <spec.json> (data-driven checks)" };
+  const checks = await runSpecChecks(cdp, site, args.spec);
 
   const result = { ...base, assertions: checks, passCount: checks.filter((c) => c.pass).length, total: checks.length };
   if (!isSectionFlow) {
     result.popupOpened = popupOpened;
     result.domDiag = await evaluate(cdp, `(() => {
+    // Generic diagnostic for ATC flows — profile-scoped, no client markup.
     var out = {};
-    out.markers = {
-      check: document.querySelectorAll('.eg-sm25-check').length,
-      progress: document.querySelectorAll('.eg-sm25-progress').length,
-      actions: document.querySelectorAll('.eg-sm25-actions').length,
-      trust: document.querySelectorAll('.eg-sm25-trust').length,
-      login: document.querySelectorAll('.eg-sm25-login').length
-    };
-    out.popups = Array.prototype.map.call(document.querySelectorAll('.aw-acp-popup'), function (p) {
-      var t = p.querySelector('.layer__checkout__title');
-      return { cls: (p.className || '').toString().slice(0, 60), title: t ? t.textContent.slice(0, 40) : '', updateLen: (p.querySelector('[data-role="update"]') || { innerHTML: '' }).innerHTML.length };
+    out.popups = Array.prototype.map.call(document.querySelectorAll(${JSON.stringify(site.popup)}), function (p) {
+      return { cls: (p.className || '').toString().slice(0, 60), len: (p.innerHTML || '').length, first: (p.innerHTML || '').slice(0, 120) };
     });
     var up = document.querySelector(${JSON.stringify(site.popup + " [data-role=\"update\"]")});
     out.updateHTML = up ? up.innerHTML.slice(0, 2500) : null;
@@ -623,87 +605,6 @@ async function captureScreenshot(cdp, file) {
   const buf = Buffer.from(res.data, "base64");
   fs.writeFileSync(file, buf);
   return file + " (" + buf.length + " bytes)";
-}
-
-/* ------------------------------------------------------------------ */
-/* 5c. Built-in fallback checks (PRAXINDO SM25) — used when no spec.json */
-/* ------------------------------------------------------------------ */
-async function sm25BuiltinChecks(cdp, site) {
-  const checks = [];
-  const titleText = await evaluate(cdp, `(() => { var t = document.querySelector(${JSON.stringify(site.title)}); return t ? t.textContent.trim() : null; })()`);
-  checks.push({ check: "success title text", pass: titleText === "Artikel hinzugefügt", detail: String(titleText) });
-
-  checks.push({ check: "check circle injected (.eg-sm25-check)", pass: await evaluate(cdp, `!!document.querySelector('${site.popup} .eg-sm25-check')`) });
-  checks.push({ check: "count line (.eg-sm25-count)", pass: await evaluate(cdp, `/Im Warenkorb befinden sich jetzt \\d+ Artikel/.test((document.querySelector('${site.popup} .eg-sm25-count')||{}).textContent||'')`) });
-  checks.push({ check: "progress bar (.eg-sm25-progress)", pass: await evaluate(cdp, `!!document.querySelector('${site.popup} .eg-sm25-progress')`) });
-
-  // header must be WHITE (site default is green #63ab0f)
-  checks.push({
-    check: "header is white (no green band)",
-    pass: await evaluate(cdp, `(() => { var t = document.querySelector(${JSON.stringify(site.title)}); return t ? getComputedStyle(t).backgroundColor === 'rgb(255, 255, 255)' : false; })()`),
-    detail: await evaluate(cdp, `(() => { var t = document.querySelector(${JSON.stringify(site.title)}); return t ? getComputedStyle(t).backgroundColor : null; })()`),
-  });
-
-  // close X: site's own button present and NO custom pseudo cross
-  checks.push({ check: "close X present", pass: await evaluate(cdp, `!!document.querySelector('${site.popup} .layer__checkout__close')`) });
-  checks.push({
-    check: "no fake pseudo cross",
-    pass: await evaluate(cdp, `(() => { var b = document.querySelector('${site.popup} .layer__checkout__close'); if (!b) return false; return (getComputedStyle(b, '::before').content || 'none') === 'none' && (getComputedStyle(b, '::after').content || 'none') === 'none'; })()`),
-  });
-
-  // CTA links
-  const ctaOk = await evaluate(cdp, `(() => {
-    var a = document.querySelectorAll('${site.popup} .eg-sm25-actions a');
-    if (a.length !== 2) return false;
-    var h = [];
-    for (var i = 0; i < a.length; i++) h.push(a[i].getAttribute('href'));
-    return h.indexOf('/checkout/cart') !== -1 && h.indexOf('/checkout/onepage') !== -1;
-  })()`);
-  checks.push({ check: "CTAs ZUM WARENKORB + ZUR KASSE", pass: ctaOk });
-
-  // trust badges: 3 items
-  checks.push({ check: "trust badges x3", pass: await evaluate(cdp, `document.querySelectorAll('${site.popup} .eg-sm25-trust__item').length === 3`) });
-
-  // login bar (guests only — report, not fail)
-  const loginBar = await evaluate(cdp, `!!document.querySelector('${site.popup} .eg-sm25-login')`);
-  checks.push({ check: "login bar visible", pass: loginBar, detail: "guests only — expected on logged-out profile" });
-
-  // related: heading renamed + at most 2 visible tiles (settled above)
-  const relatedOk = await evaluate(cdp, `(() => {
-    var rel = document.querySelector(${JSON.stringify(site.related)});
-    if (!rel) return { heading: false, tiles: 0, hidden: 0, capped: 0, headingText: '' };
-    var h = rel.querySelector('.eg-sm25-related__title');
-    var headingText = '';
-    if (h) headingText = h.textContent.trim();
-    else {
-      var els = rel.querySelectorAll('.title, .block-title, .aw-acp-popup__related__title, .layer__checkout__upselling__title');
-      for (var i = 0; i < els.length; i++) { var t = (els[i].textContent || '').trim(); if (t.indexOf('H\u00e4ufig zusammen bestellt') !== -1) { headingText = t; break; } }
-    }
-    var all = rel.querySelectorAll('.layer__checkout__upselling__list__item, .eg-sm25-tile');
-    var tiles = 0, hidden = 0;
-    for (var j = 0; j < all.length; j++) {
-      var el = all[j];
-      if (el.getAttribute('data-q-checked')) continue;
-      el.setAttribute('data-q-checked', '1');
-      tiles++;
-      if (el.style.display === 'none') hidden++;
-    }
-    var capped = 0;
-    var decorated = rel.querySelectorAll('.eg-sm25-tile');
-    for (var k = 0; k < decorated.length; k++) if (decorated[k].style.display !== 'none') capped++;
-    return { heading: headingText !== '', tiles: tiles, hidden: hidden, capped: capped, headingText: headingText };
-  })()`);
-  checks.push({ check: "related heading renamed to Häufig zusammen bestellt", pass: relatedOk.heading, detail: relatedOk.headingText });
-  checks.push({ check: "related shows at most 2 tiles", pass: relatedOk.capped > 0 && relatedOk.capped <= 2, detail: JSON.stringify({ items: relatedOk.tiles, hidden: relatedOk.hidden, visibleCapped: relatedOk.capped }) });
-
-  // minicart counter matches count line
-  const counter = await evaluate(cdp, `(() => { var c = document.querySelector(${JSON.stringify(site.counter)}); return c ? c.innerText.trim() : null; })()`);
-  checks.push({
-    check: "count line matches minicart counter",
-    pass: await evaluate(cdp, `/\\d+/.test((document.querySelector('${site.popup} .eg-sm25-count')||{}).textContent||'')`),
-    detail: "counter=" + String(counter),
-  });
-  return checks;
 }
 
 /* ------------------------------------------------------------------ */

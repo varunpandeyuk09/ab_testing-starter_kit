@@ -1,0 +1,29 @@
+{
+  "praxindo": {
+    "label": "PRAXINDO",
+    "addToCart": [
+      "#product-addtocart-button",
+      ".action.tocart",
+      "button[data-role=\"addtocart\"]",
+      "form[data-role=\"tocart-form\"] button",
+      ".box-tocart button"
+    ],
+    "popup": ".aw-acp-popup:has([data-role=\"update\"] .layer__checkout__title--success)",
+    "title": ".aw-acp-popup:has([data-role=\"update\"] .layer__checkout__title--success) .layer__checkout__title--success",
+    "update": "[data-role=\"update\"]",
+    "related": "[data-role=\"related\"]",
+    "relatedTitle": ".layer__checkout__upselling__title",
+    "relatedTile": ".layer__checkout__upselling__list__item",
+    "counter": "#minicart-counter",
+    "threshold": 100
+  },
+  "revivserums": {
+    "label": "REVIVSERUMS",
+    "addToCart": []
+  },
+  "pcliq": {
+    "label": "PCLIQUIDATIONS",
+    "addToCart": [],
+    "counter": ".storeCartQty"
+  }
+}

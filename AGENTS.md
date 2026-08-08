@@ -16,7 +16,9 @@ Read the following files IN ORDER before doing anything else — before analyzin
 
 Then, before inspecting a client's site, check `AI/SITE_PROFILES.md` — it stores verified
 DOM facts (selectors, AJAX endpoints, theme gotchas) per client so you don't re-autopsy
-a site you've already worked on.
+a site you've already worked on. The QA runner (`tools/qa_run.js`) is a GENERIC engine —
+it reads site facts from the machine-readable `AI/site_profiles.json` and all checks from
+the test's `spec.json`, so adding a client or test never requires editing the runner.
 
 ## Do not start until you have confirmed
 
@@ -41,7 +43,7 @@ The root `variation1/` is a read-only template. Do not touch it.
 
 The kit gets faster with every completed test. Before finishing a test, write its verified
 learnings back into the kit (see `AI/AGENTS.md` STEP 4):
-- Verified DOM facts → `AI/SITE_PROFILES.md` (client section)
+- Verified DOM facts → `AI/SITE_PROFILES.md` (client section) + runner tokens/selectors → `AI/site_profiles.json`
 - New technique → next P-pattern in `AI/AB_TESTING_PLAYBOOK.md` §8
 - Reusable script → `tools/`
 - Update the `P1–Pxx` count in AGENTS.md / playbook / README when you add a pattern

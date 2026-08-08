@@ -89,7 +89,7 @@ never re-asked, and things the kit already verified are never re-verified.
    python scripts/search_tests.py "your test description"
    ```
    Study the returned examples, then **add the newly discovered technique to the playbook §8 as the next P-number (P26, P27, ...)**, with a short snippet, so the library grows. Then adapt the pattern for the current brief.
-4. **Verify ONLY the FOCUS_AREA, never the whole site.** `AI/SITE_PROFILES.md` stores verified DOM facts per client, grouped **by area** (each `### Area` subsection is verified once and reused forever).
+4. **Verify ONLY the FOCUS_AREA, never the whole site.** `AI/SITE_PROFILES.md` stores verified DOM facts per client, grouped **by area** (each `### Area` subsection is verified once and reused forever). The QA runner reads the MACHINE-READABLE `AI/site_profiles.json` — the JSON holds the runner tokens/selectors (`addToCart`, `popup`, `title`, `related`, `counter`, …) and is the ONLY place the runner gets site facts from (qa_run.js is client-agnostic). Keep both in sync when a fact affects the runner.
    - Start by reading the client's profile for the **current FOCUS_AREA only** (plus the client's site-wide gotchas section).
    - If the area is already in the profile → **do not re-verify**; read the selectors and go straight to STEP 2. Re-verify only what the brief changes.
    - If the area is NOT in the profile → inspect the live DOM for **that area only** (stable selectors, AJAX/lazy-loading/SPA behaviour), then record it area-wise in STEP 4. A navigation test verifies login/cart/search — nothing else. A section test verifies only that section's container + its anchors.
@@ -220,6 +220,11 @@ verified, the test is NOT finished:
    **Add `User-confirmed (Q&A, <TEST_NAME>):` bullets** for facts the USER gave in the Q&A
    gate (STEP 0c) — mark them as user-said, not DOM-verified, so future sessions trust but
    may re-verify. This is what shrinks the Q&A gate over time.
+   **ALSO sync `AI/site_profiles.json`** — the QA runner's machine-readable source. Any
+   fact the runner needs for QA on this client (`addToCart` selectors, `popup`/`title`/
+   `related`/`relatedTile`/`counter` tokens, `threshold`) is ADDED or UPDATED there, or
+   the client's first profile entry is created. A new client with no entry yet MUST get
+   one before its spec.json can run.
 
 3. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
    pattern, append it as the next P-number (P29, P30, ...) with a short recipe + `Source:`
