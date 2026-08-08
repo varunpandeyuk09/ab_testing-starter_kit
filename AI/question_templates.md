@@ -41,6 +41,19 @@ it's cheaper/faster to ask; otherwise verify it and record the result.
 | U4 | Any hard constraints? (don't touch X, keep element Y, analytics/tracking must stay) | prevents breaking things |
 | U5 | Target audience/segment for this variation? | login state, device, traffic rules |
 | U6 | Is login/account state required to see the element? Credentials available? | QA needs the right profile state |
+| U7 | Default/preselected state — for any interactive control (tabs, accordions, selectors, dropdowns): what should be highlighted on FIRST load? | the most common rework bug (PLP01 round-4: default grade) |
+| U8 | Site default ≠ design default — if the design's default shows a different value/price than the site currently displays, do we (a) keep the site's display and just highlight the matching option, or (b) swap to the design's default? | decides whether a visible value change on load is expected or a bug |
+| U9 | Fallback when live data ≠ mockup — if the live DOM lacks an element the mockup assumes (e.g. a "Grade X" label, a variant set), what's acceptable? Hide / grey out / skip / invent? | prevents guessing degradation (PLP01: monitors `NEW` type had no A/B/C) |
+| U10 | Copy — are the mockup strings final (use verbatim) or can I adapt? | wording, pricing labels, CTAs |
+| U11 | Must-not-touch list — any element that must look EXACTLY the same (logo, trust badges, brand marks, legal text)? | guardrails for scoping + spec |
+| U12 | Extra network calls OK? — if the test must fetch data per item on scroll (e.g. each PLP card's PDP), is that acceptable? Any budget/concurrency concern? | decides queue/timeout/retry design (PLP01: server stalls on bulk PDP XHRs) |
+| U13 | 3rd-party libraries — may I inject libraries (sliders, fonts, libs) or keep it vanilla/cross-origin-safe? | wrapper + loading strategy |
+| U14 | Deployment — how will the variation ship? (Convert / VWO / GA4 experiment / custom tag) | wrapper structure, CSS scoping, selector rules |
+| U15 | QA environment — live site or a staging/preview URL? Any Cloudflare/login/CSP that blocks automation? | QA mode (manual vs AI), profile state |
+| U16 | Screenshots on live — allowed? (bot-protection can block headless captures) | verification + handover artifacts |
+| U17 | Exclusions — any page-type, device, or login-state where the change must be OFF? | scope guardrails |
+| U18 | Sign-off matrix — which browsers/devices must the final approval cover? (Chrome only, or a suite?) | QA checklist + screenshot list |
+| U19 | Tracking — what should be tracked and where must it appear? (dataLayer, GA4 event, Convert goal) | spec asserts the tracking, not just the DOM |
 
 ---
 
@@ -96,6 +109,11 @@ it's cheaper/faster to ask; otherwise verify it and record the result.
 - L6: Mobile — same card details as desktop, or a simplified variant?
 - L7: Grade selector — does the design fix the full option set on every card (e.g. always show A/B/C) with unavailable options greyed out and disabled, or only show available options?
 - L8: Do the option buttons carry prices (e.g. "A — $299") or just the bare grade label? (Only show prices if the mockup puts them there — otherwise keep them out.)
+- L9: Default grade selection on FIRST load — (a) first available (A→B→C), (b) the grade matching the site's shown price, or (c) none? *(PLP01 round-4: site shows a lower grade's price, so "match shown price" is usually wrong — confirm the rule)*
+- L10: Cards with NO options — if a product has no grade set (e.g. monitors only `NEW`), should the selector be (a) all-disabled, (b) hidden, or (c) CTA-only? What does the mockup show?
+- L11: Pagination survival — must the variation re-apply on page 2+, and must QA re-verify there? (list both URLs in the spec)
+- L12: Interaction contract — grade click swaps product image + price IN PLACE (no page refresh), re-click is a no-op, unavailable options are unclickable. Is that the intended behavior?
+- L13: Per-card data fetch — if each card's data comes from a PDP fetch (not SSR), is a queue with limited concurrency + timeout + retry acceptable, or must nothing block on the network?
 
 ---
 
