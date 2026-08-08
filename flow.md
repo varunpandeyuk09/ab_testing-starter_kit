@@ -50,10 +50,13 @@
    STEP 3  🧪 QA   🙋 RULE: ASK "QA aap khud chalenge (manual), ya main chala dun (AI)?"
         ┌─────────────┬─────────────────────────────┐
         ▼ manual      ▼ AI (node tools/qa_run.js qa --spec "<test>/spec.json")
-      give command     runner is GENERIC — reads site facts from site_profiles.json,
-      + wait output    reads checks from spec.json (batch/noPageErrors/pagination/
-                        waitJs/scrollAll) → ✅ all PASS → screenshot vs mockup →
-                        selector audit (forbidden anchors) → "Ready to share"
+      🎯 AI-directs   runner is GENERIC — reads site facts from site_profiles.json,
+      → shot-list     reads checks from spec.json (batch/noPageErrors/pagination/
+      (desktop/mobile/ waitJs/scrollAll) → ✅ all PASS → screenshot vs mockup →
+      click states)   selector audit (forbidden anchors) → "Ready to share"
+      → what to verify
+      → user sends
+        screenshots + bug reports → AI analyzes → pass or fix (loop)
                                         ▼
    STEP 4  🧠 KNOWLEDGE LOOP  (kit must be STRICTLY more capable after each test)
         metadata.json / readme.md / qa_prep.json
@@ -76,7 +79,7 @@
 | **0c** | Q&A gate | Ask only what the kit doesn't know (U/L/N/P/C/S/F/G/H banks) | Max 6–8 questions |
 | **1** | Research | Playbook §8 (P1–P31) → verify only the FOCUS_AREA live → save selectors | Area-scoped only |
 | **2** | Write code | `variation.js`/`variation.css` + `share.js` + `v1.json` + **`spec.json`** | `spec.json` must exist |
-| **3** | QA | Ask manual-vs-AI → run `qa_run.js` → visual check → selector audit | All checks PASS |
+| **3** | QA | Ask manual-vs-AI. **AI:** run `qa_run.js` + visual check + audit. **Manual:** AI gives shot-list + what-to-verify; user sends screenshots + bug reports; AI analyzes → pass or fix | All checks PASS |
 | **4** | Knowledge loop | Profiles, P-pattern, questions, tools → back into the kit | Update `flow.md` too |
 
 ---

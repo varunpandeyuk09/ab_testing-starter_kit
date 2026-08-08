@@ -177,10 +177,23 @@ Written in STEP 4 (docs, after the test is ready to share):
 0. **Ask BEFORE any QA runs (user-confirmed, PCLIQUIDATIONS PLP01):** when code + spec are
    ready, and BEFORE running/starting QA, ASK the user exactly:
    **"QA aap khud chalenge (manual), ya main chala dun (AI)?"**
-   Wait for their answer. Do NOT run QA yourself unless they say so — the user may prefer
-   to QA the build manually. If they choose manual, give them the command and wait for
-   their output:
-   `node tools/qa_run.js qa --spec "<test>/spec.json"`
+   Wait for their answer. Do NOT run QA yourself unless they say so.
+   - **AI QA:** run the data-driven QA yourself (steps 1–4 below).
+   - **Manual QA (AI-directed):** you do NOT just wait — you give the user a concrete
+     QA checklist and collect their findings. In order:
+     1. Hand them the command so they can run the automated checks too:
+        `node tools/qa_run.js qa --spec "<test>/spec.json"`
+     2. **Give a short shot-list** — the specific screenshots you need from LIVE:
+        desktop + mobile, the changed component in context, hover/click states, before
+        and after an interaction (e.g. grade click), the paginated/next view if in scope.
+        Phrase each as "take a shot of X at Y".
+     3. **Tell them what to verify while they're on the page** — the 3–5 behaviors the
+        spec asserts (e.g. "clicking grade B swaps the price to $X without reload",
+        "the NEW-only card shows the NEW tag, not a selector").
+     4. **Ask them to report anything they think is a bug** — even if unsure. Their
+        screenshots + observations come back to you; YOU analyze them (compare vs
+        mockup, check selectors/states), decide pass or fix, and if something needs a
+        code change, fix it and re-run this loop.
 1. Run the data-driven QA against the spec written in STEP 2 — every check must PASS:
    ```bash
    node tools/qa_run.js qa --spec "../ABTESTSWITHAI/CLIENT/TEST_NAME/spec.json"
