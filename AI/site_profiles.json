@@ -25,5 +25,9 @@
     "label": "PCLIQUIDATIONS",
     "addToCart": [],
     "counter": ".storeCartQty"
+  },
+  "trooper": {
+    "label": "TROOPER",
+    "addToCart": []
   }
 }

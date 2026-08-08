@@ -193,7 +193,26 @@ Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky 
 
 ---
 
-## PCLIQUIDATIONS
+## TROOPER
+
+- **Site:** https://www.trooper.ch — German outdoor/tactical gear shop. Shopify, **Dawn theme** (Dawn card/price/rating markup). Varify A/B platform (`app.varify.io/varify.js`, `window.varify.iid = 3266`).
+- **Verified in:** `../ABTESTSWITHAI/TROOPER/SM22 Product Tile Optimization` (PLP tile optimization, Aug 2026).
+- **Site-wide gotchas:** no Cloudflare challenge on PLP (Invoke-WebRequest + headed CDP both fine, fresh profile). Currency `CHF`. A shop-specific `changeMainImage()` + `variant-thumbnails` on cards (image swap on variant hover, onmouseover/onclick inline handlers → PDP `?variant=` links).
+
+### product (PLP tiles — verified)
+- Grid: `#product-grid` (ul, `data-id=template--…__product-grid`) > `li.grid__item` > `.card-wrapper.product-card-wrapper` (16 cards/page, 25 pages).
+- Card layout (Dawn): `.card__inner` (`.card__media` images, optional `.official-badge` INSIDE card__inner BEFORE card__media, `data-regios-dopp-generic-product-id`), `.card__content` (`h3.card__heading > a.full-unstyled-link`), second `.card__content` with `.card__information` (`div.caption-with-letter-spacing.light` = brand, `.card__heading.h5`, `.rating-count.caption > span[aria-hidden="true"]` = `(N)`), `.price` block, `.quick-add.no-js-hidden > a.quick-add__submit.button` ("zum Produkt", no real add-to-cart form on PLP).
+- `.price.price--on-sale`: `.price__regular .price-item--regular` ("Von CHF 189.90") + `.price__sale` (`<s class="price-item--regular">CHF 239.90</s>` + `.price-item--sale.price-item--last` "Von CHF 189.90"). Non-sale cards: `.price:not(.price--on-sale)`.
+- Badge: `.card__badge.top.left > span.badge` text "Sale" (site class `card__badge` is `top left`; variation repositions it top-right with `right:10px`).
+- Rating: only ~9/16 cards have `.rating-count`; `(N)` → `(N Bewertungen)` / `(1 Bewertung)`.
+- Discount: `s.price-item--regular` vs `.price-item--sale` → integer `-X%` tag (e.g. 239.90→189.90 = `-21%`).
+- **SM22 design contract (Q&A-confirmed):** test is scoped to the single `/collections/restposten-sale` URL; desktop + mobile sign-off; NO tracking in share.js (user-said). Buttons hidden via CSS (`.quick-add`, `a.button`), official badge moved above `.caption-with-letter-spacing` (JS) then absolute top-left desktop / in-flow centered mobile (CSS).
+- Pagination: `nav.pagination`, next page = `a.pagination__item--prev` (href `?page=2`), current = `a.pagination__item--current`. `waitCards`: `.card-wrapper.product-card-wrapper`.
+
+### Reusable tooling
+- `tools/qa_run.js` — **`--viewport WxH`** flag (e.g. `390x844`) emulates a mobile/tablet viewport via CDP `Emulation.setDeviceMetricsOverride`, so ONE viewport-aware spec.json QAs both desktop AND mobile (runner stays client-agnostic). Verified **17/17 desktop + 17/17 mobile + 5/5 pagination each** on SM22 (Aug 2026). Run: `node tools/qa_run.js qa --spec "…/SM22 Product Tile Optimization/spec.json"` (+ `--viewport 390x844` for mobile).
+
+---
 
 - **Site:** https://www.pcliquidations.com — refurbished computer/electronics reseller. Custom PHP storefront ("IsaacStore" markup) + `fullwlibs.js` (site-wide jQuery bundle, includes the `IsaacVariantSet` variant switcher). Google Tag Manager `GTM-K338VW` + `dataLayer` (listingId / listingCurPrice / ecommerce.detail on PDP).
 - **A/B platform:** Convert Experiences (`//cdn-4.convertexperiments.com/v1/js/100412892-100413810.js`) — Convert code already present on PLPs.

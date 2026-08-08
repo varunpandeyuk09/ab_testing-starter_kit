@@ -38,6 +38,7 @@
 //   --out <file.json>                                 save the full JSON result
 //   --headless                                        headless mode (Cloudflare may block!)
 //   --fresh                                           wipe the persistent profile before launch
+//   --viewport <WxH>                                  emulate viewport e.g. 390x844 (mobile QA)
 //   --wait-ms <n>                                     extra wait after popup open (default 4000)
 // --------------------------------------------------------------------------
 const { spawn } = require("child_process");
@@ -717,7 +718,7 @@ async function captureScreenshot(cdp, file) {
 /* 6. Main                                                              */
 /* ------------------------------------------------------------------ */
 function parseArgs(argv) {
-  const out = { browser: "auto", profile: "praxindo", action: "atc", waitMs: 4000, screenshot: null, out: null, injectDir: null, url: null, spec: null, headless: false, fresh: false };
+  const out = { browser: "auto", profile: "praxindo", action: "atc", waitMs: 4000, screenshot: null, out: null, injectDir: null, url: null, spec: null, headless: false, fresh: false, viewport: null };
   let first = true;
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
@@ -735,6 +736,7 @@ function parseArgs(argv) {
     else if (a === "--wait-ms") out.waitMs = parseInt(val(), 10) || 4000;
     else if (a === "--headless") out.headless = true;
     else if (a === "--fresh") out.fresh = true;
+    else if (a === "--viewport") out.viewport = val();
   }
   return out;
 }
@@ -773,6 +775,14 @@ async function main() {
     const conn = await connectPage(port);
     cdp = conn.cdp;
     console.error(`[qa_run] connected ${conn.version}`);
+    // Optional mobile/tablet viewport emulation (generic, any responsive test).
+    if (args.viewport) {
+      const m = String(args.viewport).toLowerCase().match(/^(\d+)x(\d+)$/);
+      if (!m) { console.error("ERROR: --viewport must be WxH, e.g. 390x844"); process.exit(2); }
+      const width = parseInt(m[1], 10), height = parseInt(m[2], 10);
+      await cdp.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: width < 600 });
+      console.error(`[qa_run] viewport emulated ${width}x${height} (mobile=${width < 600})`);
+    }
 
     let result;
     if (args.action === "navigate") result = await actNavigate(cdp, site, args);

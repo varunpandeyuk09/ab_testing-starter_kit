@@ -83,7 +83,7 @@ never re-asked, and things the kit already verified are never re-verified.
 ## STEP 1 — Research Before Writing Code (AREA-SCOPED)
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
-2. Match the task against the Reusable Patterns Library (playbook §8, P1–P31). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
+2. Match the task against the Reusable Patterns Library (playbook §8, P1–P32). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
 3. **Fallback (only when NO pattern in §8 fits the brief):** before running the RAG search, ASK the user:
    **"RAG search (archive se similar past tests) chalaun, ya pattern library se kaam chalaun?"**
    Wait for their answer — the search takes time, so never auto-run it.

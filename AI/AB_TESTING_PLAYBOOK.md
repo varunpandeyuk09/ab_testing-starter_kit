@@ -1008,6 +1008,23 @@ function ensure(card, cb) {
 3. **Diagnose with a per-card state probe.** A symptom of this class is "exactly N (= concurrency) cards got data, rest never start". Probe `egPdpData`/`_pclPending` per card (`obs:1` but `pend:false`, `data:null`) to distinguish "not yet queued" from "queued but stuck".
 4. **QA it at full scale, not with one lucky card.** A behavioral check that exercises one multi-grade card passes even when 21 of 24 cards have no data. Gate spec checks with a data-readiness wait (`settle.waitJs`: "all N cards have data") + a hard floor in the check itself (`cards<20 → fail`), so the queue is actually proven to drain.
 
+### P32. Viewport-aware spec — QA desktop AND mobile from ONE spec.json
+
+**When:** the test has responsive behavior (media queries change layout per breakpoint, e.g. badge placement, price size) and you want both desktop and mobile sign-off.
+
+**How (TROOPER SM22, Aug 2026):**
+1. Add the generic `--viewport WxH` flag to `tools/qa_run.js` (CDP `Emulation.setDeviceMetricsOverride`, `mobile: width<600`).
+2. Write spec checks that branch on `window.innerWidth` instead of hard-coding one breakpoint, so the SAME spec passes at any viewport:
+   ```js
+   "(function(){ var el=document.querySelector('.price--on-sale .price-item--sale'); if(!el) return { pass:false, detail:'no sale price' }; var cs=getComputedStyle(el); var w=window.innerWidth; var sizeOk = w<768 ? cs.fontSize==='14px' : cs.fontSize==='25px'; return { pass: cs.color==='rgb(14, 91, 0)' && cs.fontWeight==='700' && sizeOk, detail:'w='+w+' color='+cs.color+' weight='+cs.fontWeight+' size='+cs.fontSize }; })()"
+   ```
+3. Run twice: `qa_run.js qa --spec spec.json` (desktop) and `qa_run.js qa --spec spec.json --viewport 390x844` (mobile). Both must go green.
+
+**Key ideas:**
+1. **CSS `op` checks can't branch on viewport** — use `js` checks with `window.innerWidth` when a computed style differs by breakpoint; use plain `css` ops only for styles that are the same at every size.
+2. **Keep the same spec for both runs** — this also QAs pagination on mobile, catching "works on desktop, breaks on tap-sized layout".
+3. **The runner stays client-agnostic** — `--viewport` is a generic flag, no site-specific code added.
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -1057,7 +1074,7 @@ function ensure(card, cb) {
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P31).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P32).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).
