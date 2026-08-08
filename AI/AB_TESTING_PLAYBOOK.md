@@ -980,6 +980,34 @@ function swapVariant(card, v) {
 - **Keep prices OUT of the option buttons unless the mockup puts them there.** If the design shows bare "A/B/C" pills, don't inject per-grade prices into them (PLP01 report #3). The card's main price line already swaps on click.
 - **Spec the swap behavior against a multi-grade card.** A "price changed on click" check that runs on a single-grade card passes vacuously. In `spec.json` make the check FAIL (`{pass:false, detail:'... (vacuous pass blocked)'}`) when it cannot find a card that actually exercises the claim — see `tools/qa_run.js` vacuous-pass note and playbook §9.
 
+### P31. Lazy Fetch Queue — store the caller's callback BEFORE the first fetch
+
+**When:** you queue N async fetches (PDP data, images, API) with a concurrency limit and a `pumpQueue()` that refills itself from the `cb` of each completed fetch.
+
+**The bug (PCLIQUIDATIONS PLP01 round-3, caught by QA):** the queue deadlocked after exactly `MAX_CONCURRENT` fetches. `ensurePdpData(card, cb)` stored `cb` in `card._pclPending` only in the *already-fetching* branch; on a **fresh** fetch it set `card._pclPending = []` and started the fetch without pushing `cb`. When the fetch resolved it iterated `cbs` (empty!) and never called the pumpQueue callback → `inFlight--` never ran → `pumpQueue()` never resumed → every card after the first 3 sat in the queue forever, silently. Only the first 3 of 24 cards ever got variant data; the rest showed `pend:false, data:null` in an in-page probe.
+
+**Recipe (correct):**
+```js
+function ensure(card, cb) {
+  if (card.done) { if (cb) cb(); return; }
+  if (card.pending) { if (cb) card.pending.push(cb); return; } // already fetching
+  card.pending = [];             // fresh fetch
+  if (cb) card.pending.push(cb); // ← REQUIRED: the caller's cb (pumpQueue) must run on resolve
+  fetch(card.url).then(function () {
+    card.done = true;
+    var cbs = card.pending || [];
+    card.pending = null;
+    for (var i = 0; i < cbs.length; i++) cbs[i]();
+  });
+}
+```
+
+**Key ideas:**
+1. **Every call path must end in `cb()`.** If the caller passed a callback (especially one that decrements `inFlight` and re-pumps a queue), it must be guaranteed to run exactly once — push it into the pending list before starting the async work, not only when already in-flight.
+2. **Guard the whole completion block with try/catch.** If a fetch `.then` handler throws mid-processing (swapVariant, DOM writes), the pending callbacks after it never run — same wedge. Do the risky DOM work AFTER firing `cbs`, or wrap it so `cbs` still fire.
+3. **Diagnose with a per-card state probe.** A symptom of this class is "exactly N (= concurrency) cards got data, rest never start". Probe `egPdpData`/`_pclPending` per card (`obs:1` but `pend:false`, `data:null`) to distinguish "not yet queued" from "queued but stuck".
+4. **QA it at full scale, not with one lucky card.** A behavioral check that exercises one multi-grade card passes even when 21 of 24 cards have no data. Gate spec checks with a data-readiness wait (`settle.waitJs`: "all N cards have data") + a hard floor in the check itself (`cards<20 → fail`), so the queue is actually proven to drain.
+
 ### Other techniques observed in the archive (use when a brief needs them)
 
 - **Canvas dominant-colour swatches** — draw the product image into a hidden `<canvas>`, sample the pixels, set the swatch background. Source: `CROCS/CRO 3.04 Product Page Colour Swatch Revised/variation2/variation.js`.
@@ -1029,7 +1057,7 @@ function swapVariant(card, v) {
 
 ## 11. How to Use This Playbook
 
-1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P30).
+1. Read the test brief and identify the goal. Pick the matching pattern(s) from §8 (P1–P31).
 2. If a pattern matches, copy the base script from §2, add the body class, and adapt the chosen pattern inside `init()`. No search needed.
 3. If NO pattern in §8 fits, use the RAG fallback: `python scripts/search_tests.py "brief description"` (script auto-locates the `AB-test` archive anywhere on the machine and prints the top 3 similar tests). Study the code, then append the new technique to §8 as the next P-number so the library grows.
 4. Scope all CSS to the body class (§6). Add `share.js` goals if the test measures clicks (§7).

@@ -83,7 +83,7 @@ never re-asked, and things the kit already verified are never re-verified.
 ## STEP 1 — Research Before Writing Code (AREA-SCOPED)
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
-2. Match the task against the Reusable Patterns Library (playbook §8, P1–P30). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
+2. Match the task against the Reusable Patterns Library (playbook §8, P1–P31). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
 3. **Fallback (only when NO pattern in §8 fits the brief):** run the RAG search — it auto-locates the `AB-test` archive anywhere on this machine and prints the top 3 similar past tests with their code:
    ```bash
    python scripts/search_tests.py "your test description"
@@ -227,7 +227,7 @@ verified, the test is NOT finished:
    one before its spec.json can run.
 
 3. **`AI/AB_TESTING_PLAYBOOK.md` §8** — if the test used a technique that is NOT already a
-   pattern, append it as the next P-number (P29, P30, ...) with a short recipe + `Source:`
+   pattern, append it as the next P-number (P31, P32, ...) with a short recipe + `Source:`
    line. Then update every `P1–Pxx` reference in `AGENTS.md` / `AB_TESTING_PLAYBOOK.md` /
    `README.md` to the new max count (grep for `P1–P` before finishing).
 
