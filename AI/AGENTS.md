@@ -84,11 +84,11 @@ never re-asked, and things the kit already verified are never re-verified.
 
 1. Read `AB_TESTING_PLAYBOOK.md` in full (same folder as this file).
 2. Match the task against the Reusable Patterns Library (playbook §8, P1–P31). Adopt the matching pattern(s) and adapt them. This is the primary source — do NOT run a search unless no pattern fits.
-3. **Fallback (only when NO pattern in §8 fits the brief):** run the RAG search — it auto-locates the `AB-test` archive anywhere on this machine and prints the top 3 similar past tests with their code:
-   ```bash
-   python scripts/search_tests.py "your test description"
-   ```
-   Study the returned examples, then **add the newly discovered technique to the playbook §8 as the next P-number (P26, P27, ...)**, with a short snippet, so the library grows. Then adapt the pattern for the current brief.
+3. **Fallback (only when NO pattern in §8 fits the brief):** before running the RAG search, ASK the user:
+   **"RAG search (archive se similar past tests) chalaun, ya pattern library se kaam chalaun?"**
+   Wait for their answer — the search takes time, so never auto-run it.
+   - **Run it:** `python scripts/search_tests.py "your test description"` — auto-locates the `AB-test` archive anywhere on this machine and prints the top 3 similar past tests with their code. Study the returned examples, then **add the newly discovered technique to the playbook §8 as the next P-number (P26, P27, ...)**, with a short snippet, so the library grows. Then adapt the pattern for the current brief.
+   - **Skip it:** build from the existing P-patterns / your own knowledge; no archive search.
 4. **Verify ONLY the FOCUS_AREA, never the whole site.** `AI/SITE_PROFILES.md` stores verified DOM facts per client, grouped **by area** (each `### Area` subsection is verified once and reused forever). The QA runner reads the MACHINE-READABLE `AI/site_profiles.json` — the JSON holds the runner tokens/selectors (`addToCart`, `popup`, `title`, `related`, `counter`, …) and is the ONLY place the runner gets site facts from (qa_run.js is client-agnostic). Keep both in sync when a fact affects the runner.
    - Start by reading the client's profile for the **current FOCUS_AREA only** (plus the client's site-wide gotchas section).
    - If the area is already in the profile → **do not re-verify**; read the selectors and go straight to STEP 2. Re-verify only what the brief changes.

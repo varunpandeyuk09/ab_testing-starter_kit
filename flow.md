@@ -39,7 +39,10 @@
         → answers recorded → later saved to qa_prep.json
                                         ▼
    STEP 1  🔍 RESEARCH  (area-scoped ONLY, never whole site)
-        AB_TESTING_PLAYBOOK.md §8 (P1–P31) = primary source  → no match? RAG search
+        AB_TESTING_PLAYBOOK.md §8 (P1–P31) = primary source
+        no match? 🙋 ASK "RAG search (archive) chalaun, ya library se chalaun?"
+        → run python scripts/search_tests.py (takes time) → save new technique
+          as next P-pattern; or skip → build from existing patterns
         → verify live DOM for FOCUS_AREA → write selectors
         to AI/site_profiles.md + runner tokens to AI/site_profiles.json
                                         ▼
@@ -80,7 +83,7 @@
 | **0** | Parse | Extract `CLIENT`, `TEST_NAME`, `TEST_ID`, `URL(s)`, `FOCUS_AREA` | Never guess → ask |
 | **0b** | Scaffold | Copy root templates → `../ABTESTSWITHAI/CLIENT/TEST_NAME/` | Root `variation1/` is read-only |
 | **0c** | Q&A gate | Ask only what the kit doesn't know (U/L/N/P/C/S/F/G/H banks) | Max 6–8 questions |
-| **1** | Research | Playbook §8 (P1–P31) → verify only the FOCUS_AREA live → save selectors | Area-scoped only |
+| **1** | Research | Playbook §8 (P1–P31) → no match? **ask run-or-skip RAG search** → verify only the FOCUS_AREA live → save selectors | Area-scoped only |
 | **2** | Write code | `variation.js`/`variation.css` + `share.js` + `v1.json` + **`spec.json`** | `spec.json` must exist |
 | **3** | QA | Ask **manual / AI / skip**. **AI:** run `qa_run.js` + visual check + audit. **Manual:** AI gives shot-list + what-to-verify; user sends screenshots + bug reports; AI analyzes → pass or fix. **Skip:** no QA, hand over as UNVERIFIED | All checks PASS |
 | **4** | Knowledge loop | Profiles, P-pattern, questions, tools → back into the kit | Update `flow.md` too |
