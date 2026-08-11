@@ -121,5 +121,6 @@
 - 🧠 **Session notes** — `AI_DATA/session_notes.md` is appended ALL session (first learned fact onward), never deferred to the end; STEP 4 folds it into the client profile.
 - 🙋 **Knowledge diff approval** — STEP 4 starts with a mini self-check: list the NEW facts learned (from `session_notes.md`), show the user in ONE message, wait for approval, then write ONLY the approved facts. Unapproved guesses never land in a profile — that is the drift protection.
 - 📥 **User material lives in `AI_DATA/user_inputs/`** (images → `test_images/`, everything else → loose/own folders). Never reference files the user pasted anywhere else — copy them into `user_inputs/` first.
+- 🎨 **CSS-first (hide ≠ move)** — any presentational change (hide/show/style/spacing) is a scoped CSS rule; JS is only for behavior CSS can't do (move/clone/fetch/state). Never `remove()` / JS-hide what one `display: none` fixes.
 - 🧪 **AI never runs QA** — QA is ALWAYS the user's job. AI hands over with `AI_DATA/user_qa.md` and stops.
 - 🔄 **Keep this file in sync** — any step/file/tool/count change → update `flow.md` in the same commit (rule in `AGENTS.md` / `AI/AGENTS.md` STEP 4).

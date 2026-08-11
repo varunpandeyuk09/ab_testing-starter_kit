@@ -192,6 +192,7 @@ Every test starts from the standard wrapper. `init()` is the only entry point. D
 
 ## 6. CSS Rules
 
+- **CSS-first decision order (hide ≠ move).** Before writing ANY JS, ask: is this change presentational (hide / show / style / spacing / layout)? If yes → do it in scoped CSS under the body class. JS is ONLY for behavior CSS cannot do: move, clone, fetch, state, events, timing. Concretely: hiding a tab/link/button/section = a `display: none` rule in `variation.css` — never `remove()` the node, never set `style.display` in JS, unless a live fact proves CSS can't win (site JS re-shows it / inline-style fight). Hiding and moving are two separate jobs — hide with CSS, move with JS — never bundle a CSS job inside a JS operation. *(Lesson: a PDP tab removal that needed one scoped `display: none` was first proposed as a JS `remove()` — CSS should have been the instinct.)*
 - Scope every rule under the body class: `.EG-<TEST-ID> .eg-element { ... }`. Never write unscoped selectors.
 - Use the `eg-` prefix for all new classes.
 - Use comment section headers (`/* Main outer section wrapper */`, `/* Cards CSS */`) to group styles.
@@ -282,6 +283,7 @@ IntersectionObserver sticky, vendor guard, debug toggle) is at the end of `AI/AB
 - [ ] MutationObservers are scoped, guarded (`isRunning`), and disconnected when done.
 - [ ] Events use `live()`; SPA tests use the standard `listener()`.
 - [ ] No `!important` unless required; no unscoped CSS.
+- [ ] CSS-first pass: every hide/show/style/spacing change is a scoped CSS rule; JS is used only for behavior CSS can't do (move/clone/fetch/state) — no `remove()` / `style.display` where one `display: none` works.
 - [ ] Site functionality untouched; no global side effects.
 - [ ] `v1.json` created (+ `share.js` where clicks are tracked).
 - [ ] Clone/AJAX tests: the real site request was pasted at the Q&A gate (P33 evidence-first) and the code reproduces it byte-for-byte; the full source-container outerHTML (incl. `form=`-associated controls) was provided.
@@ -305,6 +307,7 @@ IntersectionObserver sticky, vendor guard, debug toggle) is at the end of `AI/AB
 - Rebuilding the whole page or touching unrelated components — scope everything to `EG-<TEST-ID>`.
 - Raw non-ASCII copy strings that can mangle encoding in the injection pipeline.
 - Re-initialising on every SPA route without idempotency guards (body class + element existence checks).
+- Using JS to hide/show or restyle an element that a scoped CSS rule handles (`display: none`, spacing, colour) — presentation belongs in `variation.css`; JS is only for behavior (move/clone/fetch/state). The hidden trap: bundling a CSS job inside a JS move operation.
 
 ---
 
