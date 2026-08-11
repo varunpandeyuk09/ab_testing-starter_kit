@@ -1,4 +1,4 @@
-# AB Testing Patterns Library (P1–P32)
+# AB Testing Patterns Library (P1–P37)
 
 REFERENCE FILE — do NOT read this end-to-end. Match the brief against the §8 INDEX in
 `AI/AB_TESTING_PLAYBOOK.md`, then open ONLY the matching pattern here. New patterns are
@@ -851,6 +851,83 @@ function ensure(card, cb) {
 3. Always verify the mobile layout still stacks after the fix — `nowrap` must be applied only where the redesign intends it.
 
 Source: verified on a contact-page redesign (layout bug found during QA, fixed in `variation1/variation.css`).
+
+### P33. Replicate the theme's own AJAX request byte-for-byte
+
+**When:** your variation clones a site component whose action fires a site AJAX call (variant switch, add-to-cart, quick-add) and must produce the same effect the site's own UI does. The server validates exactly the shape the theme sends — a wrong payload silently fails or resolves the wrong thing.
+
+**Recipe:** before writing any request builder, get the REAL request from the user's Network tab (full URL with query, complete payload with its encodings, headers). Build byte-for-byte. Preserve `encodeURIComponent`-style encodings (`%7B`, `%22`, `%3A`, `%2C`, `%7D` for JSON braces/quotes/colons/commas/brackets). Include `X-Requested-With: XMLHttpRequest` so the server treats it as the theme's own AJAX.
+
+**Key ideas:**
+1. Match encoding exactly — the theme sends `JSON.stringify()` run through `encodeURIComponent`; so must you.
+2. Include ALL the state the theme includes. `data-*` attributes that look like "ignore" hints (e.g. `data-select-only`, `data-ignore-me`) are NOT reliably excluded from the request — verify against the theme's actual Network tab entry before omitting them.
+3. Force the picked value into the request regardless of DOM state — the theme's configurator can revert cloned-form radio state, so read your own tracked choice.
+4. Copy the AJAX headers the theme sends so the server can't distinguish your call from the site's own.
+
+**Gotchas:** guessing the payload shape is the #1 silent-failure source — this pattern exists precisely because the "obvious" JSON payload (just the option id) was wrong on a verified build. Evidence first: if the user can't paste the request, you don't have enough to build it.
+
+Source: verified on a PLP quick-add modal (size/grade switch returned `{url, productId}` with a JSON-encoded, URL-encoded payload; the naive `{id: X}` shape failed).
+
+### P34. In-place form update from `{url, id}` switch responses — don't re-fetch the page
+
+**When:** a switch/selection endpoint returns JSON like `{url, productId}`, and the site updates its own form CLIENT-SIDE from the returned id (its reload-selectors list only analytics elements). Re-fetching the returned `url` is a trap: it can return the BASE page (all variants share one URL) whose buy-form id doesn't match the switch id — rebuilding from it wipes the picked state.
+
+**Recipe:** read the response id, rewrite every id-bearing field name/value in the container (`lineItems[<id>]...`), set the CTA's `data-product-id`, keep the user's picked option checked, then re-enable the button. Only when the returned `url` is a genuinely different page → fetch it and rebuild (configurator + media + select range) from its HTML.
+
+**Key ideas:**
+1. After fetching the variant page, compare its buy-form id against the switch response id. If they DON'T match, the page is the base page → fall back to in-place update instead of applying it.
+2. Rewrite id fields across the WHOLE container, not just the `<form>` element — `form=`-associated controls (e.g. a quantity `<select>`) live OUTSIDE the form tag.
+3. Track the modal's current source URL and compare against it (not the page's original open URL) after every applied switch page.
+
+**Gotchas:** a `{url, id}` response looks like a "fetch this page" hint — that's exactly what makes this pattern counter-intuitive. Always verify which fields the theme's OWN reload-selectors actually rebuild before re-fetching.
+
+Source: verified on a PLP quick-add modal where the theme's reload-selectors rebuilt the analytics elements (not the form) client-side from the id.
+
+### P35. Cloned configurator: capture-phase click + whole-container radio state
+
+**When:** the site's configurator (size/colour pills) intercepts clicks — it `preventDefault()`s the native radio check and drives the `.active` highlight itself. On a CLONED component the theme's plugin never binds, so clicks are swallowed silently. Compounding trap: the same radio group is often DUPLICATED (an in-form group + an external selector), and same-`name` radios form ONE document-wide group.
+
+**Recipe:** use a document-level CAPTURE-phase click handler (`addEventListener('click', fn, true)`) that `preventDefault()` + `stopImmediatePropagation()`, forces `radio.checked = true`, mirrors `.active` on ALL copies of the option, and runs your handler. Read state from the whole container, not one copy.
+
+**Key ideas:**
+1. Capture phase runs BEFORE the theme's document-level handlers — force your check there, before the theme's `preventDefault` can kill it.
+2. Block disabled / not-combinable options; no-op on an already-checked option.
+3. Keep a `change` listener as a keyboard / accessibility fallback.
+4. `form=`-associated external controls: rewrite field names across the whole container, not just the `<form>`.
+
+**Gotchas:** if you only listen on the clone's own nodes (bubble phase), the theme's document handler usually swallows the event first — this is the silent "nothing happens on click" bug.
+
+Source: verified on a PLP quick-add modal configurator with in-form radios + an external selector sharing the same `name`.
+
+### P36. Hydrate cloned plugin components (strip hooks → site initializer)
+
+**When:** you clone a component the site's JS normally enhances (gallery slider, buy box). The theme's native plugins won't auto-bind on cloned nodes, so the clone looks dead.
+
+**Recipe:** verify the plugin API surface FIRST with `typeof` checks (e.g. `window.PluginManager.initializePlugins()` may exist while `createPluginInstanceFromElement` does not). Strip the clone's `data-*` hooks that would re-trigger theme plugins you drive manually (`data-custom-switch`, `data-variant-switch-options`, `data-add-to-cart`, `data-buy-box`, zoom/magnifier), then call the site's initializer scoped to the clone. The initializer skips already-initialized elements, so the rest of the page stays untouched.
+
+**Key ideas:**
+1. Never assume an init path — `typeof` each API member before calling it.
+2. Strip zoom/magnifier hooks if the modal gallery should be slide-only.
+3. Re-run the hydration after every media/component replacement inside the clone.
+
+**Gotchas:** calling the initializer on the whole document can double-init page components that the theme already initialized — scope it to the clone subtree only.
+
+Source: verified on a PLP quick-add modal (shopware `PluginManager.initializePlugins` on the clone; zoom hooks stripped for a slide-only gallery).
+
+### P37. Author `!important` vs cloned slider inline transform
+
+**When:** the site's CSS forces e.g. `transform: none !important` on the slider track (`.tns-slider`) or `display: grid` on the container up to a breakpoint. A cloned slider inside your modal freezes: the inline `transform` exists but the COMPUTED value is `none`, because static CSS can't beat author `!important` on a dynamic value.
+
+**Recipe:** fix `display: grid` with a scoped override (`display: block !important` on the modal container only). For the transform: re-assert the track's OWN inline value with `style.setProperty('transform', t, 'important')` (inline `!important` beats author `!important`) and keep it in sync with a MutationObserver on the track's style/class — tns writes `translate3d` there; re-setting the same string is a no-op, so there's no loop. Mirror the technique for `transition`.
+
+**Key ideas:**
+1. Timing: tns creates `.tns-slider` only after the FIRST PAINT — a one-shot pin right after init finds nothing. Watch the whole modal subtree (attributes) and re-pin whenever the track appears or its style changes.
+2. Disconnect the observer on close and re-create it after a media replacement.
+3. Scope CSS overrides to the modal so the real PDP keeps its theme behaviour.
+
+**Gotchas:** a one-shot `style.setProperty` is a mirage — the theme re-asserts on every tns update, so the observer is the fix, not the initial pin.
+
+Source: verified on a PLP quick-add modal slider inside a grid-forced container.
 
 ### Other techniques observed in the archive (use when a brief needs them)
 

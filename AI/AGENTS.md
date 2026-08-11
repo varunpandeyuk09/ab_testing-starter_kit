@@ -146,6 +146,15 @@ code, turn the brief into the minimum set of questions the kit cannot already an
    do — nahi to ye specific facts aap live site se confirm kar dena (1 min ka kaam)."
    Never guess product facts, and never silently run a long catalog scrape the user could
    have provided in seconds.
+6. **Front-load the evidence the code will need (clone/AJAX tests — pattern index P33–P37).**
+   If the test clones a site component or calls a site AJAX endpoint, ASK IN THIS GATE for the
+   three pastes that end guess-work (§2.5 cheat sheet): (a) the real Network-tab request for
+   the action (URL + payload with encodings + headers), (b) the FULL container outerHTML
+   (including `form=`-associated controls that live OUTSIDE the `<form>`), (c) a console log
+   of the action. And if the variation reuses a site component, ask the PARITY question (U20):
+   must it behave EXACTLY like the source (swatch → product + image + per-option sizes + qty
+   range), or is a simplified version OK? Getting these at the gate turns AB044-style
+   "make it like the PDP" QA rounds into build spec.
 
 This gate is what makes the kit faster per test: things the user once answered are
 never re-asked, and things the kit already verified are never re-verified.
@@ -273,6 +282,11 @@ The kit's job ends at a clean, complete handover.
    before handover — cheap, catches the worst mistakes before the user does.
 4. Then run STEP 4 (knowledge loop) — capture only facts you actually verified (code-level,
    or facts the user confirmed in their bug reports). Do not pad with guesses.
+5. **Give the user the bug-report format in `user_qa.md`** — one line expected-vs-actual
+   ("M selected but cart shows noSize (expected M)") + the console log (+ relevant DOM/network
+   paste per `question_templates.md` §2.5). Ask them to batch independent bugs in ONE message
+   instead of one-per-round; dependent bugs (can't see B until A is fixed) stay sequential.
+   This is what keeps a clone-heavy QA loop at 1–2 rounds instead of 9 (AB044 lesson).
 
 ---
 

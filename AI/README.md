@@ -19,7 +19,7 @@ BEFORE writing any code, read these files IN ORDER:
 1. AI/AGENTS.md               — step-by-step build instructions (steps + hard bans)
 2. AI/PROMPT_PARSING.md       — how to extract CLIENT / TEST_NAME / TEST_ID from a brief
 3. AI/question_templates.md   — pre-code Q&A gate (STEP 0c)
-4. AI/AB_TESTING_PLAYBOOK.md  — coding standards (read in full) + §8 pattern INDEX; the P1–P32
+4. AI/AB_TESTING_PLAYBOOK.md  — coding standards (read in full) + §8 pattern INDEX; the P1–P37
                                 recipes live in AI/AB_TESTING_PATTERNS.md — open ONLY the matched pattern
 5. ClientData/examples/EG-EXAMPLE-SM01/readme.md    — what a correct test looks like
 6. ClientData/examples/EG-EXAMPLE-SM01/variation1/variation.js   — reference JS
@@ -108,7 +108,7 @@ ab_testing-starter_kit/
     PROMPT_PARSING.md         ← teaches AI to extract CLIENT/TEST_NAME from any brief
     question_templates.md     ← pre-code Q&A gate (area-wise banks + kit-lookup rules)
      AB_TESTING_PLAYBOOK.md    ← full coding standard + §8 pattern INDEX (read in full)
-     AB_TESTING_PATTERNS.md    ← P1–P32 recipes (REFERENCE — open ONLY the matched P#)
+     AB_TESTING_PATTERNS.md    ← P1–P37 recipes (REFERENCE — open ONLY the matched P#)
     snippets/
       live.js               ← event-delegation helper (ONLY when events needed)
       listener.js           ← SPA routing listener (ONLY when site is a SPA)

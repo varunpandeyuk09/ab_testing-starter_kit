@@ -78,6 +78,30 @@ Q&A *question* — it is a material-location check:
 | U17 | Exclusions — any page-type, device, or login-state where the change must be OFF? | scope guardrails |
 | U18 | Sign-off matrix — which browsers/devices must the final approval cover? (Chrome only, or a suite?) | user's QA checklist per browser/device |
 | U19 | Tracking — what should be tracked and where must it appear? (dataLayer, GA4 event, Convert goal) | QA checklist must include tracking, not just the DOM |
+| U20 | **Parity vs simplified** — if the variation reuses a site component (buy-box, configurator, slider, cart): must it behave EXACTLY like the source (e.g. option click → product + image + per-option sizes + quantity range all change), or is a simplified version OK? List every source behavior the variation must mirror. | parity decided at the gate, not discovered during QA (AB044: rounds 7–9 were "make it like the PDP" feature requests) |
+| U21 | **Evidence front-load** — if the test calls a site AJAX action or clones a site component, which of these can you paste NOW (see §2.5 cheat sheet): (a) the real Network-tab request, (b) the full container outerHTML incl. `form=`-associated controls, (c) a console log of the action working/failing? | one paste now beats 3 fix rounds later (P33 evidence-first) |
+
+---
+
+## 2.5 Evidence-paste cheat sheet (for the user — read before starting, ask in the gate)
+
+Before ANY code is written, and again before QA, the user can hand over three evidence
+types that end guess-work. One paste ≈ 1 minute ≈ one skipped QA round. Ask for these in
+the Q&A gate when the test clones a site component or calls a site AJAX action (U21).
+
+| Evidence | What to paste | When it's needed |
+|---|---|---|
+| **Network request** | DevTools → Network tab → do the action (variant switch / add-to-cart / filter) → right-click it → Copy → Copy as cURL (or paste the URL + Payload tab + Request Headers). | Any test where the variation CALLS a site AJAX action (clone-heavy: P33–P37). Wrong request shape silently fails — the #1 time-waster (AB044: 3 rounds). |
+| **Full container HTML** | Element → right-click → Copy → Copy element (outerHTML). Paste the WHOLE container, not one sub-element. | Any test that CLONES a site component (quick-add modal, buy-box, section). Include elements OUTSIDE the `<form>` that reference it via `form="..."` (e.g. a quantity `<select>`) — form-associated controls live outside the form tag (AB044: ATC 400 bug). |
+| **Console log on fail** | When something doesn't work: paste the full console output (errors + any `[EG-…]` logs) AND expected-vs-actual in ONE line. | Every bug report. "M selected but cart shows noSize (expected M)" + the console lines = 1 round, not 5. |
+| **Before/after DOM** | When a value doesn't stick (variant id, checked option, price): paste the element's outerHTML BEFORE the action and AFTER. | Proves what the site wrote vs what the variation wrote (AB044: the M-variant id proof). |
+| **DevTools experiment result** | If a fix is proposed and it can be tested manually in DevTools first (edit style, run a snippet), report the result before it's coded. | Confirms a mechanism before it's built (AB044: `setProperty(..., 'important')` proved the slider fix). |
+
+**Parity rule (U20 — asked once, saves whole rounds):** if the variation shows or reuses a
+site component (e.g. a PDP buy-box in a quick-add modal), the user states UPFRONT whether it
+must behave EXACTLY like the source ("swatch click → product + image + sizes + quantity range
+all change") or a simplified version is fine. "Behave exactly like the PDP" said at QA time
+is a feature request, not a bug.
 
 ---
 
@@ -94,6 +118,8 @@ Q&A *question* — it is a material-location check:
 - P2: Is the add-to-cart a form submit or JS-only button? Any variant/qty options required?
 - P3: Should price/stock/stock-availability sources stay as the site renders them, or be recomputed?
 - P4: Is a "verified price/strike" line required (e.g. site renders its own statt)?
+- P5: Clone-heavy build (quick-add modal / reusing the site's own form or AJAX): paste the site's REAL network request for the action (variant switch, add-to-cart) — URL + full payload with encodings + headers — from the Network tab. The code matches it byte-for-byte instead of guessing. *(P33 evidence-first rule — guessing the payload is the #1 silent-failure source)*
+- P6: Cloning a PDP component (quick-add modal, buy-box): paste the FULL container outerHTML — the whole buy-box area INCLUDING any element outside the `<form>` that references it via `form="..."` (e.g. a quantity `<select>`). Partial pastes hide form-associated controls → ATC 400s. *(AB044 round 6)*
 
 ### checkout (cart page, popups, payment, confirmation)
 - C1: Does the post-add experience use a popup/modal, a minicart update, or a page redirect?
@@ -151,6 +177,9 @@ does the check in one headed run. Ask them to verify, then record the verified f
 - SPA routing (pushState) vs page reload
 - Hidden inputs/values updated by JS after load (read at apply-time)
 - Mobile vs desktop markup differences (different containers per breakpoint)
+- Theme intercepts clicks on interactive controls (configurator pills, swatches, tabs) — does a click actually check the radio / update the highlight, or does the theme JS drive it and swallow the native check? (→ capture-phase click needed, P35)
+- After a switch/selection, does the site update the DOM CLIENT-SIDE from the response id, or does it fetch a whole page? (→ P34 in-place update vs page apply)
+- Does the component's behavior change per option (image swap, per-option availability, quantity range)? Parity is not binary — verify each source behavior separately (P36/P37 interplay).
 
 `verified` entries from these go straight into `session_notes.md` and the client profile.
 

@@ -262,6 +262,11 @@ idempotent, use stable selectors, and never break existing functionality.
 | P30 | Client-side variant switcher from fetched PDP blocks | PLP variant selector when the PDP embeds all variant HTML server-side |
 | P31 | Lazy fetch queue — store caller's callback BEFORE the first fetch | N async fetches with a concurrency limit (prevents queue deadlock) |
 | P32 | Bootstrap `.row` flex-wrap gotcha | 2-col desktop redesign silently stacks vertically — needs `flex-wrap: nowrap` |
+| P33 | Replicate the theme's own AJAX request byte-for-byte | Cloned component fires a site AJAX action; wrong payload/encoding silently fails |
+| P34 | In-place form update from `{url, id}` switch responses | Switch returns id + url; site rebuilds client-side; re-fetching the url wipes picked state |
+| P35 | Cloned configurator: capture-phase click + whole-container radio state | Theme intercepts pill clicks; same-name radios duplicated; `form=`-associated controls sit outside the form |
+| P36 | Hydrate cloned plugin components (strip hooks → site initializer) | Cloned gallery/buy-box won't auto-init; strip `data-*` hooks, then call the site's initializer on the clone |
+| P37 | Author `!important` vs cloned slider inline transform | `.tns-slider` frozen by `transform: none !important`; re-assert inline value with `!important` + MutationObserver |
 
 A short list of **other techniques** (canvas colour swatches, SVG star ratings, video overlay,
 IntersectionObserver sticky, vendor guard, debug toggle) is at the end of `AI/AB_TESTING_PATTERNS.md`.
@@ -279,6 +284,8 @@ IntersectionObserver sticky, vendor guard, debug toggle) is at the end of `AI/AB
 - [ ] No `!important` unless required; no unscoped CSS.
 - [ ] Site functionality untouched; no global side effects.
 - [ ] `v1.json` created (+ `share.js` where clicks are tracked).
+- [ ] Clone/AJAX tests: the real site request was pasted at the Q&A gate (P33 evidence-first) and the code reproduces it byte-for-byte; the full source-container outerHTML (incl. `form=`-associated controls) was provided.
+- [ ] `user_qa.md` gives the user the bug-report format (expected-vs-actual in one line + console log + §2.5 evidence paste) and asks them to batch independent bugs in one message.
 - [ ] Verified on desktop, tablet, mobile.
 - [ ] Knowledge capture done (AGENTS.md STEP 4): verified facts → `ClientData/SITE_PROFILES.md`, new technique → `AI/AB_TESTING_PATTERNS.md` as next P-number + a row in this §8 index + `P1–Pxx` count updated, reusable script → `tools/`.
 

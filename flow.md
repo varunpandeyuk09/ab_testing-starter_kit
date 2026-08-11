@@ -46,12 +46,16 @@
           (c) abhi kuch nahi → proceed with brief text; re-scan if material arrives
           Missing material NEVER blocks — fewer inputs now.
                                         ▼
-   STEP 0c 🗣️ Q&A GATE  AI/question_templates.md (U1–U19, L1–L13, N/P/C/S/F/G/H banks)
+   STEP 0c 🗣️ Q&A GATE  AI/question_templates.md (U1–U21 + §2.5 evidence cheat sheet, L1–L13, N/P/C/S/F/G/H banks)
         1. gap-scan the brief          2. kit-lookup (drop what's already known:
          ClientData/SITE_PROFILES.md, past qa_prep.json, playbook §8 index)     3. ask ONLY what's left
         → answers written to AI_DATA/qa_prep.json NOW (not deferred — gate checks it)
          → product/catalog tests: ask the user for product data first (they have it
            in seconds; the AI never scrapes — no bulk fetch, no curl loops)
+         → clone/AJAX tests (P33–P37): ASK for the evidence NOW — real network request,
+           full container outerHTML incl. form=-associated controls, console log (U21) —
+           + the PARITY question (U20: behave exactly like the source, or simplified?)
+           one paste now > 3 QA rounds (AB044: 9 rounds → target 1–2)
                                         ▼
    STEP 1  🔍 RESEARCH  (area-scoped ONLY, never whole site)
         §8 pattern INDEX in AB_TESTING_PLAYBOOK.md → open ONLY the matched P#
@@ -73,8 +77,9 @@
                                          ▼
    STEP 3  🙋 USER QA HANDOVER  (AI does NOT run QA — user QA's ALWAYS)
          write AI_DATA/user_qa.md: what changed + 3–5 things to verify + risky bits
+         + the bug-report format (expected-vs-actual in one line + console log + §2.5 evidence)
          "Test ready — QA aap karo" → STOP (no screenshots, no analysis)
-         loop after handover: user tests → reports bug → AI fixes → note updated
+         loop after handover: user tests → reports bug (batched, with evidence) → AI fixes
                                          ▼
    STEP 4  🧠 KNOWLEDGE LOOP  (kit must be STRICTLY more capable after each test)
          🙋 KNOWLEDGE DIFF (mini self-check): list NEW facts from session_notes.md
@@ -99,10 +104,10 @@
 | **0** | Parse | Extract `CLIENT`, `TEST_NAME`, `TEST_ID`, `URL(s)`, `FOCUS_AREA` | Never guess → ask |
 | **0b** | Scaffold | Copy root templates → `../ABTESTSWITHAI/CLIENT/TEST_NAME/` | Root `variation1/` is read-only |
 | **0b.5** | Input gate | Ask where the user's material lives → images into `user_inputs/test_images/`, PDF/DOCX etc. into `user_inputs/`, meaningful file names | (a) all / (b) partial / (c) none → never blocks |
-| **0c** | Q&A gate | Ask only what the kit doesn't know (U/L/N/P/C/S/F/G/H banks) | Max 6–8 questions; write `qa_prep.json` NOW; ask for product/catalog data when products are in scope |
+| **0c** | Q&A gate | Ask only what the kit doesn't know (U/L/N/P/C/S/F/G/H banks + §2.5 evidence cheat sheet) | Max 6–8 questions; write `qa_prep.json` NOW; ask for product/catalog data when products are in scope; clone/AJAX tests → front-load evidence (U21) + parity (U20) |
 | **1** | Research | §8 pattern INDEX → open ONLY the matched P# in `AB_TESTING_PATTERNS.md` → no match? **ask run-or-skip RAG search** → **ask-don't-guess**: live facts come from the user (outerHTML/screenshot/log) | Area-scoped only; never speculate — ask |
 | **2** | Write code | `variation1/` (`variation.js`/`.css` + `v1.json` + `share.js`) | Start `session_notes.md` at first learned fact |
-| **3** | User QA handover | Write `AI_DATA/user_qa.md` (what changed + 3–5 things to verify + risks) → "Test ready — QA aap karo" → STOP | AI never runs QA; user QA's always; fix-loop: user reports → AI fixes |
+| **3** | User QA handover | Write `AI_DATA/user_qa.md` (what changed + 3–5 things to verify + risks + bug-report format) → "Test ready — QA aap karo" → STOP | AI never runs QA; user QA's always; fix-loop: user reports (batched, with evidence) → AI fixes |
 | **4** | Knowledge loop | Knowledge diff first: show user the NEW facts from `session_notes.md` in one message, get approval, write ONLY approved facts → then profiles, P-patterns, questions, tools → back into the kit | Update `flow.md` too; no unapproved guess reaches a profile |
 
 ---
@@ -112,7 +117,7 @@
 - 🏗️ **Templates** — root `variation1/`, `share.js`, `v1.json`, `metadata.json` are the source of truth. Copy, never edit.
 - 🗂️ **ClientData/ is the ONLY client-data home** — profiles (`SITE_PROFILES.md`/`site_profiles.json`), `client_registry.md`, `examples/`, client tools (`tools/ss_search_check.ps1`). Everything else in the kit is generic; if `ClientData/` is missing the kit still works (verify facts from scratch).
 - 🛡️ **Flow gate is mandatory** — `node tools/flow_gate.js "<test folder>"` after EVERY step. A `FAIL` means STOP and fix first. The gate enforces the same checks for every test.
-- 🙋 **Ask, don't guess** — the user IS your browser. Live-page facts (request shape, response, DOM after click, console errors) come from the user — one paste/screenshot/log, never a guess-test loop.
+- 🙋 **Ask, don't guess** — the user IS your browser. Live-page facts (request shape, response, DOM after click, console errors) come from the user — one paste/screenshot/log, never a guess-test loop. Evidence is front-loaded at the Q&A gate for clone/AJAX tests (network request, full container HTML, console-on-fail — `question_templates.md` §2.5 / U21), and the parity question (U20) is asked once at the gate, not discovered at QA.
 - 🧠 **Session notes** — `AI_DATA/session_notes.md` is appended ALL session (first learned fact onward), never deferred to the end; STEP 4 folds it into the client profile.
 - 🙋 **Knowledge diff approval** — STEP 4 starts with a mini self-check: list the NEW facts learned (from `session_notes.md`), show the user in ONE message, wait for approval, then write ONLY the approved facts. Unapproved guesses never land in a profile — that is the drift protection.
 - 📥 **User material lives in `AI_DATA/user_inputs/`** (images → `test_images/`, everything else → loose/own folders). Never reference files the user pasted anywhere else — copy them into `user_inputs/` first.

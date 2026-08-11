@@ -8,7 +8,7 @@ Read the following files IN ORDER before doing anything else — before analyzin
 1. `AI/AGENTS.md`               — your complete step-by-step build instructions
 2. `AI/PROMPT_PARSING.md`       — how to extract CLIENT and TEST_NAME from any brief
 3. `AI/question_templates.md`   — pre-code Q&A gate (ask only what the kit doesn't know)
-4. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards (read in full) + pattern INDEX; the full P1–P32 recipes live in `AI/AB_TESTING_PATTERNS.md` (open ONLY the matching pattern)
+4. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards (read in full) + pattern INDEX; the full P1–P37 recipes live in `AI/AB_TESTING_PATTERNS.md` (open ONLY the matching pattern)
 5. `ClientData/examples/EG-EXAMPLE-SM01/readme.md`            — what correct output looks like
 6. `ClientData/examples/EG-EXAMPLE-SM01/variation1/variation.js`  — reference JS (match this standard)
 7. `ClientData/examples/EG-EXAMPLE-SM01/variation1/variation.css` — reference CSS (match this standard)
