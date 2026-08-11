@@ -55,6 +55,38 @@ Read `AI/PROMPT_PARSING.md` and extract:
 
 If the brief is incomplete or ambiguous, **ask the user for the missing pieces before proceeding**. Do NOT guess and do NOT start writing code.
 
+### 0a.5 — Classify test effort (AI decides from the brief — NEVER ask the user)
+
+The user doesn't know the taxonomy; the AI judges from the brief's own signals, right after
+parsing and BEFORE scaffolding (it changes how much machinery the rest of the flow runs).
+Record the level in `session_notes.md` + `qa_prep.json` (`"effort"` field). Never present
+"Lite/Standard/Heavy?" as a question — the user will just tell you the goal.
+
+- **HEAVY** if ANY of: clones/reuses a site component that carries its OWN JS behavior
+  (configurators, buy-boxes, sliders, carts, forms with `onSubmit`/AJAX — P33–P37); calls a
+  site AJAX endpoint or needs the theme's real request shape; needs evidence front-loading
+  (network request / full container outerHTML — U21/§2.5); cross-page or persistent state;
+  multiple interactive sub-features; must survive re-render inside a JS-driven UI.
+- **LITE** if ALL of: presentational/structural ONLY (hide, show, move, reorder, restyle
+  EXISTING content); NO new behavior (no click handlers, no fetches, no AJAX, no state, no
+  cloning-with-JS, no variant/conditional logic); single page/area; brief already specifies
+  scope + exact target with no open design questions.
+- **otherwise → STANDARD** (the full flow below, unchanged).
+
+**Process per level:**
+- **LITE** → scaffold the deploy package; Q&A gate auto-shrinks to 0–2 questions (only real
+  gaps); no archive/RAG/deep research — a quick §8 pattern match (e.g. P4 move + CSS-first)
+  is enough; `session_notes.md` 3–5 lines; knowledge diff (STEP 4.0) ONLY if a genuinely NEW
+  site fact or technique was confirmed, else just `metadata.json` + minimal `readme.md`;
+  `user_qa.md` is ALWAYS written (handover is non-negotiable). Target: brief → handover
+  **~10–15 min** (a "hide this tab, move that block" test is minutes, not an hour).
+- **STANDARD** → run the full flow exactly as written below.
+- **HEAVY** → full flow + evidence front-loading (U21 / §2.5) + parity (U20) + the matching
+  P33–P37 patterns. Budget real QA rounds — HEAVY tests are where clone/AJAX edge cases live.
+
+**Decision rule:** when unsure → **STANDARD**. Never down-classify a test to save time — the
+cost of missing a HEAVY signal is a 9-round QA loop (AB044), not 10 minutes.
+
 ### 0b. Create the folder structure immediately
 Every test lives under `../ABTESTSWITHAI/CLIENT/TEST_NAME/` (outside the starter kit). **Never write to the root `variation1/` folder — it is a read-only template.**
 

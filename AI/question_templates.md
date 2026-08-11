@@ -192,6 +192,7 @@ does the check in one headed run. Ask them to verify, then record the verified f
   "test": "AB01 Minicart Redesign",
   "client": "CLIENTX",
   "focus_area": "navigation",
+  "effort": "STANDARD",
   "brief_gaps": ["design mockup", "scoped URLs", "open-trigger"],
   "asked": [
     { "q": "Does the minicart open on add-to-cart or header icon click?", "a": "header icon click", "source": "user" },
@@ -209,6 +210,7 @@ does the check in one headed run. Ask them to verify, then record the verified f
 - `asked` → answers given by the user (record verbatim; these are USER-CONFIRMED facts).
 - `skipped_known` → questions auto-dropped because the kit already knew (this is what makes the kit faster every test).
 - `verified` → facts YOU confirmed live (later moved into `ClientData/SITE_PROFILES.md`).
+- `effort` → the STEP 0a.5 classification (LITE / STANDARD / HEAVY) — records how much machinery this test needed so the flow gate and future sessions can see it.
 
 ---
 

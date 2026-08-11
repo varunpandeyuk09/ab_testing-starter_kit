@@ -29,9 +29,16 @@
                                         ▼
    STEP 0  🏷️ PARSE   AI/PROMPT_PARSING.md → CLIENT / TEST_NAME / TEST_ID(EG-…)
          → client-code/domain lookup: ClientData/client_registry.md (if present)
-                                          → WEBSITE_URL / FOCUS_AREA
+                                           → WEBSITE_URL / FOCUS_AREA
                          If any missing → 🙋 ASK user, never guess
-                                         ▼
+                                          ▼
+   STEP 0a.5 🧠 CLASSIFY effort (AI decides from the brief — NEVER ask the user)
+         LITE   = presentational/structural only (hide/show/move/style existing), no behavior
+         HEAVY  = clone/AJAX/state/re-render (P33–P37), needs evidence front-load
+         else STANDARD = full flow.  unsure → STANDARD (never down-classify a test)
+         LITE: Q&A → 0–2, no archive/RAG, session_notes 3–5 lines, knowledge diff only if
+               genuinely new; user_qa.md ALWAYS. Target brief→handover ~10–15 min
+                                          ▼
    STEP 0b 🏗️ SCAFFOLD  Copy ROOT templates (variation1/, share.js, v1.json)
         → ../ABTESTSWITHAI/CLIENT/TEST_NAME/  (⛔ NEVER touch root variation1/)
           TEST_NAME/ = TWO folders: variation1/ (deploy: variation.js/css + v1.json
@@ -102,6 +109,7 @@
 | Step | Name | What happens | Key rule |
 |:---:|---|---|---|
 | **0** | Parse | Extract `CLIENT`, `TEST_NAME`, `TEST_ID`, `URL(s)`, `FOCUS_AREA` | Never guess → ask |
+| **0a.5** | Classify effort | AI judges LITE / STANDARD / HEAVY from the brief's signals — **never ask the user**; record in `qa_prep.json` (`effort`) | unsure → STANDARD; LITE skips the heavy machinery (~10–15 min total) |
 | **0b** | Scaffold | Copy root templates → `../ABTESTSWITHAI/CLIENT/TEST_NAME/` | Root `variation1/` is read-only |
 | **0b.5** | Input gate | Ask where the user's material lives → images into `user_inputs/test_images/`, PDF/DOCX etc. into `user_inputs/`, meaningful file names | (a) all / (b) partial / (c) none → never blocks |
 | **0c** | Q&A gate | Ask only what the kit doesn't know (U/L/N/P/C/S/F/G/H banks + §2.5 evidence cheat sheet) | Max 6–8 questions; write `qa_prep.json` NOW; ask for product/catalog data when products are in scope; clone/AJAX tests → front-load evidence (U21) + parity (U20) |
