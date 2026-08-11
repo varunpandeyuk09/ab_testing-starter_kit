@@ -1,4 +1,4 @@
-    // Cookie helpers (get / set / delete). Source: OCTO_PART, VACATION.
+    // Cookie helpers (get / set / delete). Source: verified across cart/promo tests.
     function getCookie(name) {
       var m = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([.$?*|{}()\[\]\\\/+^])/g, "\\$1") + "=([^;]*)"));
       return m ? decodeURIComponent(m[1]) : null;

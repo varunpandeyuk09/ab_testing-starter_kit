@@ -13,7 +13,7 @@ already knows.
    answered in the brief. Never re-ask those.
 2. **Kit-lookup.** Check for existing answers in this order and DROP any question
    whose answer is already recorded:
-   - `AI/SITE_PROFILES.md` → the client's header + `### <FOCUS_AREA>` (verified DOM
+   - `ClientData/SITE_PROFILES.md` → the client's header + `### <FOCUS_AREA>` (verified DOM
      facts AND `User-confirmed` bullets).
    - Previous test folders of the same client → their `qa_prep.json` + `readme.md`
      "Knowledge added" section (same area = answers already captured).
@@ -24,10 +24,11 @@ already knows.
    (design intent > behavior > scope > environment). Record every answer in
    `qa_prep.json` (see §5).
 
-**Self-check before asking:** would this answer change what I build or how I
-verify it? If no → skip. If I can verify it myself in one headed browser run
-(e.g. "does the minicart open on add-to-cart or on header click?") → only ask if
-it's cheaper/faster to ask; otherwise verify it and record the result.
+**Self-check before asking:** would this answer change what I build? If no → skip.
+You have NO browser — behavior facts (e.g. "does the minicart open on add-to-cart
+or on header click?") come from the USER: ask them to check once and report back,
+then record the answer in `qa_prep.json` as `user-confirmed`. Never self-verify on
+the live site.
 
 ---
 
@@ -47,8 +48,8 @@ Q&A *question* — it is a material-location check:
    (a) Sab daal diya   (b) Kuch daala hai   (c) Abhi kuch nahi hai — data baad me aa jayega
 ```
 
-- **(a)/(b):** scan `user_inputs/` now — images → design contract (STEP 1b); PDF/DOCX →
-  read for brief/requirements and fold the facts into the Q&A gate below.
+- **(a)/(b):** scan `user_inputs/` now — images → look at them once for design facts;
+  PDF/DOCX → read for brief/requirements and fold the facts into the Q&A gate below.
 - **(c):** proceed on the brief text; re-scan if material arrives later.
 - Missing material never blocks the flow.
 
@@ -58,25 +59,25 @@ Q&A *question* — it is a material-location check:
 
 | # | Question | Why it matters |
 |---|----------|----------------|
-| U1 | Which URL(s)/pages is this test scoped to? Any exclusions? | scope = where code + spec run |
-| U2 | What is the redesign/change supposed to achieve (goal/KPI)? | decides what the spec asserts |
+| U1 | Which URL(s)/pages is this test scoped to? Any exclusions? | scope = where the change applies + is verified |
+| U2 | What is the redesign/change supposed to achieve (goal/KPI)? | decides what to build and what QA must verify |
 | U3 | Is there a design mockup (Figma/image)? Describe layout: image left, text right, button colors/copy. | design intent is NEVER in the DOM |
 | U4 | Any hard constraints? (don't touch X, keep element Y, analytics/tracking must stay) | prevents breaking things |
 | U5 | Target audience/segment for this variation? | login state, device, traffic rules |
 | U6 | Is login/account state required to see the element? Credentials available? | QA needs the right profile state |
-| U7 | Default/preselected state — for any interactive control (tabs, accordions, selectors, dropdowns): what should be highlighted on FIRST load? | the most common rework bug (PLP01 round-4: default grade) |
+| U7 | Default/preselected state — for any interactive control (tabs, accordions, selectors, dropdowns): what should be highlighted on FIRST load? | the most common rework bug (graded-goods PLP: wrong default grade) |
 | U8 | Site default ≠ design default — if the design's default shows a different value/price than the site currently displays, do we (a) keep the site's display and just highlight the matching option, or (b) swap to the design's default? | decides whether a visible value change on load is expected or a bug |
-| U9 | Fallback when live data ≠ mockup — if the live DOM lacks an element the mockup assumes (e.g. a "Grade X" label, a variant set), what's acceptable? Hide / grey out / skip / invent? | prevents guessing degradation (PLP01: monitors `NEW` type had no A/B/C) |
+| U9 | Fallback when live data ≠ mockup — if the live DOM lacks an element the mockup assumes (e.g. a "Grade X" label, a variant set), what's acceptable? Hide / grey out / skip / invent? | prevents guessing degradation (graded-goods PLP: `NEW` type had no A/B/C) |
 | U10 | Copy — are the mockup strings final (use verbatim) or can I adapt? | wording, pricing labels, CTAs |
-| U11 | Must-not-touch list — any element that must look EXACTLY the same (logo, trust badges, brand marks, legal text)? | guardrails for scoping + spec |
-| U12 | Extra network calls OK? — if the test must fetch data per item on scroll (e.g. each PLP card's PDP), is that acceptable? Any budget/concurrency concern? | decides queue/timeout/retry design (PLP01: server stalls on bulk PDP XHRs) |
+| U11 | Must-not-touch list — any element that must look EXACTLY the same (logo, trust badges, brand marks, legal text)? | guardrails for scoping |
+| U12 | Extra network calls OK? — if the test must fetch data per item on scroll (e.g. each PLP card's PDP), is that acceptable? Any budget/concurrency concern? | decides queue/timeout/retry design (graded-goods PLP: server stalls on bulk PDP XHRs) |
 | U13 | 3rd-party libraries — may I inject libraries (sliders, fonts, libs) or keep it vanilla/cross-origin-safe? | wrapper + loading strategy |
 | U14 | Deployment — how will the variation ship? (Convert / VWO / GA4 experiment / custom tag) | wrapper structure, CSS scoping, selector rules |
-| U15 | QA environment — live site or a staging/preview URL? Any Cloudflare/login/CSP that blocks automation? | QA mode (manual vs AI), profile state |
-| U16 | Screenshots on live — allowed? (bot-protection can block headless captures) | verification + handover artifacts |
+| U15 | QA environment — live site or a staging/preview URL? Any Cloudflare/login that blocks the live page? | whether the user's QA needs a specific profile state |
+| U16 | Screenshots on live — can YOU capture them? (bot-protection can block captures) | the user QA's visually; screenshots help when reporting bugs |
 | U17 | Exclusions — any page-type, device, or login-state where the change must be OFF? | scope guardrails |
-| U18 | Sign-off matrix — which browsers/devices must the final approval cover? (Chrome only, or a suite?) | QA checklist + screenshot list |
-| U19 | Tracking — what should be tracked and where must it appear? (dataLayer, GA4 event, Convert goal) | spec asserts the tracking, not just the DOM |
+| U18 | Sign-off matrix — which browsers/devices must the final approval cover? (Chrome only, or a suite?) | user's QA checklist per browser/device |
+| U19 | Tracking — what should be tracked and where must it appear? (dataLayer, GA4 event, Convert goal) | QA checklist must include tracking, not just the DOM |
 
 ---
 
@@ -127,23 +128,23 @@ Q&A *question* — it is a material-location check:
 - L1: Scope — one category page or all listing pages sitewide (brand/filter/pagination views)?
 - L2: Grade/variant selector — must it replicate the PDP's own switcher behavior (click changes product image + price WITHOUT page refresh)?
 - L3: What happens when the user clicks the card CTA (e.g. "See Options") — navigate to PDP / open a quickview / trigger ATC?
-- L4: Where does each data point come from — is price/strike/spec already rendered on the card, or fetched from the PDP (verify markup first)?
+- L4: Where does each data point come from — is price/strike already rendered on the card, or fetched from the PDP (verify markup first)?
 - L5: Does the redesign apply to grid view, list view, or both?
 - L6: Mobile — same card details as desktop, or a simplified variant?
 - L7: Grade selector — does the design fix the full option set on every card (e.g. always show A/B/C) with unavailable options greyed out and disabled, or only show available options?
 - L8: Do the option buttons carry prices (e.g. "A — $299") or just the bare grade label? (Only show prices if the mockup puts them there — otherwise keep them out.)
-- L9: Default grade selection on FIRST load — (a) first available (A→B→C), (b) the grade matching the site's shown price, or (c) none? *(PLP01 round-4: site shows a lower grade's price, so "match shown price" is usually wrong — confirm the rule)*
+- L9: Default grade selection on FIRST load — (a) first available (A→B→C), (b) the grade matching the site's shown price, or (c) none? *(graded-goods PLP: site shows a lower grade's price, so "match shown price" is usually wrong — confirm the rule)*
 - L10: Cards with NO options — if a product has no grade set (e.g. monitors only `NEW`), should the selector be (a) all-disabled, (b) hidden, or (c) CTA-only? What does the mockup show?
-- L11: Pagination survival — must the variation re-apply on page 2+, and must QA re-verify there? (list both URLs in the spec)
+- L11: Pagination survival — must the variation re-apply on page 2+, and must QA re-verify there? (list both URLs for the user's QA)
 - L12: Interaction contract — grade click swaps product image + price IN PLACE (no page refresh), re-click is a no-op, unavailable options are unclickable. Is that the intended behavior?
 - L13: Per-card data fetch — if each card's data comes from a PDP fetch (not SSR), is a queue with limited concurrency + timeout + retry acceptable, or must nothing block on the network?
 
 ---
 
-## 4. Behavior questions worth verifying yourself (not asking)
+## 4. Behavior questions worth checking (not asking blind)
 
-These are often cheaper to check in a headed run (`tools/qa_run.js`) than to ask —
-verify, then record the verified fact:
+These are often cheaper to CHECK than to ask — but you have no browser, so the USER
+does the check in one headed run. Ask them to verify, then record the verified fact:
 
 - Element renders on SSR vs late AJAX (poll/settle needed?)
 - Site wipes injected nodes after render (re-decorate pattern needed?)
@@ -151,14 +152,16 @@ verify, then record the verified fact:
 - Hidden inputs/values updated by JS after load (read at apply-time)
 - Mobile vs desktop markup differences (different containers per breakpoint)
 
+`verified` entries from these go straight into `session_notes.md` and the client profile.
+
 ---
 
 ## 5. qa_prep.json — record format (write to the TEST folder)
 
 ```json
 {
-  "test": "SM26 Minicart Redesign",
-  "client": "TROOPER",
+  "test": "AB01 Minicart Redesign",
+  "client": "CLIENTX",
   "focus_area": "navigation",
   "brief_gaps": ["design mockup", "scoped URLs", "open-trigger"],
   "asked": [
@@ -166,23 +169,23 @@ verify, then record the verified fact:
     { "q": "Which URLs is this scoped to?", "a": "/index.php, /category", "source": "user" }
   ],
   "skipped_known": [
-    { "q": "Does the popup wipe injected nodes?", "reason": "SITE_PROFILES PRAXINDO checkout — P28", "source": "kit" }
+    { "q": "Does the popup wipe injected nodes?", "reason": "ClientData/SITE_PROFILES checkout section — P28", "source": "kit" }
   ],
   "verified": [
-    { "fact": "minicart trigger = .header-cart-trigger", "how": "qa_run.js navigate+click", "area": "navigation" }
+    { "fact": "minicart trigger = .header-cart-trigger", "how": "user-confirmed in a headed run", "area": "navigation" }
   ]
 }
 ```
 
 - `asked` → answers given by the user (record verbatim; these are USER-CONFIRMED facts).
 - `skipped_known` → questions auto-dropped because the kit already knew (this is what makes the kit faster every test).
-- `verified` → facts YOU confirmed live (later moved into `SITE_PROFILES.md`).
+- `verified` → facts YOU confirmed live (later moved into `ClientData/SITE_PROFILES.md`).
 
 ---
 
 ## 6. Feeding Q&A back into the kit (STEP 4)
 
-- **User-confirmed facts** → add to `SITE_PROFILES.md` under the client's
+- **User-confirmed facts** → add to `ClientData/SITE_PROFILES.md` under the client's
   `### <FOCUS_AREA>` as `User-confirmed (Q&A, <TEST_NAME>): ...`. Mark them clearly
   as user-said (NOT DOM-verified) so a future session knows to trust but can re-verify.
 - **Verified facts** → normal profile entries (DOM-verified, same as before).

@@ -1,0 +1,42 @@
+{
+  "praxindo": {
+    "label": "PRAXINDO",
+    "selectors": {
+      "addToCart": [
+        "#product-addtocart-button",
+        ".action.tocart",
+        "button[data-role=\"addtocart\"]",
+        "form[data-role=\"tocart-form\"] button",
+        ".box-tocart button"
+      ],
+      "popup": ".aw-acp-popup:has([data-role=\"update\"] .layer__checkout__title--success)",
+      "popupTitle": ".aw-acp-popup:has([data-role=\"update\"] .layer__checkout__title--success) .layer__checkout__title--success",
+      "update": "[data-role=\"update\"]",
+      "related": "[data-role=\"related\"]",
+      "relatedTitle": ".layer__checkout__upselling__title",
+      "relatedTile": ".layer__checkout__upselling__list__item",
+      "counter": "#minicart-counter"
+    }
+  },
+  "revivserums": {
+    "label": "REVIVSERUMS"
+  },
+  "pcliq": {
+    "label": "PCLIQUIDATIONS",
+    "selectors": {
+      "counter": ".storeCartQty",
+      "mobileShowMenu": ".pclBurger.mobileOnly a.mobileShowMenu",
+      "stMobileMenu": "#stMobileMenu",
+      "stMobileMenuInner": "#stMobileMenu .stMobileMenuInner",
+      "menuHeadingSelector": "#stMobileMenu .menuHeading",
+      "browseCls": ".browseMenu.pclMobileAllCats",
+      "mobileBreakpoint": 800
+    }
+  },
+  "trooper": {
+    "label": "TROOPER"
+  },
+  "monash": {
+    "label": "MONASH"
+  }
+}

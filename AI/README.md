@@ -9,31 +9,37 @@
 Copy this entire block at the start of every new AI session. Replace the path and paste your brief at the bottom.
 
 ```
-You are an expert CRO developer at a premium A/B testing agency.
+You are an expert CRO developer at a premium A/B testing agency. You build production-grade
+A/B test variations using the starter kit below. Follow its process EXACTLY — do not skip,
+reorder, or "remember" steps.
 
 The AB test starter kit is at: D:\WORK_EXPOGROWTH\ab_testing-starter_kit
 
-Before writing a single line of code, read these files in order:
-1. AI/AGENTS.md               — your step-by-step instructions
-2. AI/PROMPT_PARSING.md       — how to extract CLIENT and TEST_NAME from the brief
-3. AI/question_templates.md   — pre-code Q&A gate (STEP 0c): ask only what the kit doesn't know
-4. AI/AB_TESTING_PLAYBOOK.md  — coding standards and reusable patterns (P1–P35)
-5. AI/examples/EG-EXAMPLE-SM01/readme.md    — what a correct test looks like
-6. AI/examples/EG-EXAMPLE-SM01/variation1/variation.js  — reference JS
-7. AI/examples/EG-EXAMPLE-SM01/variation1/variation.css — reference CSS
-8. AI/examples/EG-EXAMPLE-SM01/share.js                 — reference tracking
-9. flow.md                    — end-to-end flow of the kit (single source of truth; kept updated on every change)
+BEFORE writing any code, read these files IN ORDER:
+1. AI/AGENTS.md               — step-by-step build instructions (steps + hard bans)
+2. AI/PROMPT_PARSING.md       — how to extract CLIENT / TEST_NAME / TEST_ID from a brief
+3. AI/question_templates.md   — pre-code Q&A gate (STEP 0c)
+4. AI/AB_TESTING_PLAYBOOK.md  — coding standards (read in full) + §8 pattern INDEX; the P1–P32
+                                recipes live in AI/AB_TESTING_PATTERNS.md — open ONLY the matched pattern
+5. ClientData/examples/EG-EXAMPLE-SM01/readme.md    — what a correct test looks like
+6. ClientData/examples/EG-EXAMPLE-SM01/variation1/variation.js   — reference JS
+7. ClientData/examples/EG-EXAMPLE-SM01/variation1/variation.css  — reference CSS
+8. ClientData/examples/EG-EXAMPLE-SM01/share.js                   — reference tracking
+9. flow.md                    — end-to-end flow (single source of truth, kept updated)
+10. AI/README.md              — this file: prompt starter, brief formats, structure
 
-Note: the blank templates to copy are at the kit ROOT (`variation1/`, `share.js`, `v1.json`, `metadata.json`, `design_contract.json`) — see AI/AGENTS.md Step 0b. The AI/examples files are reference only.
-
-After reading all files above, confirm:
-- CLIENT folder name
-- TEST_NAME (subfolder)
-- Body class (EG-...)
+AFTER reading the files, state and CONFIRM with the user:
+- CLIENT folder name (e.g. CLIENTX)
+- TEST_NAME subfolder (e.g. AB01 Product Tile Optimization)
+- Body class (e.g. EG-CLIENTX-AB01)
 - Target URL(s)
+- FOCUS_AREA (navigation / product / checkout / section / form / page / search)
 
-Then scaffold the folder structure and build the test. When the test is finished, write its
-verified learnings back into the kit (AI/AGENTS.md STEP 4): SITE_PROFILES.md, playbook §8, tools/.
+If any of the above is not in the brief → ASK first, never guess.
+
+THEN follow AI/AGENTS.md STEP 0 → 4 in order (scaffold → input gate → Q&A gate → area-scoped
+research → code → user-QA handover → knowledge loop). Run  node tools/flow_gate.js "<test folder>"
+after EVERY step — any FAIL means STOP and fix first.
 
 --- BRIEF START ---
 [PASTE YOUR BRIEF HERE]
@@ -48,8 +54,8 @@ Paste whatever you have — any format works. Examples:
 
 **Option A — Trello card title + requirements:**
 ```
-TRO | SM22 | Product Tile Optimization
-For trooper.ch, adjustments to all tiles on the PLP:
+ABC | AB01 | Product Tile Optimization
+For abcstore.example.com, adjustments to all tiles on the PLP:
 - Remove the button from all of them
 - Set price font size to 25px
 - SALE badge on right side with border radius 6px
@@ -57,19 +63,19 @@ For trooper.ch, adjustments to all tiles on the PLP:
 
 **Option B — Just the Trello card title:**
 ```
-TRO | SM22 | Product Tile Optimization
+ABC | AB01 | Product Tile Optimization
 ```
 *(AI will ask for requirements if too vague)*
 
 **Option C — URL + description (no Trello card):**
 ```
-Website: https://trooper.ch/collections/all
+Website: https://abcstore.example.com/collections/all
 Test: Make the product price bigger and hide the add to cart button on PLP
 ```
 
 **Option D — With design images:**
 ```
-TRO | SM22 | Product Tile Optimization
+ABC | AB01 | Product Tile Optimization
 [attach desktop screenshot]
 [attach mobile screenshot]
 Match the design in these images.
@@ -77,8 +83,8 @@ Match the design in these images.
 
 **Option E — Mixed language brief:**
 ```
-TRO | SM22 | Product Tile Optimization
-trooper.ch pe product tiles mein se button hatana hai,
+ABC | AB01 | Product Tile Optimization
+abcstore.example.com pe product tiles mein se button hatana hai,
 price 25px krni hai aur SALE badge right side pe chahiye 6px border radius ke saath
 ```
 
@@ -94,30 +100,33 @@ ab_testing-starter_kit/
   share.js                    ← goals/tracking template (blank)
   v1.json                     ← platform config template (blank)
   metadata.json               ← RAG metadata template (blank)
-  design_contract.json        ← design-understanding contract template (STEP 1b)
   flow.md                     ← end-to-end flow of the kit (SINGLE SOURCE OF TRUTH — update on every kit change)
   AGENTS.md                   ← entry-point instructions (read these files first)
-  README.md                   ← this file — onboarding: session starter prompt, brief formats, structure
   AI/                         ← everything the AI needs to know / reuse
+    README.md                 ← onboarding: session starter prompt, brief formats, structure (this file)
     AGENTS.md                 ← step-by-step instructions the AI follows automatically
     PROMPT_PARSING.md         ← teaches AI to extract CLIENT/TEST_NAME from any brief
     question_templates.md     ← pre-code Q&A gate (area-wise banks + kit-lookup rules)
-    AB_TESTING_PLAYBOOK.md    ← full coding standard + patterns library
-    SITE_PROFILES.md          ← verified per-client DOM facts (check before live autopsy)
+     AB_TESTING_PLAYBOOK.md    ← full coding standard + §8 pattern INDEX (read in full)
+     AB_TESTING_PATTERNS.md    ← P1–P32 recipes (REFERENCE — open ONLY the matched P#)
     snippets/
       live.js               ← event-delegation helper (ONLY when events needed)
       listener.js           ← SPA routing listener (ONLY when site is a SPA)
       cookies.js            ← getCookie/setCookie/deleteCookie (ONLY when cookies needed)
       waitForLibrary.js     ← waitForJquery/waitForLibrary readiness waiters
     share.js / v1.json        ← backups of the root blank templates
+  ClientData/                 ← THE ONLY place client-specific data lives
+    SITE_PROFILES.md          ← verified per-client DOM facts (check before live autopsy)
+    site_profiles.json        ← machine-readable facts store (selectors/endpoints/gotchas)
+    client_registry.md        ← real client codes + domains → folder-name map (if present)
     examples/
       EG-EXAMPLE-SM01/        ← REFERENCE ONLY — correct, complete output to study
+    tools/
+      ss_search_check.ps1     ← client-instance of P27 (headless search-result checker)
   scripts/
     search_tests.py           ← RAG fallback search (auto-locates the AB-test archive)
-  tools/                      ← reusable scripts built during tests (see ss_search_check.ps1)
-    ss_search_check.ps1       ← headless-search-result checker (SMARTSIGN instance of P27)
-    cache_vision.js           ← per-test vision output cache (sha256@model@prompt-v; static refs only)
-    contract_to_spec.js       ← design_contract.json → spec.json generator (tokens/layout/copy → css/geom/eq ops)
+  tools/                      ← reusable scripts built during tests
+    flow_gate.js              ← MECHANICAL FLOW ENFORCEMENT — run after every step (FAIL → stop & fix)
   ../ABTESTSWITHAI/CLIENT/    ← actual test output lives here (outside starter kit)
     TEST_NAME/                ← exactly TWO folders
       variation1/             ← DEPLOY PACKAGE (everything the platform runs)
@@ -127,18 +136,15 @@ ab_testing-starter_kit/
         share.js
         metadata.json
       AI_DATA/                ← ALL AI/QA working data (never touched by the platform)
-        spec.json             ← data-driven QA checks (tools/qa_run.js) — REQUIRED before STEP 3
-        qa_prep.json          ← Q&A gate record
+        qa_prep.json          ← Q&A gate record (STEP 0c)
+        session_notes.md      ← facts appended ALL session (folded into profiles in STEP 4)
+        user_qa.md            ← STEP 3 handover note (what changed + what the user should verify)
         readme.md
-        design_contract.json  ← build-time design understanding (STEP 1b)
-        design_tokens.json
         user_inputs/          ← EVERYTHING the user pastes (STEP 0b.5 gate)
           test_images/        ← figma / control / variation reference images
-        vision_cache/         ← per-test vision output cache (STEP 1b)
-        qa_result.json, qa_*.png ← QA outputs
 ```
 
-> **Template source of truth:** the blank templates live at the kit ROOT — `variation1/`, `share.js`, `v1.json`, `design_contract.json`. The copies under `AI/` are backups. `AI/examples/EG-EXAMPLE-SM01/` is a filled reference example ONLY — never copy its values into a real test.
+> **Template source of truth:** the blank templates live at the kit ROOT — `variation1/`, `share.js`, `v1.json`, `metadata.json`. The copies under `AI/` are backups. `ClientData/examples/EG-EXAMPLE-SM01/` is a filled reference example ONLY — never copy its values into a real test. `ClientData/` is the ONLY folder holding client-specific data — the rest of the kit is generic.
 
 ---
 
@@ -159,13 +165,16 @@ The base `variation.js` contains **only** `waitForElement` + `init()`.
 
 ## AI Workflow (automatic — no manual steps needed)
 
+> 🛡️ **The flow is ENFORCED, not just documented:** run `node tools/flow_gate.js "<test folder>"`
+> after **every** step. Any `FAIL` → STOP, fix that step, re-run. The gate enforces the
+> same checks for every test. Prose is the manual; the gate is the law.
+
 The exact end-to-end flow is documented in `flow.md` (kit root) — **the single source of
 truth for HOW this kit works**. It is kept updated on every kit change, so read it, don't
-re-derive it. The short version of the pipeline is STEP 0 (parse + scaffold) → STEP 0c
-(Q&A gate) → STEP 1 (area-scoped research) → STEP 1b (design contract: cache static
-refs once via `tools/cache_vision.js`, write `design_contract.json`, generate design
-checks with `tools/contract_to_spec.js`) → STEP 2 (code + spec.json) → STEP 3 (QA) →
-STEP 4 (knowledge loop back into the kit).
+re-derive it. The short version of the pipeline is STEP 0 (parse + scaffold) →
+STEP 0c (Q&A gate) → STEP 1 (area-scoped research, ask-don't-guess) → STEP 2 (code +
+start `session_notes.md`) → STEP 3 (user QA handover via `AI_DATA/user_qa.md` — AI never
+runs QA) → STEP 4 (knowledge loop back into the kit).
 
 > ⚠️ If you change anything about the kit (a step, file, folder, tool, flag, or pattern
 > count), update `flow.md` in the SAME commit — see `AI/AGENTS.md` STEP 4 item 6.
@@ -174,7 +183,7 @@ STEP 4 (knowledge loop back into the kit).
 
 ## RAG fallback search (`scripts/search_tests.py`)
 
-The patterns library (playbook §8, P1–P35) is the primary source. If no pattern fits a brief, the AI runs the fallback search against the agency's archive:
+The patterns library is the primary source: match the brief against the §8 INDEX in `AB_TESTING_PLAYBOOK.md`, then read ONLY the matched P# in `AI/AB_TESTING_PATTERNS.md`. If no pattern fits a brief, the AI runs the fallback search against the agency's archive:
 
 ```bash
 python scripts/search_tests.py "test description"
@@ -187,7 +196,7 @@ python scripts/search_tests.py "test description"
 
 **Required once per machine:** Python 3 with `scikit-learn` (`pip install scikit-learn`). Pure-Python fallback is used if sklearn is missing.
 
-**Rule:** when the fallback is used, the newly learned technique MUST be appended to playbook §8 as the next P-number — the library is the lasting output, the search is only the teacher.
+**Rule:** when the fallback is used, the newly learned technique MUST be appended to `AI/AB_TESTING_PATTERNS.md` as the next P-number + a row in the playbook §8 index — the library is the lasting output, the search is only the teacher.
 
 ---
 
@@ -195,8 +204,9 @@ python scripts/search_tests.py "test description"
 
 Every finished test must leave its verified learnings in the kit. The full checklist lives
 in `AI/AGENTS.md` STEP 4 and the pipeline is mirrored in `flow.md` (kit root). In short:
-- Verified DOM facts + user-confirmed Q&A → `AI/SITE_PROFILES.md` (client section, area-wise)
-- New technique → next P-pattern in `AI/AB_TESTING_PLAYBOOK.md` §8 + update `P1–Pxx` count
+- **Knowledge diff (user-approved)** — show the user the NEW facts from `session_notes.md` in ONE message, wait for approval, write only approved facts (drift protection)
+- Verified DOM facts + user-confirmed Q&A → `ClientData/SITE_PROFILES.md` (client section, area-wise)
+- New technique → next P-pattern in `AI/AB_TESTING_PATTERNS.md` + a row in playbook §8 index + update `P1–Pxx` count
 - New question the templates missed → `AI/question_templates.md` (relevant area bank)
 - Reusable script → `tools/`
 - Any kit change → update `flow.md` (root) in the SAME commit

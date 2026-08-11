@@ -1,6 +1,6 @@
     // Library readiness waiters. Use BEFORE any code that calls a library
     // (e.g. $, Swiper, Slick) that the page may load lazily or via AJAX.
-    // Source: Moorings (waitForJquery), WICKED_CLOTHES (Swiper/Slick), SWEET PLAID (Marketo).
+    // Source: verified across live tests where the site lazy-loads jQuery/Swiper/Slick/Marketo.
     function waitForJquery(callback, timeout) {
       if (typeof jQuery !== "undefined") return callback();
       var waited = 0;
