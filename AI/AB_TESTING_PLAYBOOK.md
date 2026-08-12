@@ -268,6 +268,7 @@ idempotent, use stable selectors, and never break existing functionality.
 | P35 | Cloned configurator: capture-phase click + whole-container radio state | Theme intercepts pill clicks; same-name radios duplicated; `form=`-associated controls sit outside the form |
 | P36 | Hydrate cloned plugin components (strip hooks → site initializer) | Cloned gallery/buy-box won't auto-init; strip `data-*` hooks, then call the site's initializer on the clone |
 | P37 | Author `!important` vs cloned slider inline transform | `.tns-slider` frozen by `transform: none !important`; re-assert inline value with `!important` + MutationObserver |
+| P38 | Relocate plugin-owned iframes/widgets (overlay-sync) | Moving an SDK/plugin-rendered widget (PayPal/Amazon express buttons, iframes) from PDP to mini-cart — `appendChild` breaks postMessage/click wiring, `display:none` kills render; keep the original alive off-screen and overlay it over dummy slots with `position: fixed` + rAF loop |
 
 A short list of **other techniques** (canvas colour swatches, SVG star ratings, video overlay,
 IntersectionObserver sticky, vendor guard, debug toggle) is at the end of `AI/AB_TESTING_PATTERNS.md`.
@@ -308,6 +309,7 @@ IntersectionObserver sticky, vendor guard, debug toggle) is at the end of `AI/AB
 - Raw non-ASCII copy strings that can mangle encoding in the injection pipeline.
 - Re-initialising on every SPA route without idempotency guards (body class + element existence checks).
 - Using JS to hide/show or restyle an element that a scoped CSS rule handles (`display: none`, spacing, colour) — presentation belongs in `variation.css`; JS is only for behavior (move/clone/fetch/state). The hidden trap: bundling a CSS job inside a JS move operation.
+- Iterating on a failing approach instead of questioning it — "5 tries, same premise" (e.g. forcing a DOM-move on a plugin-owned PayPal iframe: postMessage breaks, retries can't fix it). Fail ONCE → ask *who owns this element's lifecycle*; if a plugin/SDK owns it, overlay — never move (P38). Changing the approach on try 2 beats forcing the same one on try 5.
 
 ---
 

@@ -1,4 +1,4 @@
-# AB Testing Patterns Library (P1–P37)
+# AB Testing Patterns Library (P1–P38)
 
 REFERENCE FILE — do NOT read this end-to-end. Match the brief against the §8 INDEX in
 `AI/AB_TESTING_PLAYBOOK.md`, then open ONLY the matching pattern here. New patterns are
@@ -928,6 +928,26 @@ Source: verified on a PLP quick-add modal (shopware `PluginManager.initializePlu
 **Gotchas:** a one-shot `style.setProperty` is a mirage — the theme re-asserts on every tns update, so the observer is the fix, not the initial pin.
 
 Source: verified on a PLP quick-add modal slider inside a grid-forced container.
+
+### P38. Overlay-sync plugin-owned iframes/widgets — never move them
+
+**When:** you need to relocate a widget the site's plugin/SDK already initialized — PayPal express-checkout iframes, Amazon Pay buttons, any SDK-rendered component — from its original spot (e.g. PDP) into a new one (e.g. mini-cart). Physically moving the node with `appendChild` breaks the SDK: iframes detach/reload and lose their postMessage channel (button blank or checkout never opens); Amazon's `.lpa-button` loses its click wiring. Hiding the source with `display: none` makes the SDK measure 0×0 and bail out of rendering.
+
+**Recipe:** keep the real element exactly where the plugin rendered it and overlay it over a dummy "slot" at the destination:
+1. Never `appendChild` the plugin's element. Create a mount at the destination with placeholder slots (one per widget); reserve space with `min-height` so layout doesn't collapse. Slot order = visual order (grid/flex) — reorder by swapping the slots' `appendChild` order, never plugin DOM.
+2. If the source sits inside a `display:none`/clipped ancestor (z-index jail), move its *container* once to `<body>` and park it off-screen (`position:absolute; top/left:-9999px; width/height:0; overflow:visible`) — never `display:none`. Remove duplicate containers left by AJAX re-renders.
+3. Drive a `requestAnimationFrame` sync loop: read each slot's `getBoundingClientRect()` and pin the REAL widget over it with `position: fixed; top/left/width = rect; z-index; pointer-events: auto`. When the destination slot is off-screen/invisible, park the widget off-screen (`-9999px`, opacity 0, pointer-events none) instead of hiding it.
+4. A container move reloads iframes → re-trigger the plugin's own initializer if it exposes one (e.g. JTL PayPal: find the init fn in `window.PPCcomponentInitializations`, fire `window.jQuery(window).trigger('ppc:componentInit', [initFn, true])`).
+5. Handle two-phase UIs (consent button → iframe): sync whichever is currently visible, park the other.
+
+**Key ideas:**
+1. The plugin must keep full ownership of its element; the script only mirrors coordinates. Clicks land on the untouched real button → checkout opens.
+2. The rAF loop self-keeps alignment across scroll, open/close animation and AJAX re-renders — a one-shot position is not enough.
+3. Detect the slot's on-screen visibility from its rect (width/height > 0 and inside the viewport) so hidden destinations park the widgets.
+
+**Gotchas:** `position: fixed` is viewport-relative — any `transform`/`filter` ancestor (slide-in cart animations) breaks the overlay, so keep the slots' ancestors transform-free. The rAF loop runs forever (cheap, but park buttons when the destination is closed). Re-init depends on plugin globals (`PPCcomponentInitializations`, `jQuery`) — pin the plugin version. If the anchor that places the mount (e.g. a coupon field) is absent, widgets stay parked off-screen and silently disappear — always keep a fallback that leaves them visible in the original spot.
+
+Source: verified on a JTL-shop storefront fixing PayPal + Amazon Pay express buttons moved PDP → mini-cart (DOM-move broke PayPal iframe messaging; off-screen parking + overlay-sync fixed it).
 
 ### Other techniques observed in the archive (use when a brief needs them)
 

@@ -91,7 +91,7 @@ the Q&A gate when the test clones a site component or calls a site AJAX action (
 
 | Evidence | What to paste | When it's needed |
 |---|---|---|
-| **Network request** | DevTools → Network tab → do the action (variant switch / add-to-cart / filter) → right-click it → Copy → Copy as cURL (or paste the URL + Payload tab + Request Headers). | Any test where the variation CALLS a site AJAX action (clone-heavy: P33–P37). Wrong request shape silently fails — the #1 time-waster (AB044: 3 rounds). |
+| **Network request** | DevTools → Network tab → do the action (variant switch / add-to-cart / filter) → right-click it → Copy → Copy as cURL (or paste the URL + Payload tab + Request Headers). | Any test where the variation CALLS a site AJAX action (clone-heavy: P33–P38). Wrong request shape silently fails — the #1 time-waster (AB044: 3 rounds). |
 | **Full container HTML** | Element → right-click → Copy → Copy element (outerHTML). Paste the WHOLE container, not one sub-element. | Any test that CLONES a site component (quick-add modal, buy-box, section). Include elements OUTSIDE the `<form>` that reference it via `form="..."` (e.g. a quantity `<select>`) — form-associated controls live outside the form tag (AB044: ATC 400 bug). |
 | **Console log on fail** | When something doesn't work: paste the full console output (errors + any `[EG-…]` logs) AND expected-vs-actual in ONE line. | Every bug report. "M selected but cart shows noSize (expected M)" + the console lines = 1 round, not 5. |
 | **Before/after DOM** | When a value doesn't stick (variant id, checked option, price): paste the element's outerHTML BEFORE the action and AFTER. | Proves what the site wrote vs what the variation wrote (AB044: the M-variant id proof). |

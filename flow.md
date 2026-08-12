@@ -34,7 +34,7 @@
                                           ▼
    STEP 0a.5 🧠 CLASSIFY effort (AI decides from the brief — NEVER ask the user)
          LITE   = presentational/structural only (hide/show/move/style existing), no behavior
-         HEAVY  = clone/AJAX/state/re-render (P33–P37), needs evidence front-load
+         HEAVY  = clone/AJAX/state/re-render (P33–P38), needs evidence front-load
          else STANDARD = full flow.  unsure → STANDARD (never down-classify a test)
          LITE: Q&A → 0–2, no archive/RAG, session_notes 3–5 lines, knowledge diff only if
                genuinely new; user_qa.md ALWAYS. Target brief→handover ~10–15 min
@@ -59,7 +59,7 @@
         → answers written to AI_DATA/qa_prep.json NOW (not deferred — gate checks it)
          → product/catalog tests: ask the user for product data first (they have it
            in seconds; the AI never scrapes — no bulk fetch, no curl loops)
-         → clone/AJAX tests (P33–P37): ASK for the evidence NOW — real network request,
+         → clone/AJAX tests (P33–P38): ASK for the evidence NOW — real network request,
            full container outerHTML incl. form=-associated controls, console log (U21) —
            + the PARITY question (U20: behave exactly like the source, or simplified?)
            one paste now > 3 QA rounds (AB044: 9 rounds → target 1–2)
@@ -126,6 +126,7 @@
 - 🗂️ **ClientData/ is the ONLY client-data home** — profiles (`SITE_PROFILES.md`/`site_profiles.json`), `client_registry.md`, `examples/`, client tools (`tools/ss_search_check.ps1`). Everything else in the kit is generic; if `ClientData/` is missing the kit still works (verify facts from scratch).
 - 🛡️ **Flow gate is mandatory** — `node tools/flow_gate.js "<test folder>"` after EVERY step. A `FAIL` means STOP and fix first. The gate enforces the same checks for every test.
 - 🙋 **Ask, don't guess** — the user IS your browser. Live-page facts (request shape, response, DOM after click, console errors) come from the user — one paste/screenshot/log, never a guess-test loop. Evidence is front-loaded at the Q&A gate for clone/AJAX tests (network request, full container HTML, console-on-fail — `question_templates.md` §2.5 / U21), and the parity question (U20) is asked once at the gate, not discovered at QA.
+- 🛑 **Fail once → question the APPROACH, not just the guess** — if a technique can't work (e.g. moving a plugin-owned iframe breaks postMessage), retries never fix it; re-derive from first principles and change the approach (5x same-premise ≠ smarter, it's harder — antigravity fixed the same bug on try 2 by switching approach).
 - 🧠 **Session notes** — `AI_DATA/session_notes.md` is appended ALL session (first learned fact onward), never deferred to the end; STEP 4 folds it into the client profile.
 - 🙋 **Knowledge diff approval** — STEP 4 starts with a mini self-check: list the NEW facts learned (from `session_notes.md`), show the user in ONE message, wait for approval, then write ONLY the approved facts. Unapproved guesses never land in a profile — that is the drift protection.
 - 📥 **User material lives in `AI_DATA/user_inputs/`** (images → `test_images/`, everything else → loose/own folders). Never reference files the user pasted anywhere else — copy them into `user_inputs/` first.

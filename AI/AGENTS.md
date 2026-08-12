@@ -34,6 +34,11 @@ When you need such a fact and it is NOT already in the kit (`ClientData/SITE_PRO
   → NEVER build speculative code to "discover" the fact. If a guess fails ONCE on the
     live site, STOP guessing and ask. Max one speculative round, ever.
   → A guess-test-guess loop costs hours and is the #1 kit time-waster — it is banned.
+  → FAIL ONCE = question the APPROACH, not just the guess (lesson: 5 tries on a DOM-move of a
+    plugin-owned PayPal iframe never converged; antigravity fixed it by changing the approach
+    on try 2). If the technique itself can't work, no number of retries fixes it. Stop and ask:
+    who owns this element's lifecycle (plugin/SDK/theme)? does the site re-render it? Re-derive
+    the approach from first principles before the next try — never re-try the same premise harder.
 
 ---
 
@@ -63,7 +68,7 @@ Record the level in `session_notes.md` + `qa_prep.json` (`"effort"` field). Neve
 "Lite/Standard/Heavy?" as a question — the user will just tell you the goal.
 
 - **HEAVY** if ANY of: clones/reuses a site component that carries its OWN JS behavior
-  (configurators, buy-boxes, sliders, carts, forms with `onSubmit`/AJAX — P33–P37); calls a
+  (configurators, buy-boxes, sliders, carts, forms with `onSubmit`/AJAX — P33–P38); calls a
   site AJAX endpoint or needs the theme's real request shape; needs evidence front-loading
   (network request / full container outerHTML — U21/§2.5); cross-page or persistent state;
   multiple interactive sub-features; must survive re-render inside a JS-driven UI.
@@ -82,7 +87,7 @@ Record the level in `session_notes.md` + `qa_prep.json` (`"effort"` field). Neve
   **~10–15 min** (a "hide this tab, move that block" test is minutes, not an hour).
 - **STANDARD** → run the full flow exactly as written below.
 - **HEAVY** → full flow + evidence front-loading (U21 / §2.5) + parity (U20) + the matching
-  P33–P37 patterns. Budget real QA rounds — HEAVY tests are where clone/AJAX edge cases live.
+  P33–P38 patterns. Budget real QA rounds — HEAVY tests are where clone/AJAX edge cases live.
 
 **Decision rule:** when unsure → **STANDARD**. Never down-classify a test to save time — the
 cost of missing a HEAVY signal is a 9-round QA loop (AB044), not 10 minutes.
@@ -178,7 +183,7 @@ code, turn the brief into the minimum set of questions the kit cannot already an
    do — nahi to ye specific facts aap live site se confirm kar dena (1 min ka kaam)."
    Never guess product facts, and never silently run a long catalog scrape the user could
    have provided in seconds.
-6. **Front-load the evidence the code will need (clone/AJAX tests — pattern index P33–P37).**
+6. **Front-load the evidence the code will need (clone/AJAX tests — pattern index P33–P38).**
    If the test clones a site component or calls a site AJAX endpoint, ASK IN THIS GATE for the
    three pastes that end guess-work (§2.5 cheat sheet): (a) the real Network-tab request for
    the action (URL + payload with encodings + headers), (b) the FULL container outerHTML
