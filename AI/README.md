@@ -19,7 +19,7 @@ BEFORE writing any code, read these files IN ORDER:
 1. AI/AGENTS.md               — step-by-step build instructions (steps + hard bans)
 2. AI/PROMPT_PARSING.md       — how to extract CLIENT / TEST_NAME / TEST_ID from a brief
 3. AI/question_templates.md   — pre-code Q&A gate (STEP 0c)
-4. AI/AB_TESTING_PLAYBOOK.md  — coding standards (read in full) + §8 pattern INDEX; the P1–P38
+4. AI/AB_TESTING_PLAYBOOK.md  — coding standards (read in full) + §8 pattern INDEX; the P1–P40
                                 recipes live in AI/AB_TESTING_PATTERNS.md — open ONLY the matched pattern
 5. ClientData/examples/EG-EXAMPLE-SM01/readme.md    — what a correct test looks like
 6. ClientData/examples/EG-EXAMPLE-SM01/variation1/variation.js   — reference JS
@@ -38,13 +38,60 @@ AFTER reading the files, state and CONFIRM with the user:
 If any of the above is not in the brief → ASK first, never guess.
 
 THEN follow AI/AGENTS.md STEP 0 → 4 in order (scaffold → input gate → Q&A gate → area-scoped
-research → code → user-QA handover → knowledge loop). Run  node tools/flow_gate.js "<test folder>"
-after EVERY step — any FAIL means STOP and fix first.
+research → code → user-QA handover → knowledge loop). After every completed step, run
+node tools/flow_gate.js "<test folder>" --through <completed-step>. Any FAIL in that phase
+means STOP and fix first; omit --through only for the final full-flow check.
 
 --- BRIEF START ---
 [PASTE YOUR BRIEF HERE]
 --- BRIEF END ---
 ```
+
+---
+
+## ⚡ Fast Lane (use for a 10–20 minute build target)
+
+For a simple test, paste this below the Session Starter Prompt. The AI decides whether it is
+LITE, STANDARD, or HEAVY — do not guess the effort level yourself.
+
+```text
+FAST LANE
+Client: CLIENT
+Test ID: AB01
+Test name: Product Tile Copy Change
+URL(s): https://example.com/page
+Focus area: section
+Change: [exact change required]
+Target selector / full outerHTML: [paste]
+Mockup: [attach or state none]
+Tracking: [what to track, or none]
+Constraints: [devices/pages/elements that must not change]
+Input material: (a) all uploaded / (b) partially uploaded / (c) none
+```
+
+LITE tasks (CSS/text/show/hide/reorder of existing content) target **10–15 minutes**. A known
+STANDARD task targets **up to 20 minutes** only when the client profile and exact target facts
+already exist. AJAX, cloned components, forms, variants, or re-render/state work are HEAVY and
+need their normal evidence/QA time.
+
+### Optional local commands
+
+Normally the AI runs these. Use them yourself only when you need to prepare a test before
+opening a session:
+
+```powershell
+# Create the safe test scaffold.
+node tools/start_test.js --client CLIENT --name "AB01 Product Tile Copy Change" --id CLIENT-AB01 --url "https://example.com/page" --focus section --effort LITE
+
+# Run after each completed phase.
+node tools/flow_gate.js "<test folder>" --through 0b
+node tools/flow_gate.js "<test folder>" --through 0c
+
+# Run before giving the build to the user for QA.
+node tools/preflight_check.js "<test folder>"
+```
+
+Full rules and examples: [`AI/FAST_LANE.md`](FAST_LANE.md).
 
 ---
 
@@ -108,7 +155,7 @@ ab_testing-starter_kit/
     PROMPT_PARSING.md         ← teaches AI to extract CLIENT/TEST_NAME from any brief
     question_templates.md     ← pre-code Q&A gate (area-wise banks + kit-lookup rules)
      AB_TESTING_PLAYBOOK.md    ← full coding standard + §8 pattern INDEX (read in full)
-     AB_TESTING_PATTERNS.md    ← P1–P38 recipes (REFERENCE — open ONLY the matched P#)
+     AB_TESTING_PATTERNS.md    ← P1–P40 recipes (REFERENCE — open ONLY the matched P#)
     snippets/
       live.js               ← event-delegation helper (ONLY when events needed)
       listener.js           ← SPA routing listener (ONLY when site is a SPA)
@@ -127,6 +174,8 @@ ab_testing-starter_kit/
     search_tests.py           ← RAG fallback search (auto-locates the AB-test archive)
   tools/                      ← reusable scripts built during tests
     flow_gate.js              ← MECHANICAL FLOW ENFORCEMENT — run after every step (FAIL → stop & fix)
+    start_test.js              ← optional safe STEP 0b scaffold command
+    preflight_check.js         ← static check before user QA handover (never replaces QA)
   ../ABTESTSWITHAI/CLIENT/    ← actual test output lives here (outside starter kit)
     TEST_NAME/                ← exactly TWO folders
       variation1/             ← DEPLOY PACKAGE (everything the platform runs)

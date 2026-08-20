@@ -7,13 +7,16 @@ You are building an A/B test variation for a premium CRO agency. Work must match
 
 ## GATE RULE (MANDATORY — this is what prevents skipping steps)
 
-Run the mechanical gate after **EVERY** step, before starting the next one:
+Run the mechanical gate after **EVERY** step, before starting the next one. Check only
+the phase that has actually been completed:
 
 ```
-node tools/flow_gate.js "<test folder>"
+node tools/flow_gate.js "<test folder>" --through 0b
 ```
 
-- **Any `FAIL` printed → STOP.** Fix that step first, re-run the gate, and only then proceed.
+- Use `--through 0b`, `0b.5`, `0c`, `1`, `2`, `3`, or `4` after that named step. Omit
+  `--through` only for the final full-flow check.
+- **Any `FAIL` in the checked phase → STOP.** Fix that step first, re-run the gate, and only then proceed.
 - `WARN` = note it, continue.
 - `ALL PASS` → move to the next step.
 - The gate is the *enforcement*; this document is only the *manual*. If a step is missing,
@@ -178,6 +181,8 @@ code, turn the brief into the minimum set of questions the kit cannot already an
    `../ABTESTSWITHAI/CLIENT/TEST_NAME/AI_DATA/qa_prep.json` **before leaving this step**.
    Do NOT defer it to STEP 4 — a deferred record is a lost record, and the flow gate
    treats a missing `qa_prep.json` as "STEP 0c not done".
+   For a LITE brief with no remaining question, set `"gate_complete": true` in
+   `qa_prep.json`; this records that the zero-question gate was deliberately completed.
 5. **Ask the user for catalog/product data if the test touches products** (PDP, cart,
    upsells, prices): "Products/catalog data (handles, variant IDs, prices, images) ho to de
    do — nahi to ye specific facts aap live site se confirm kar dena (1 min ka kaam)."
@@ -259,6 +264,7 @@ The base `variation.js` contains ONLY `waitForElement` + `init()`. Do not add he
   - Visual/utility classes (`.bg-gradient`, `.text-white`, `.shadow-sm`, `.font-bold`).
   - Positional selectors (`.row > div:nth-child(3)`).
 - Stable-selector test: is it semantic, does it survive a theme/grid update, and is it identical on dev → staging → prod? If any answer is no, find a better anchor.
+- **No stable selector exists (Salesforce CRM fields, tool-injected IDs)?** → ASK the user: "In fields ke liye koi stable class ya data-attribute hai, ya `name` attribute se kaam chalana padega?" Use `name` attribute as pragmatic fallback ONLY after user confirms no better option exists. Log the risk in `session_notes.md`: "Selector uses CRM-generated ID — unstable, could change on CRM update."
 - Support multiple matching elements — loop where applicable. Guard against duplicate inserts: `if (!parent.querySelector('.eg-...')) { ... }`.
 - Use `waitForElement(selector, trigger, 50, 15000)` to initialize. Never call `init()` before the required DOM exists.
 - Every `setInterval`/`setTimeout` must self-clear or have a timeout. No infinite intervals/loops.

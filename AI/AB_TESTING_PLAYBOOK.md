@@ -161,6 +161,7 @@ Every test starts from the standard wrapper. `init()` is the only entry point. D
 - **No visual/utility classes as anchors** (`.bg-gradient`, `.text-white`, `.shadow-sm`, `.font-bold`). They describe styling, not structure, and get renamed freely.
 - **No positional selectors** (`.row > div:nth-child(3)`) — DOM order and grid columns change.
 - **Stable-selector checklist:** (a) semantic id/class/`data-*`, (b) survives a theme/grid update, (c) identical across dev → staging → prod. If any answer is no, find a better anchor.
+- **No stable selector exists (Salesforce CRM fields, tool-injected IDs)?** → ASK the user: "In fields ke liye koi stable class ya data-attribute hai, ya `name` attribute se kaam chalana padega?" Use `name` attribute as pragmatic fallback ONLY after user confirms no better option exists. Log the risk in `session_notes.md`: "Selector uses CRM-generated ID — unstable, could change on CRM update." Never silently ship a CRM ID selector without documenting the risk.
 - Preferred: `id`, stable classes, `data-*` attributes, and CSS selector chaining (e.g. `[data-login="logged-out"] #cart-page .button-go-to-checkout`).
 - Never assume a single element — loop `querySelectorAll(...)` results and apply the change to every match where applicable.
 - Prevent duplicate insertion/listeners/observers:
@@ -269,6 +270,8 @@ idempotent, use stable selectors, and never break existing functionality.
 | P36 | Hydrate cloned plugin components (strip hooks → site initializer) | Cloned gallery/buy-box won't auto-init; strip `data-*` hooks, then call the site's initializer on the clone |
 | P37 | Author `!important` vs cloned slider inline transform | `.tns-slider` frozen by `transform: none !important`; re-assert inline value with `!important` + MutationObserver |
 | P38 | Relocate plugin-owned iframes/widgets (overlay-sync) | Moving an SDK/plugin-rendered widget (PayPal/Amazon express buttons, iframes) from PDP to mini-cart — `appendChild` breaks postMessage/click wiring, `display:none` kills render; keep the original alive off-screen and overlay it over dummy slots with `position: fixed` + rAF loop |
+| P39 | Optimizely events — eventName-only, default tags | Engagement goals fire by `eventName` ONLY with default `{revenue: 0, value: 0.00}` — no custom tags unless the user asks; page-view / time-on-page marks / scroll depth (once per mark) / interaction clicks mapped by user intent (`handoff_clicks`, `trial_start`) |
+| P40 | SFCC Product-Variation fetch + inflight dedup for shared-pid tiles | PLP on SFCC/Demandware site; fetch variant data (sizes/widths/stock) per tile; `dwvar_` double-underscore encoding; Tealium `masterProductId` unreliable; multiple tiles share same `data-pid` (colorways) — inflight tracker prevents duplicate fetches, flushPending applies data to all tiles |
 
 A short list of **other techniques** (canvas colour swatches, SVG star ratings, video overlay,
 IntersectionObserver sticky, vendor guard, debug toggle) is at the end of `AI/AB_TESTING_PATTERNS.md`.

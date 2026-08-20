@@ -138,6 +138,7 @@ is a feature request, not a bug.
 - F2: What happens on submit (AJAX, redirect, success state)? Must it keep working?
 - F3: Validation/error states — restyle or keep site's?
 - F4: Are required/optional/autofill attributes to be preserved?
+- F5: Form fields with no stable selector (Salesforce `00N…` IDs, CRM tokens) — shall I use the `name` attribute as fallback, or is there a stable class/data-attribute on the live page? *(Risks: CRM-generated values could change on platform update)*
 
 ### page (full-page / template-level redesign)
 - G1: Which template(s)/page types (home, category, article)?
@@ -164,6 +165,25 @@ is a feature request, not a bug.
 - L11: Pagination survival — must the variation re-apply on page 2+, and must QA re-verify there? (list both URLs for the user's QA)
 - L12: Interaction contract — grade click swaps product image + price IN PLACE (no page refresh), re-click is a no-op, unavailable options are unclickable. Is that the intended behavior?
 - L13: Per-card data fetch — if each card's data comes from a PDP fetch (not SSR), is a queue with limited concurrency + timeout + retry acceptable, or must nothing block on the network?
+
+---
+
+## 3.5 EVENT bank — "event banane" brief ke liye (ask ONLY if the brief doesn't state it)
+
+Use this when the brief is ONLY about adding tracking events (Optimizely goals). Kit
+defaults (P39) answer most of it — ask at most 2–4 questions, ONLY the ones below whose
+answer the brief doesn't already give:
+
+| # | Question | Kit default if not answered |
+|---|----------|-----------------------------|
+| E1 | Kaunse events? (page view / time-on-page marks / scroll depth / click interactions — list the user actions) | Standard set: `variant_page_view`, `time_on_page` (10/30/60/120/300s), `scroll_25_`/`scroll_50_`/`scroll_90_`/`scroll_100_` |
+| E2 | Custom tags chahiye (variant, plan, type, etc.) ya default `{revenue:0, value:0.00}` hi rahe? | Default tags ONLY — eventName-based (USER-CONFIRMED: no custom tags unless asked) |
+| E3 | Kya mapping? (kaunsa action kaunsa event fire kare — Login → `handoff_clicks`, Register/Hero-trial → `trial_start`, FAQ → `faq_clicks`) | User intent mapping, not element names (P39) |
+| E4 | Which platform — Optimizely only, or also dataLayer/GA4? | Optimizely `window['optimizely'].push` only |
+
+**Output rule (P39):** one `pushEvent(eventName)` helper with default tags; each mark fires
+ONCE; interaction events wire via `live()`; event names snake_case action-based. Never invent
+custom tags.
 
 ---
 

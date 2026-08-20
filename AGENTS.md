@@ -8,7 +8,7 @@ Read the following files IN ORDER before doing anything else — before analyzin
 1. `AI/AGENTS.md`               — your complete step-by-step build instructions
 2. `AI/PROMPT_PARSING.md`       — how to extract CLIENT and TEST_NAME from any brief
 3. `AI/question_templates.md`   — pre-code Q&A gate (ask only what the kit doesn't know)
-4. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards (read in full) + pattern INDEX; the full P1–P38 recipes live in `AI/AB_TESTING_PATTERNS.md` (open ONLY the matching pattern)
+4. `AI/AB_TESTING_PLAYBOOK.md`  — coding standards (read in full) + pattern INDEX; the full P1–P40 recipes live in `AI/AB_TESTING_PATTERNS.md` (open ONLY the matching pattern)
 5. `ClientData/examples/EG-EXAMPLE-SM01/readme.md`            — what correct output looks like
 6. `ClientData/examples/EG-EXAMPLE-SM01/variation1/variation.js`  — reference JS (match this standard)
 7. `ClientData/examples/EG-EXAMPLE-SM01/variation1/variation.css` — reference CSS (match this standard)
@@ -60,13 +60,15 @@ and write them to `qa_prep.json` **now** (STEP 0c, not deferred — the flow gat
 
 ## Flow gate (mandatory — do not skip steps)
 
-The flow is ENFORCED mechanically, not just documented. Run after EVERY step:
+The flow is ENFORCED mechanically, not just documented. Run after EVERY step, scoped to the
+step just completed:
 
 ```
-node tools/flow_gate.js "<test folder>"
+node tools/flow_gate.js "<test folder>" --through 0b
 ```
 
-Any `FAIL` → STOP, fix that step, re-run the gate, then continue. The gate enforces the
+Use `--through 0b`, `0b.5`, `0c`, `1`, `2`, `3`, or `4`; omit it only for the final full-flow
+check. Any `FAIL` in the checked phase → STOP, fix that step, re-run the gate, then continue. The gate enforces the
 same checks for every test. A fresh session MUST run the gate before touching a test.
 
 ## Critical rule

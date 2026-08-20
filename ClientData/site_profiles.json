@@ -38,5 +38,24 @@
   },
   "monash": {
     "label": "MONASH"
+  },
+  "lhlic": {
+    "label": "LHLIC"
+  },
+  "newbalance": {
+    "label": "NEWBALANCE",
+    "selectors": {
+      "pgpTile": ".product-grid > .pgptiles",
+      "product": ".product[data-pid]",
+      "tealiumData": "[data-tealium-product-tile-data]",
+      "categoryName": ".product .category-name",
+      "swatchSelected": "img.swatch-selected[data-color]",
+      "swatchImages": "img[data-color]"
+    },
+    "api": {
+      "nz": "https://www.newbalance.co.nz/on/demandware.store/Sites-NBNZ-Site/en_NZ/Product-Variation",
+      "us": "https://www.newbalance.com/on/demandware.store/Sites-NBUS-Site/en_US/Product-Variation"
+    },
+    "notes": "SFCC site. dwvar_ params use double-underscore encoding (_ → __). Tealium masterProductId can be truncated — always derive pid from paramPrefix and normalize __ → _. Multiple tiles can share data-pid (colorways)."
   }
 }

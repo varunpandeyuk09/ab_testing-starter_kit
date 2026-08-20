@@ -260,3 +260,43 @@ Headless Edge sometimes produces a 0-byte dump on parallel runs — rerun flaky 
 ### Technique lessons
 - **Lazy fetch-queue deadlock (round-3 bug, caught by QA):** the PDP fetch queue in `variation.js` deadlocked after the first 3 cards — `pumpQueue`/`ensurePdpData` never stored the caller's `cb` in `_pclPending` for a fresh fetch, so `inFlight` never decremented and cards 3+ sat in `fetchQueue` forever (only 3 of 24 cards ever got variant data). Fix: `card._pclPending = []; if (cb) card._pclPending.push(cb);` before fetching. Symptom to watch for in any lazy fetch-queue pattern: N cards fetched (exactly = concurrency limit) then silence.
 - `Invoke-WebRequest` + `[regex]` works for quick grade/markup checks (site does not block PowerShell UA).
+
+---
+
+## LHLIC
+
+- **Site:** https://contact.lhlic.com
+- **Verified in:** `../ABTESTSWITHAI/LHLIC/2026 SIYQ Content-Driven`
+
+### page
+- The sections to be replaced are identified by the following stable classes on the `<section>` elements:
+  - `.lh26-crem-title-image-list` (How Funeral Advantage Helps Families)
+  - `.lh26-crem-intro-logos` (Trusted by Families Across America)
+  - `.lh26-crem-banner-yellow-background-image` (Affordable Protection for Every Budget)
+  - `.lh26-crem-title-reviews` (What Families Are Saying)
+- These sections can be hidden using a scoped CSS `display: none` rule.
+- The new design sections (Trusted by Families, How it Works, Why Families Choose, About Funeral Advantage) should be injected before the green CTA section `.lh26-crem-cta-green` (Take the Next Step Toward Peace of Mind).
+- User-confirmed (Q&A, 2026 SIYQ Content-Driven): Swiper is approved for the testimonial carousel; the 3 testimonials from the control should be used; CTAs smooth-scroll to top; sections stack on mobile; no tracking required initially.
+
+---
+
+## NEWBALANCE
+
+- **Site:** https://www.newbalance.co.nz (NZ) / https://www.newbalance.com (US) — SFCC (Salesforce Commerce Cloud) storefront.
+- **A/B platform:** None observed (no Varify/Convert).
+- **Verified in:** `../ABTESTSWITHAI/NEWBALANCE/width-logger` (PLP width data fetcher, Aug 2026).
+- **Site-wide gotchas:** SFCC uses double-underscore encoding in `dwvar_` query params (`_` → `__`); Tealium `masterProductId` can be truncated and unreliable for API `pid`; no Cloudflare challenge on PLP.
+
+### product (PLP tiles — verified)
+- Grid: `.product-grid > .pgptiles` (each `.pgptiles` = one tile container).
+- Product element: `.product[data-pid]` — `data-pid` = master product ID, `data-sid` = SKU/colorway.
+- **Tealium data:** `span[data-tealium-product-tile-data]` is a **sibling** of `.product` inside `.pgptiles` (NOT a child). Contains JSON with `masterProductId`, `style`, `color`, etc.
+- **Multiple tiles can share the same `data-pid`** (different colorways of same master). Dedup must not skip tiles entirely — queue fetches via inflight tracker and flush to all pending tiles on completion.
+- **paramPrefix extraction:** from link href query string, split on `_style=` → prefix = everything before `_style=` + `_`. Used for SFCC API `dwvar_` parts.
+- **SFCC Product-Variation API:** `GET {API_URL}?dwvar_{PID}_style={STYLE}&dwvar_{PID}_width=D&pid={MASTER_PID}&quantity=1`
+  - NZ: `https://www.newbalance.co.nz/on/demandware.store/Sites-NBNZ-Site/en_NZ/Product-Variation`
+  - US: `https://www.newbalance.com/on/demandware.store/Sites-NBUS-Site/en_US/Product-Variation`
+- **pid normalization:** paramPrefix-derived pid has double underscores (`W410V9__RU-FTW-802439`); must normalize `__` → `_` for the `pid=` API parameter. `paramPrefix` itself keeps double underscores (SFCC expects that encoding).
+- **Swatch detection:** `img.swatch-selected[data-color]` class — no click events needed; MutationObserver on `class` attribute of `img[data-color]` elements catches swatch changes.
+- No-swatch products: fetch with `dwvar_{PID}_width=D&pid={PID}&quantity=1` (no style param); cache key `_default_`.
+- `data-widths` attribute on `.product .category-name` — count of available (selectable) widths.

@@ -10,7 +10,9 @@
 // USAGE:
 //   node tools/flow_gate.js "<TEST_NAME folder path>"
 //   node tools/flow_gate.js "../ABTESTSWITHAI/NMN/CART-AB06 Redesign mini cart"
-//   node tools/flow_gate.js "<test dir>" --json     <- machine-readable output
+//   node tools/flow_gate.js "<test dir>" --through 0b
+//   node tools/flow_gate.js "<test dir>" --through 2 --json
+//   node tools/flow_gate.js "<test dir>" --json     <- full-flow check (default)
 //
 // EXIT CODES:
 //   0 = all steps PASS (flow complete, or only WARNs left)
@@ -37,11 +39,14 @@ const hasFile = (dir, name) => fs.existsSync(path.join(dir, name));
 const isDir = (p) => { try { return fs.statSync(p).isDirectory(); } catch (_) { return false; } };
 const listFiles = (dir) => { try { return fs.readdirSync(dir).map((n) => path.join(dir, n)); } catch (_) { return []; } };
 
+const STEP_ORDER = ["0b", "0b.5", "0c", "1", "2", "3", "4"];
+
 function parseArgs(argv) {
-  const out = { testDir: null, json: false };
+  const out = { testDir: null, json: false, through: "4" };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--json") out.json = true;
+    else if (a === "--through") out.through = argv[++i];
     else if (!out.testDir) out.testDir = a;
   }
   return out;
@@ -50,7 +55,11 @@ function parseArgs(argv) {
 function main() {
   const args = parseArgs(process.argv);
   if (!args.testDir) {
-    console.error('ERROR: usage: node tools/flow_gate.js "<TEST_NAME folder path>" [--json]');
+    console.error('ERROR: usage: node tools/flow_gate.js "<TEST_NAME folder path>" [--through 0b|0b.5|0c|1|2|3|4] [--json]');
+    process.exit(2);
+  }
+  if (STEP_ORDER.indexOf(args.through) === -1) {
+    console.error("ERROR: --through must be one of: " + STEP_ORDER.join(", "));
     process.exit(2);
   }
   const testDir = path.resolve(args.testDir);
@@ -89,9 +98,10 @@ function main() {
     const qp = JSON.parse(fs.readFileSync(qpFile, "utf8"));
     const hasAnswers = Array.isArray(qp.asked) && qp.asked.length > 0;
     const hasVerified = Array.isArray(qp.verified) && qp.verified.length > 0;
-    qpOk = !!qp.test && (hasAnswers || hasVerified);
-    qpDetail = qpOk ? "qa_prep.json recorded (" + (qp.asked || []).length + " asked, " + (qp.verified || []).length + " verified)"
-      : "qa_prep.json exists but has no test name / no asked or verified entries — run the Q&A gate and record answers";
+    const liteComplete = qp.effort === "LITE" && qp.gate_complete === true;
+    qpOk = !!qp.test && (hasAnswers || hasVerified || liteComplete);
+    qpDetail = qpOk ? "qa_prep.json recorded (" + (qp.asked || []).length + " asked, " + (qp.verified || []).length + " verified" + (liteComplete && !hasAnswers && !hasVerified ? ", LITE gate complete" : "") + ")"
+      : "qa_prep.json exists but has no test name / no asked or verified entries — run the Q&A gate and record answers (LITE: set gate_complete: true only after confirming no questions remain)";
   } catch (_) { qpDetail = fs.existsSync(qpFile) ? "qa_prep.json exists but is invalid JSON" : "AI_DATA/qa_prep.json missing — Q&A gate (STEP 0c) not recorded"; }
   add("0c", "Q&A GATE (qa_prep.json)", qpOk ? "PASS" : "FAIL", qpDetail);
 
@@ -158,13 +168,16 @@ function main() {
     k4Ok ? "metadata.json + readme.md + session_notes.md + profile done" : "missing: " + k4Miss.join(", "));
 
   // ---- Report ---------------------------------------------------------------
-  const fails = steps.filter((s) => s.status === "FAIL");
-  const warns = steps.filter((s) => s.status === "WARN");
+  const limit = STEP_ORDER.indexOf(args.through);
+  const checked = steps.filter((s) => STEP_ORDER.indexOf(s.step) <= limit);
+  const future = steps.filter((s) => STEP_ORDER.indexOf(s.step) > limit);
+  const fails = checked.filter((s) => s.status === "FAIL");
+  const warns = checked.filter((s) => s.status === "WARN");
   if (args.json) {
-    console.log(JSON.stringify({ client, testDir, complete: fails.length === 0, steps }, null, 2));
+    console.log(JSON.stringify({ client, testDir, through: args.through, complete: fails.length === 0, steps: checked, future_steps: future.map((s) => s.step) }, null, 2));
   } else {
-    console.log("flow gate  |  " + client.toUpperCase() + "  |  " + testDir);
-    for (const s of steps) console.log("  [" + s.step + "] " + s.name + "  ->  " + s.status + "  " + s.detail);
+    console.log("flow gate through STEP " + args.through + "  |  " + client.toUpperCase() + "  |  " + testDir);
+    for (const s of checked) console.log("  [" + s.step + "] " + s.name + "  ->  " + s.status + "  " + s.detail);
     if (fails.length) {
       const first = fails[0];
       console.error("STOP at STEP " + first.step + " (" + first.name + ") — fix before the next step: " + first.detail);
@@ -172,7 +185,7 @@ function main() {
     } else if (warns.length) {
       console.log("OK with " + warns.length + " warning(s) — check the WARN lines");
     } else {
-      console.log("FLOW COMPLETE — ready to hand over.");
+      console.log(args.through === "4" ? "FLOW COMPLETE — ready to hand over." : "PHASE COMPLETE — continue to the next step.");
     }
   }
   process.exit(fails.length ? 1 : 0);

@@ -1,4 +1,4 @@
-# AB Testing Patterns Library (P1–P38)
+# AB Testing Patterns Library (P1–P40)
 
 REFERENCE FILE — do NOT read this end-to-end. Match the brief against the §8 INDEX in
 `AI/AB_TESTING_PLAYBOOK.md`, then open ONLY the matching pattern here. New patterns are
@@ -948,6 +948,109 @@ Source: verified on a PLP quick-add modal slider inside a grid-forced container.
 **Gotchas:** `position: fixed` is viewport-relative — any `transform`/`filter` ancestor (slide-in cart animations) breaks the overlay, so keep the slots' ancestors transform-free. The rAF loop runs forever (cheap, but park buttons when the destination is closed). Re-init depends on plugin globals (`PPCcomponentInitializations`, `jQuery`) — pin the plugin version. If the anchor that places the mount (e.g. a coupon field) is absent, widgets stay parked off-screen and silently disappear — always keep a fallback that leaves them visible in the original spot.
 
 Source: verified on a JTL-shop storefront fixing PayPal + Amazon Pay express buttons moved PDP → mini-cart (DOM-move broke PayPal iframe messaging; off-screen parking + overlay-sync fixed it).
+
+### P39. Optimizely events — eventName-only, default tags (no custom tags unless asked)
+
+**When:** the test needs engagement goals in Optimizely — page view, time-on-page marks, scroll depth, or interaction clicks (FAQ, login/handoff, trial start). USER-CONFIRMED default: every event fires by `eventName` ONLY, with the default tags `{ revenue: 0, value: 0.00 }`. No custom tags (no `variant`, `plan`, `type`, `destination`, `scroll_depth`, `time_seconds`, …) unless the user EXPLICITLY asks for them — strip them even if the design doc lists them.
+
+**Recipe:**
+```js
+window['optimizely'] = window['optimizely'] || [];
+var pushEvent = function (eventName) {
+  window['optimizely'].push({
+    type: 'event',
+    eventName: eventName,
+    tags: { revenue: 0, value: 0.00 }   // always the default tags
+  });
+};
+```
+
+**Approved event set (landing page):**
+```js
+pushEvent('variant_page_view');                       // page load (once)
+
+var timeMarks = [10, 30, 60, 120, 300];               // time-on-page
+var firedT = {};
+timeMarks.forEach(function (s) {
+  setTimeout(function () { if (!firedT[s]) { firedT[s] = 1; pushEvent('time_on_page'); } }, s * 1000);
+});
+
+var scrollMarks = [25, 50, 90, 100];                  // scroll depth
+var firedS = {};
+window.addEventListener('scroll', function () {
+  var pct = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+  scrollMarks.forEach(function (m) {
+    if (pct >= m && !firedS[m]) { firedS[m] = 1; pushEvent('scroll_' + m + '_'); }
+  });
+}, { passive: true });
+
+// interaction clicks → wire via live()/delegation; map by user intent:
+pushEvent('faq_clicks');       // FAQ accordion
+pushEvent('handoff_clicks');   // Login / handoff
+pushEvent('trial_start');      // Register / hero trial / subscription signup
+```
+
+**Key ideas:**
+1. One helper, eventName-only. The default tags are THE default — never invent extras.
+2. Naming convention: snake_case, action-based (`variant_page_view`, `time_on_page`, `faq_clicks`, `handoff_clicks`, `trial_start`); scroll marks use a trailing underscore (`scroll_25_`).
+3. Each mark fires ONCE (Set/object guard) — `time_on_page` is emitted at every mark (10s, 30s, … 300s), scroll only past each threshold.
+4. Interactivity events map to the USER's intent, not the element name (Login = `handoff_clicks`, Register/Hero-trial/Subscription = `trial_start`).
+
+**Gotchas:** fire `variant_page_view` yourself at page load — Optimizely's own page-view is not a variant signal. `window['optimizely'] = window['optimizely'] || []` first so `.push` never throws before the snippet loads.
+
+Source: user-confirmed on an Optimizely landing-page test — events reduced to eventName-only with default tags; custom tag values removed on request.
+
+## P40 — SFCC Product-Variation API: fetch + inflight dedup for shared-pid tiles
+
+**When to use:** PLP/PDP on a Salesforce Commerce Cloud (SFCC/Demandware) site where you need to fetch variant data (sizes, widths, stock) from the `Product-Variation` API per tile, and multiple tiles may share the same `data-pid` (different colorways of one master product).
+
+**The problems this solves (all verified on New Balance NZ, Aug 2026):**
+
+1. **SFCC double-underscore encoding** — `dwvar_` query params encode `_` as `__` (e.g. `dwvar_W410V9__RU-FTW-802439`). The `pid=` API param needs single underscores. Extract `paramPrefix` from the tile's `<a href>` query string (split on `_style=`), then normalize: `pid = paramPrefix.replace(/^dwvar_/, "").replace(/_$/, "").replace(/__/g, "_")`. Keep `paramPrefix` with `__` for the `dwvar_` parts of the URL.
+
+2. **Tealium masterProductId is unreliable** — it can be truncated (e.g. `WTHIERV9-50177-PMG-APAC` instead of the full `WTHIERV9-50177-PMG-APAC-ANZ-WHIER4A5`). Always derive `masterId` from `paramPrefix`, not tealium.
+
+3. **Tealium element is a sibling, not child** — `span[data-tealium-product-tile-data]` sits inside the tile container (`.pgptiles`) as a sibling of `.product`, not inside `.product`. Query from tile first: `tile.querySelector("[data-tealium-product-tile-data]")`.
+
+4. **Shared data-pid (colorways)** — Two tiles with the same `data-pid` but different styles. A naive `lastActiveStyle[pid]` guard in `processTiles` skips the second tile entirely — `handleSwatchChange` never fires, no `data-widths` set. Fix: remove the pid-based skip in `processTiles`; always call `handleSwatchChange` for every tile.
+
+5. **Inflight dedup** — Don't fire duplicate API calls for the same pid+style. Track inflight fetches per `pid|style` key. First tile queues the fetch; subsequent tiles with same key are added to a pending list. On fetch completion (`flushPending`), apply data to ALL pending tiles.
+
+**Recipe:**
+
+```js
+var inflight = {};
+
+function flushPending(pid, style) {
+  var key = pid + "|" + style;
+  var list = inflight[key];
+  delete inflight[key];
+  if (list) list.forEach(function (t) { logWidths(t, pid, style); });
+}
+
+function queueFetch(tile, pid, style, url) {
+  if (cache[pid] && cache[pid][style]) { logWidths(tile, pid, style); return; }
+  var key = pid + "|" + style;
+  if (!inflight[key]) inflight[key] = [];
+  inflight[key].push(tile);
+  if (inflight[key].length > 1) return;  // fetch already queued
+  fetchQueue.push({ tile: tile, pid: pid, style: style, url: url });
+  if (!fetchRunning) runFetchQueue();
+}
+
+// In processTiles: ALWAYS call handleSwatchChange — never skip by pid.
+// In runFetchQueue completion: flushPending(job.pid, job.style);
+```
+
+**SFCC API URL shape:**
+```
+{API_BASE}?dwvar_{PID}_style={STYLE}&dwvar_{PID}_width=D&pid={NORMALIZED_PID}&quantity=1
+```
+No-swatch products: omit the `style` param, cache under `_default_`.
+
+**Swatch detection:** `img.swatch-selected[data-color]` class on swatch images. MutationObserver on `class` attribute of `img[data-color]` elements (attributeFilter: `["class"]`), 300ms debounce. No click listeners needed.
+
+Source: verified on newbalance.co.nz PLP width-logger test (Aug 2026). All 5 sub-problems confirmed against live SFCC DOM + Network tab.
 
 ### Other techniques observed in the archive (use when a brief needs them)
 
