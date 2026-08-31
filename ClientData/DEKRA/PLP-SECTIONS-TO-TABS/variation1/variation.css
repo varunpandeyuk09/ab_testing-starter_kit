@@ -1,0 +1,54 @@
+/* ==========================================================================
+   EG-DKR001 — PLP Sections to Tabs
+   ========================================================================== */
+
+/* ── Tab Navigation ──────────────────────────────────────────────────────── */
+.EG-DKR001 .eg-tab-nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.EG-DKR001 .eg-tab-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.EG-DKR001 .eg-tab-btn:hover {
+  color: #374151;
+}
+
+.EG-DKR001 .eg-tab-btn.eg-active {
+  color: #007d40;
+  border-bottom-color: #007d40;
+}
+
+/* ── Tab Panels ──────────────────────────────────────────────────────────── */
+.EG-DKR001 .eg-tab-panel {
+  animation: egFadeIn 0.3s ease;
+}
+
+@keyframes egFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+  .EG-DKR001 .eg-tab-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+}

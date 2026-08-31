@@ -1,0 +1,28 @@
+{
+  "id": "NB-RECENTLY-VIEWED",
+  "client": "New Balance Australia",
+  "website_url": "https://www.newbalance.com.au",
+  "type": "Recently Viewed Product Carousel",
+  "platform": "Salesforce Commerce Cloud (Demandware)",
+  "website_type": "E-commerce",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": [
+    "sessionStorage read",
+    "External API fetch (Product-Variation)",
+    "Slick Slider carousel",
+    "Promise.all batch fetch",
+    "Dynamic DOM insertion"
+  ],
+  "changes_made": [
+    "Read 'cq.viewReco' from sessionStorage to get recently viewed product IDs",
+    "Fetch product data (image, name, gender, prices) from NB Product-Variation API",
+    "Insert responsive Slick carousel showing recently viewed products",
+    "Desktop: 4 slides, Tablet: 3 slides, Mobile: 2→1 slides",
+    "Dots navigation with active state"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation with Slick carousel pulling product data from session storage + API.",
+  "complexity": "medium",
+  "notes": "Depends on session storage key 'cq.viewReco' being populated by NB's recommendation engine. Slick Slider + jQuery loaded from CDN."
+}

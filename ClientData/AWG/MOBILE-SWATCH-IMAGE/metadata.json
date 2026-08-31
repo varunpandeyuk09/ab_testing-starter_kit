@@ -1,0 +1,29 @@
+{
+  "client": "AWG",
+  "test_id": "AB045",
+  "test_name": "Mobile Swatch Image Change",
+  "type": "AB",
+  "platform": "Shopware 6",
+  "website_type": "E-commerce Fashion",
+  "complexity": "Medium",
+  "website_url": "https://www.awg-mode.de/",
+  "target_pages": ["PLP", "Homepage Product Slider"],
+  "techniques": ["P1 - Image Swap", "P11 - Device-Switch"],
+  "changes_made": [
+    "Intercept swatch click on mobile (<=767px)",
+    "Prevent PDP redirect via preventDefault",
+    "Parse data-val-swatches-hover-image-options JSON",
+    "Update main product image src/srcset/sizes",
+    "Update active swatch state (is--active class)"
+  ],
+  "selectors": {
+    "product_card": ".card.product-box.box-standard",
+    "swatch_wrapper": ".val-color-swatches-wrapper",
+    "swatch": ".val-color-swatches-variant",
+    "main_image": ".val-js-swatch-main-image",
+    "hover_options": "data-val-swatches-hover-image-options",
+    "swatch_index": "data-val-swatches-hover-image-url"
+  },
+  "breakpoint": "767px",
+  "notes": "Desktop hover behavior unchanged. Mobile tap now swaps image instead of redirecting to PDP."
+}

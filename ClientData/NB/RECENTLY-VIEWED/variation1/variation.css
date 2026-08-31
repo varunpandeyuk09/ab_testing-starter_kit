@@ -1,0 +1,221 @@
+/* ==========================================================================
+   NB-RECENTLY-VIEWED — Recently Viewed Product Carousel
+   All rules scoped under .NB-RECENTLY-VIEWED (body class added in variation.js)
+   ========================================================================== */
+
+/* ── Section Container ─────────────────────────────────────────────────── */
+.NB-RECENTLY-VIEWED .eg-rv-section {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px 50px;
+  box-sizing: border-box;
+}
+
+/* ── Heading ───────────────────────────────────────────────────────────── */
+.NB-RECENTLY-VIEWED .eg-rv-heading {
+  font-family: 'NB New', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 24px;
+  padding: 0;
+  line-height: 1.3;
+}
+
+/* ── Slick Track Override ──────────────────────────────────────────────── */
+.NB-RECENTLY-VIEWED .eg-rv-track {
+  position: relative;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-list {
+  margin: 0 -8px;
+  padding: 0 !important;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-slide {
+  padding: 0 4px 0 0;
+  box-sizing: border-box;
+}
+
+/* ── Product Card ──────────────────────────────────────────────────────── */
+.NB-RECENTLY-VIEWED .eg-rv-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-card:hover {
+  opacity: 0.85;
+}
+
+/* ── Card Image ────────────────────────────────────────────────────────── */
+.NB-RECENTLY-VIEWED .eg-rv-card__img-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0;
+  margin-bottom: 12px;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  mix-blend-mode: multiply;
+}
+
+/* ── Card Info ─────────────────────────────────────────────────────────── */
+.NB-RECENTLY-VIEWED .eg-rv-card__info {
+  padding: 0 4px;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-card__name {
+  font-family: 'NB New', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 2px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-card__gender {
+  font-family: 'NB New', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #666666;
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
+/* ── Prices ────────────────────────────────────────────────────────────── */
+.NB-RECENTLY-VIEWED .eg-rv-card__prices {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-card__price {
+  font-family: 'NB New', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #999999;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-card__sale {
+  font-family: 'NB New', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color:#999999;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-card__list {
+  font-family: 'NB New', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #999999;
+  text-decoration: line-through;
+}
+
+/* ── Slick Dots ────────────────────────────────────────────────────────── */
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-dots {
+  bottom: -30px;
+  display: flex;
+  background: rgba(0, 0, 0, .349);
+  margin: 20px auto 0;
+  position: static;
+  width: fit-content;
+  height: 4px !important;
+  --radius: 11px;
+  border-radius: var(--radius);
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-dots li {
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-dots li button {
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  color: transparent;
+  cursor: pointer;
+  display: block;
+  font-size: 0;
+  line-height: 0;
+  outline: none;
+  width: 2rem;
+  height: 100%;
+  padding: 0 !important;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-dots li:nth-child(1) button{
+  border-top-left-radius:var(--radius);
+  border-bottom-left-radius:var(--radius);
+}
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-dots li:last-child button{
+  border-top-right-radius:var(--radius);
+  border-bottom-right-radius:var(--radius);
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-dots li button:before,
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-dots li button span:before{
+  display:none;
+}
+
+.NB-RECENTLY-VIEWED .eg-rv-track .slick-dots li.slick-active button {
+  background-color: #1a1a1a;
+}
+
+/* ── Responsive: Tablet ────────────────────────────────────────────────── */
+@media screen and (max-width: 1024px) {
+  .NB-RECENTLY-VIEWED .eg-rv-section {
+    padding: 32px 20px 40px;
+  }
+
+  .NB-RECENTLY-VIEWED .eg-rv-heading {
+    font-size: 22px;
+  }
+}
+
+/* ── Responsive: Mobile ────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+  .NB-RECENTLY-VIEWED .eg-rv-section {
+    padding: 24px 16px 36px;
+  }
+
+  .NB-RECENTLY-VIEWED .eg-rv-heading {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .NB-RECENTLY-VIEWED .eg-rv-card__name {
+    font-size: 13px;
+  }
+
+  .NB-RECENTLY-VIEWED .eg-rv-card__gender {
+    font-size: 12px;
+  }
+
+  .NB-RECENTLY-VIEWED .eg-rv-card__price,
+  .NB-RECENTLY-VIEWED .eg-rv-card__sale,
+  .NB-RECENTLY-VIEWED .eg-rv-card__list {
+    font-size: 13px;
+  }
+
+  .NB-RECENTLY-VIEWED .eg-rv-track .slick-dots li button{
+    width: 10px !important;
+  }
+}

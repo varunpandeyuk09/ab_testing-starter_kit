@@ -1,0 +1,29 @@
+/* ==========================================================================
+   EG-AB045 — Mobile Swatch Image Change
+   All rules scoped under .EG-AB045 (body class added in variation.js)
+
+   Only visual feedback for active swatch on mobile.
+   Image swap is handled in JS — no CSS transitions needed.
+   ========================================================================== */
+
+/* ── Active Swatch Indicator (Mobile Only) ──────────────────────────────────
+   On mobile, user taps swatch → this border confirms selection.
+   Desktop hover behavior remains untouched (no scope conflict).
+   ───────────────────────────────────────────────────────────────────────── */
+/* ── Cursor Hint ───────────────────────────────────────────────────────────
+   On mobile, swatches are now interactive (tap to swap image).
+   Pointer cursor reinforces tappability.
+   ───────────────────────────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+  .EG-AB045 .val-color-swatches-variant {
+    cursor: pointer;
+  }
+
+  .EG-AB045 .val-color-swatches-variant.is--active{
+    outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+  order:unset !important;
+  }
+
+
+}

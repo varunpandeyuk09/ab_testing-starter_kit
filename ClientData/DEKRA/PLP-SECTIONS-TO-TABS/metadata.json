@@ -1,0 +1,27 @@
+{
+  "client": "DEKRA",
+  "test_id": "DKR001",
+  "test_name": "PLP Sections to Tabs",
+  "type": "AB",
+  "platform": "Vue.js SPA",
+  "website_type": "Education / Training",
+  "complexity": "Medium",
+  "website_url": "https://www.dekra-akademie.de/weiterbildung/berufskraftfahrer-weiterbildung",
+  "target_pages": ["PLP"],
+  "techniques": ["Custom — Sections to Tabs conversion"],
+  "changes_made": [
+    "Find all content sections below hero",
+    "Create tab navigation with section titles",
+    "Wrap each section in a tab panel",
+    "Show/hide panels based on active tab"
+  ],
+  "selectors": {
+    "container": "#app .flex.flex-col",
+    "hero": "#app .flex.flex-col > div[data-preview-id]:first-child",
+    "sections": "#app .flex.flex-col > div[data-preview-id]",
+    "tab_nav": ".eg-tab-nav",
+    "tab_btn": ".eg-tab-btn",
+    "tab_panel": ".eg-tab-panel"
+  },
+  "notes": "Vue.js SPA — sections are client-rendered. Tab titles extracted from section headings."
+}

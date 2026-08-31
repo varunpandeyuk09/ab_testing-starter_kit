@@ -1,0 +1,28 @@
+{
+  "client": "ZATTOO",
+  "test_id": "ZAT001",
+  "test_name": "HP CTA & Signup Redirect",
+  "type": "AB",
+  "platform": "React SPA",
+  "website_type": "Streaming / Entertainment",
+  "complexity": "Low",
+  "website_url": "https://zattoo.com/de",
+  "target_pages": ["Homepage", "Signup Page"],
+  "techniques": ["P6 - SPA Routing", "P12 - Cross-Page State"],
+  "changes_made": [
+    "Update homepage CTA href from /de/sender to /start/signup",
+    "Auto-redirect on Signup page if Shop content is shown",
+    "SPA route change listener for dynamic navigation"
+  ],
+  "selectors": {
+    "homepage_cta": "[data-soul='SECTION'] [href='/de/sender']",
+    "signup_cta": "[href='/start/signup']",
+    "header_register": "[data-soul='REGISTER']"
+  },
+  "target_urls": {
+    "homepage": "https://zattoo.com/de",
+    "signup": "https://zattoo.com/start/signup",
+    "shop": "https://zattoo.com/start/shop"
+  },
+  "notes": "Homepage is React SPA. Signup/Shop are separate apps under /start/ path."
+}

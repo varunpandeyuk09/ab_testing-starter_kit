@@ -1,0 +1,20 @@
+/* ==========================================================================
+   EG-ZAT001 — HP CTA & Signup Redirect
+   All rules scoped under .EG-ZAT001 (body class added in variation.js)
+
+   Minimal CSS — this test is mostly JS logic.
+   Only visual feedback for the updated CTA.
+   ========================================================================== */
+
+/* ── Updated CTA Visual Feedback ───────────────────────────────────────────
+   Subtle animation to draw attention to the changed CTA.
+   Only on homepage where the CTA is modified.
+   ───────────────────────────────────────────────────────────────────────── */
+.EG-ZAT001 [data-soul="SECTION"] [href="/start/signup"] {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.EG-ZAT001 [data-soul="SECTION"] [href="/start/signup"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

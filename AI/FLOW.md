@@ -1,5 +1,7 @@
 # Flow
 
+> **⚠️ Remember:** Kit bas reference hai. Pehle khud soch, phir match kar patterns se. Client intent > Kit patterns.
+
 ```
 BRIEF
   │
