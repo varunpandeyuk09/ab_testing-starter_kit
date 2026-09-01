@@ -26,7 +26,7 @@ function swapImage(container, newSrc) {
 ---
 
 ## P2. Insert Section
-**When:** Add marketing section/banner/CTA at a specific spot.
+**When:** Add marketing section/banner/CTA at a specific spot. (75% of tests)
 ```js
 function addSection() {
   var anchor = document.querySelector('.stable-anchor');
@@ -37,7 +37,7 @@ function addSection() {
   anchor.insertAdjacentElement('beforebegin', section);
 }
 ```
-**Gotcha:** Never `innerHTML =` container with event bindings. Guard against duplicate insert.
+**Gotcha:** Never `innerHTML =` container with event bindings. Guard against duplicate insert. Always `waitForElement` on anchor, not parent.
 
 ---
 
@@ -113,9 +113,19 @@ mo.observe(document.querySelector('.target'), { childList: true, subtree: true }
 
 ---
 
-## P9. Load External Library
-**When:** Need library site doesn't ship (tiny-slider, etc.).
-**Use:** `loadExternalLib()` from SNIPPETS.md. Poll `window.tns` before init.
+## P9. Load External Library (Slick/JQuery)
+**When:** Need library site doesn't ship. Real pattern: dual CSS + JS inject (21% of tests use slick).
+```js
+function loadSlick(cb) {
+  if (document.querySelector('.eg-slick-loaded')) return;
+  var g = document.createElement('div'); g.className = 'eg-slick-loaded'; document.head.appendChild(g);
+  var l1 = document.createElement('link'); l1.rel = 'stylesheet'; l1.href = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css'; document.head.appendChild(l1);
+  var l2 = document.createElement('link'); l2.rel = 'stylesheet'; l2.href = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css'; document.head.appendChild(l2);
+  var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js'; s.onload = cb; document.head.appendChild(s);
+}
+function waitForSlick(cb){ var i=setInterval(function(){ if(window.jQuery && jQuery.fn.slick){ clearInterval(i); cb(); }},50); setTimeout(function(){clearInterval(i)},15000); }
+```
+**Use:** Call `loadSlick(function(){ waitForSlick(initSlick); });`
 
 ---
 
@@ -125,21 +135,52 @@ mo.observe(document.querySelector('.target'), { childList: true, subtree: true }
 
 ---
 
-## P11. Device-Switch Restore
-**When:** Apply on some viewports, revert on others.
-**Use:** `deviceAware()` from SNIPPETS.md. Store originals for restore.
+## P11. URL / Page-Type Gating
+**When:** Test only on specific PDP/PLP/category or exclude pages. (26% of tests)
+```js
+function shouldRun() {
+  if (['/cart','/checkout'].some(function(p){ return location.pathname.includes(p); })) return false;
+  if (location.href.includes('/collections/')) return true;
+  return false;
+}
+if (!shouldRun()) return;
+waitForElement('.stable-anchor', init, 50, 15000);
+```
+**Gotcha:** Gate BEFORE waitForElement. Use `blockedUrls.includes(location.href)` early return for CROCS pattern.
 
 ---
 
-## P12. Cross-Page State
-**When:** Multi-step flow, urgency timers, one-time nudges.
-**Use:** `localStorage` with try/catch. Version key with variation name.
+## P12. Viewport Branch + Resize Rebuild
+**When:** Different DOM/position on mobile vs desktop. (35% use screen.width)
+```js
+function build() {
+  var isMobile = window.innerWidth < 767;
+  if (document.querySelector('.eg-details')) document.querySelector('.eg-details').remove();
+  var anchor = document.querySelector(isMobile ? '.mobile-anchor' : '.desktop-anchor');
+  if (!anchor || document.querySelector('.eg-details')) return;
+  anchor.insertAdjacentHTML('afterend', '<div class="eg-details">...</div>');
+}
+waitForElement('.desktop-anchor', build, 50, 15000);
+window.addEventListener('resize', function(){ setTimeout(build, 200); });
+```
+**Gotcha:** Replace old `deviceAware()` matchMedia (0.07% hit) — real tests use inline `screen.width` + rebuild.
 
 ---
 
-## P13. XHR Hook
-**When:** Page re-renders via fetch/XHR, DOM changes wiped.
-**Use:** `hookXHR()` from SNIPPETS.md. Re-apply in load callback.
+## P13. XHR Hook (Cart/Filter Re-apply)
+**When:** Page re-renders via fetch/XHR, DOM changes wiped. (11% fetch, 4.6% Cart)
+```js
+function hookCartReapply(reApply){
+  var orig = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(){
+    this.addEventListener('load', function(){
+      if (this.responseURL && this.responseURL.includes('Cart-UpdateQuantity')) reApply();
+    });
+    return orig.apply(this, arguments);
+  };
+}
+```
+**Price parse helper:** `var price = parseFloat(el.innerText.replace(/[^0-9.]/g,''));`
 
 ---
 
@@ -149,30 +190,54 @@ mo.observe(document.querySelector('.target'), { childList: true, subtree: true }
 
 ---
 
-## P15. Exit-Intent Popup
-**When:** Show popup on mouse-leave (desktop) / scroll-up (mobile).
+## P15. Nudge / Progress / Urgency (merged)
+**When:** Exit nudge, cart progress, countdown, scarcity line. (exit 0%, progress 3%, urgency 0.4%)
 ```js
-document.addEventListener('mouseout', function (e) {
-  if (e.clientY < 5 && !sessionStorage.getItem('eg-popup-seen')) {
-    showModal();
-    sessionStorage.setItem('eg-popup-seen', '1');
-  }
-});
+// progress bar
+var pct = Math.min((cartTotal/threshold)*100,100); document.querySelector('.eg-progress').style.width=pct+'%';
+// urgency line
+var anchor=document.querySelector('.hero-cta'); if(anchor && !document.querySelector('.eg-urgency')) anchor.insertAdjacentHTML('beforebegin','<div class="eg-urgency">Only 3 spots left</div>');
+// countdown: use setInterval + Date math, version key with variation name
+```
+**Gotcha:** Keep to 5 lines, not full pattern per use.
+
+---
+
+## P16. CSS Scope & Layout Gotchas (merged)
+**When:** Scoping, accordion, carousel, flex. (80% @media, 80% !important, 71% flex in real tests)
+```css
+/* Scope — 78% use .EG-/.eg- prefix, 22% unscoped = bug */
+.EG-TEST-ID .element { /* correct - scope all CSS */ }
+.element { /* wrong - unscoped */ }
+/* !important guard — 80% bloat, use <2 per file */
+.EG-TEST-ID .eg-hidden { display:none !important; } /* only utility */
+/* Trust logos — 9.5% filter pattern */
+.EG-TEST-ID .eg-trust-logos { display:flex; flex-wrap:wrap; gap:15px; justify-content:center }
+.EG-TEST-ID .eg-trust-logos img { width:90px; height:48px; object-fit:contain; filter:invert(50%) grayscale(100%); transition:filter .2s }
+.EG-TEST-ID .eg-trust-logos img:hover { filter:invert(0) grayscale(0) !important; }
+/* Accordion — P21 grid, 3% use */
+.eg-accordion-content { display:grid; grid-template-rows:0fr; transition:grid-template-rows .32s; }
+.eg-accordion.open .eg-accordion-content { grid-template-rows:1fr; }
+.eg-accordion-content > div { overflow:hidden; }
+/* Progress — 2.2% */
+.EG-TEST-ID .eg-progress-track { height:6px; background:#E4E4E7; border-radius:9999px; overflow:hidden }
+.EG-TEST-ID .eg-progress { height:100%; width:0; background:#00BE00; transition:width .32s; }
+/* Reorder — 18% order, 4.2% :has */
+.EG-TEST-ID .eg-reorder { display:flex; flex-direction:column }
+.EG-TEST-ID .eg-reorder .eg-reviews { order:-1 }
+.EG-TEST-ID .container > .row { flex-wrap:nowrap; } /* P32 — only where needed */
+.eg-carousel { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; } /* P20 — rare, JS slick 5% preferred */
 ```
 
 ---
 
-## P16. Cart Progress Bar
-**When:** Threshold-based progress bar / free-shipping message.
-```js
-function updateCartProgress(cartTotal) {
-  var threshold = 50;
-  var pct = Math.min((cartTotal / threshold) * 100, 100);
-  document.querySelector('.eg-progress').style.width = pct + '%';
-}
-```
+## Appendix A. Shopware / AWG Quick-View (collapsed P23-P29, P31)
+**When:** Only for AWG-MODE Shopware PLP→PDP clone (0.3% of tests). Do not use for generic tests.
+**Use:** `fetchPdpBlocks()` + `sanitizeBuyBox()` + CAPTURE handler + variant switch. See `ab-test/AWG-MODE/AB044`, `AB045` for full 80-line implementation. Snippets 7-13 archived.
 
----
+## Appendix B. Rare Gotchas (collapsed)
+- **P33 Payload Encoding:** Match `encodeURIComponent(JSON.stringify)` + `X-Requested-With` exactly — get real Network payload first. (1.3%)
+- **P34 Iframe Overlay:** Never `appendChild` PayPal iframe — overlay with `position:fixed` + rAF sync, keep original offscreen `left:-9999px`. (0.2%)
 
 ## P17. Date Math / Countdown
 **When:** Business days calculation, urgency countdown.
@@ -183,182 +248,3 @@ function addBusinessDays(startDate, days) {
   return d;
 }
 ```
-
----
-
-## P18. Cross-Page HTML Fetch
-**When:** Fetch another page, parse, clone elements.
-**Use:** `fetchPdpBlocks()` from SNIPPETS.md.
-
----
-
-## P19. IP-Geo Content Swap
-**When:** Show content based on user location.
-**Use:** Fetch `https://ipapi.co/json/` → check `country_code` → swap content.
-
----
-
-## P20. CSS-Only Carousel
-**When:** Simple carousel without JS library.
-```css
-.eg-carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
-.eg-carousel > * { scroll-snap-align: start; flex: 0 0 100%; }
-```
-
----
-
-## P21. Accordion Animation
-**When:** Smooth accordion open/close.
-```css
-.eg-accordion-content { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s; }
-.eg-accordion.open .eg-accordion-content { grid-template-rows: 1fr; }
-.eg-accordion-content > div { overflow: hidden; }
-```
-
----
-
-## P22. rAF waitFor
-**When:** Wait for element with requestAnimationFrame (lighter than setInterval).
-```js
-function rafWaitFor(selector, callback) {
-  function check() {
-    var el = document.querySelector(selector);
-    if (el) callback(el); else requestAnimationFrame(check);
-  }
-  check();
-}
-```
-
----
-
-## P23. PLP Quick View (Clone PDP)
-**When:** Show PDP content in PLP modal.
-**Use:** `fetchPdpBlocks()` + `sanitizeBuyBox()` + `bindModalBuy()` from SNIPPETS.md.
-**See:** AB044 (AWG) for full implementation.
-
----
-
-## P24. PDP to PLP Auto Popup
-**When:** User lands on PDP, redirect to PLP, auto-open modal.
-**Flow:** PDP saves URL → sessionStorage → redirect → PLP reads → fetch PDP → auto modal.
-**Gotcha:** `waitForElement('html body')` not cards. `openModal(pdpUrl)` not card.
-
----
-
-## P25. PLP Image Zoom Modal
-**When:** Mobile PLP image click → zoom modal instead of PDP navigation.
-**Flow:** Fetch PDP → extract gallery images → store in `data-pdp-images` → click → modal with tns slider + CSS `transform: scale()`.
-**Gotcha:** tns = slider only. Zoom = custom CSS transform. Load tns via `loadExternalLib()`.
-
----
-
-## P26. Configurator CAPTURE Handler
-**When:** Theme intercepts radio clicks, cloned radios never get checked.
-```js
-document.addEventListener('click', function (e) {
-  var opt = e.target.closest('.modal .product-detail-configurator-option');
-  if (!opt) return;
-  var radio = opt.querySelector('input[type="radio"]');
-  if (!radio || radio.disabled || radio.checked) return;
-  e.preventDefault(); e.stopPropagation();
-  if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-  radio.checked = true;
-  handleVariantSelect(modal, radio, isSize);
-}, true);
-```
-**Gotcha:** Must be CAPTURE phase (third arg `true`). Stops theme handlers from running.
-
----
-
-## P27. Variant Switch In-Place
-**When:** Single-URL products — update buy form without re-fetch.
-**Use:** `updateBuyFormInPlace()` pattern from SNIPPETS.md logic. Rewrite `lineItems[oldId]` → `lineItems[newId]` across WHOLE modal.
-
----
-
-## P28. SessionStorage Popup Tracking
-**When:** Don't show popup again for same product in session.
-```js
-function markShown(key, url) { sessionStorage.setItem(key, getProductSlug(url)); }
-function isShown(key, url) { return sessionStorage.getItem(key) === getProductSlug(url); }
-```
-**Gotcha:** Simple flag better than array. Clear key after read.
-
----
-
-## P29. Single-File Dual-Context
-**When:** One script runs on both PDP and PLP.
-```js
-(function () {
-  // All code here — works on both page types
-  // PDP: check body class, save URL, redirect
-  // PLP: check sessionStorage, fetch PDP, open modal
-  waitForElement('html body', init, 50, 15000);
-})();
-```
-**Gotcha:** Don't wait for page-specific selectors. Use `html body` as universal wait.
-
----
-
-## P30. CSS Scope Guard
-**When:** All CSS must be scoped under test body class.
-```css
-.EG-TEST-ID .element { /* correct */ }
-.element { /* wrong — unscoped */ }
-```
-
----
-
-## P31. Lazy Fetch Queue — Push Callback Before Fetch
-**When:** Queuing async fetches with concurrency limit. Queue deadlocks if callback stored after fetch starts.
-```js
-function ensure(card, cb) {
-  if (card.done) { if (cb) cb(); return; }
-  if (card.pending) { if (cb) card.pending.push(cb); return; }
-  card.pending = [];
-  if (cb) card.pending.push(cb); // ← push BEFORE fetch
-  fetch(card.url).then(function () {
-    card.done = true;
-    var cbs = card.pending || [];
-    card.pending = null;
-    for (var i = 0; i < cbs.length; i++) cbs[i]();
-  });
-}
-```
-**Gotcha:** Symptom: exactly N (= concurrency limit) cards get data, rest never start.
-
----
-
-## P32. Bootstrap Flex-Wrap Gotcha
-**When:** 2-col desktop layout uses Bootstrap `.row` — columns stack vertically because `flex-wrap: wrap` is default.
-```css
-.EG-TEST-ID .container > .row { flex-wrap: nowrap; }
-```
-**Gotcha:** Verify mobile still stacks. Only apply `nowrap` where redesign intends it.
-
----
-
-## P33. Match AJAX Payload Encoding Byte-for-Byte
-**When:** Cloning site component that fires AJAX. Server validates exact payload shape.
-- Use `encodeURIComponent` on JSON: `%7B`, `%22`, `%3A`, `%2C`, `%7D`
-- Include `X-Requested-With: XMLHttpRequest`
-- Copy ALL state theme includes — don't omit fields that look like "ignore" hints
-**Gotcha:** Wrong encoding = silent failure. Get real request from user's Network tab first.
-
----
-
-## P34. Plugin Iframe/Widget Overlay — Don't Move
-**When:** Moving plugin-owned widget (PayPal, Amazon, iframes) from one spot to another. `appendChild` breaks postMessage/click wiring.
-- Keep original alive off-screen (`position: absolute; left: -9999px`)
-- Overlay over target with `position: fixed` + rAF loop to sync position
-**Gotcha:** `display:none` kills iframe render. Never move — always overlay.
-
----
-
-## P35. Urgency/Scarcity Line Above CTA
-**When:** Insert urgency or scarcity messaging directly above a CTA button group.
-- Use `insertAdjacentElement('beforebegin', urgencyEl)` on the CTA container
-- Idempotent: check `previousElementSibling` class before inserting
-- MutationObserver on parent if hero section re-renders (SPA/AJAX)
-- CSS: semi-transparent or brand-color background, white text, rounded, centered
-**Gotcha:** CTA container may be inside a flex/grid parent — verify insertion doesn't break layout. Always test mobile viewport.

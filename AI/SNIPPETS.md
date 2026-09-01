@@ -1,12 +1,12 @@
 # Snippets & Functions — Reusable Code
 
-Copy-paste ready. Patterns reference these.
+Copy-paste ready. Patterns reference these. Keep to 7 core — rest in Appendix.
 
 ---
 
 ## 1. waitForElement
 
-Polls for selector, triggers once, self-clears.
+Polls for selector, triggers once, self-clears. (97% of tests)
 
 ```js
 function waitForElement(selector, trigger, delayInterval, delayTimeout) {
@@ -19,15 +19,15 @@ function waitForElement(selector, trigger, delayInterval, delayTimeout) {
   setTimeout(function () { clearInterval(interval); }, delayTimeout);
 }
 
-// Usage
-waitForElement('.target', init, 50, 15000);
+// Usage — always on ANCHOR, not parent
+waitForElement('.stable-anchor', init, 50, 15000);
 ```
 
 ---
 
 ## 2. live (delegated events)
 
-Event delegation for static + dynamic elements. Use instead of `addEventListener`.
+Event delegation for static + dynamic elements. Use instead of `addEventListener`. (28% of tests)
 
 ```js
 function live(selector, event, callback, context) {
@@ -62,7 +62,7 @@ live('.btn', 'click', function () { /* this = matched element */ });
 
 ## 3. listener (SPA routing)
 
-Fires `locationchange` on pushState/replaceState/popstate.
+Fires `locationchange` on pushState/replaceState/popstate. (9.8% of tests)
 
 ```js
 function listener() {
@@ -113,346 +113,60 @@ function setCookie(name, val, days) {
 
 ---
 
-## 5. waitForLibrary
+## 5. Init Guard (Idempotent + Body Class)
 
-Polls for a library global before calling back.
-
-```js
-function waitForLibrary(globalName, callback, interval, timeout) {
-  var i = setInterval(function () {
-    if (window[globalName]) { clearInterval(i); callback(); }
-  }, interval || 50);
-  setTimeout(function () { clearInterval(i); }, timeout || 15000);
-}
-
-// Usage
-waitForLibrary('jQuery', function () { /* $ is ready */ });
-waitForLibrary('tns', function () { /* tiny-slider ready */ });
-```
-
----
-
-## 6. sameUrl
-
-Loose URL equality (ignore protocol, trailing slash, query, fragment).
+Canonical 3-line guard — 65% duplicate guard + 85% body class use this.
 
 ```js
-function sameUrl(a, b) {
-  if (!a || !b) return false;
-  var na = a.split('#')[0].split('?')[0].replace(/\/+$/, '').replace(/^https?:\/\//i, '').toLowerCase();
-  var nb = b.split('#')[0].split('?')[0].replace(/\/+$/, '').replace(/^https?:\/\//i, '').toLowerCase();
-  return na === nb;
+function init() {
+  document.body.classList.add('EG-TEST-ID');
+  if (document.querySelector('.eg-hero-section')) return; // idempotent
+  var anchor = document.querySelector('.stable-anchor');
+  if (!anchor) return;
+  anchor.insertAdjacentHTML('afterend', '<div class="eg-hero-section">...</div>');
 }
 ```
 
 ---
 
-## 7. fetchPdpBlocks
+## 6. loadExternalLib (Slick/JQuery CDN)
 
-Fetch PDP page, extract key blocks for cloning.
+Real pattern: dual CSS + JS + Slick poll. (21% CDN inject)
 
 ```js
-function fetchPdpBlocks(url) {
-  return fetch(url, { credentials: 'same-origin' })
-    .then(function (r) { return r.text(); })
-    .then(function (html) {
-      var doc = new DOMParser().parseFromString(html, 'text/html');
-      return {
-        buy: doc.querySelector('.product-detail-buy'),
-        media: doc.querySelector('.product-detail-media'),
-        title: doc.querySelector('.product-detail-name')
-      };
-    })
-    .catch(function () { return null; });
+function loadSlick(cb) {
+  if (document.querySelector('.eg-slick-loaded')) return;
+  var g = document.createElement('div'); g.className = 'eg-slick-loaded'; document.head.appendChild(g);
+  var l1 = document.createElement('link'); l1.rel = 'stylesheet'; l1.href = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css'; document.head.appendChild(l1);
+  var l2 = document.createElement('link'); l2.rel = 'stylesheet'; l2.href = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css'; document.head.appendChild(l2);
+  var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js'; s.onload = cb; document.head.appendChild(s);
 }
+function waitForSlick(cb){ var i=setInterval(function(){ if(window.jQuery && jQuery.fn.slick){ clearInterval(i); cb(); }},50); setTimeout(function(){clearInterval(i)},15000); }
+// Usage: loadSlick(function(){ waitForSlick(initSlick); });
 ```
 
 ---
 
-## 8. sanitizeBuyBox
+## 7. XHR Hook + Price Parse (Cart Re-apply)
 
-Strip theme plugin hooks from cloned buy box.
-
-```js
-function sanitizeBuyBox(buy) {
-  if (!buy) return;
-  buy.removeAttribute('data-buy-box');
-  var buyForm = buy.querySelector('#productDetailPageBuyProductForm');
-  if (buyForm) buyForm.removeAttribute('data-add-to-cart');
-  var switchForm = buy.querySelector('#variantSwitchForm');
-  if (switchForm) {
-    switchForm.removeAttribute('data-custom-switch');
-    switchForm.removeAttribute('data-variant-switch-options');
-    switchForm.removeAttribute('data-variant-external-element');
-  }
-}
-```
-
----
-
-## 9. syncBuyState
-
-Enable/disable ATC button based on real size selection.
+Re-apply after AJAX cart update. (4.6% Cart)
 
 ```js
-function syncBuyState(modal) {
-  var buy = modal.querySelector('.product-detail-buy');
-  if (!buy) return;
-  var btn = buy.querySelector('.btn-buy');
-  if (!btn) return;
-  var sizeGroupId = getSizeGroupId(modal);
-  var noSizeValue = getNoSizeValue(modal);
-  var radios = modal.querySelectorAll('input[type="radio"]');
-  var realOptions = 0;
-  var realChecked = null;
-  for (var i = 0; i < radios.length; i++) {
-    var r = radios[i];
-    if (r.getAttribute('name') !== sizeGroupId) continue;
-    if (r.value === noSizeValue) continue;
-    if (r.disabled) continue;
-    realOptions++;
-    if (r.checked) realChecked = r;
-  }
-  if (realOptions === 0) return;
-  var alert = buy.querySelector('.size-info-wrapper');
-  if (realChecked && !modal.__egNeedSwitch) {
-    btn.disabled = false;
-    if (alert) alert.style.display = 'none';
-  } else {
-    btn.disabled = true;
-    if (alert) alert.style.display = '';
-  }
-}
-```
-
----
-
-## 10. updateVariantUi
-
-Mirror `.active` highlight across duplicated size groups.
-
-```js
-function updateVariantUi(modal, radio) {
-  var name = radio.getAttribute('name') || '';
-  if (!name) return;
-  var all = modal.querySelectorAll('input[type="radio"][name="' + name + '"]');
-  for (var i = 0; i < all.length; i++) {
-    var option = all[i].closest('.product-detail-configurator-option');
-    var label = option && option.querySelector('.product-detail-configurator-option-label');
-    if (!label) continue;
-    if (all[i].checked) label.classList.add('active');
-    else label.classList.remove('active');
-  }
-}
-```
-
----
-
-## 11. getSwitchQuery
-
-Build variant switch query exactly like theme does.
-
-```js
-function getSwitchQuery(modal, switchedGroup, forcedValue) {
-  var options = {};
-  var radios = modal.querySelectorAll('input[type="radio"]:checked');
-  for (var i = 0; i < radios.length; i++) {
-    var name = radios[i].getAttribute('name') || '';
-    var value = radios[i].value || '';
-    if (!name || !value) continue;
-    if (options[name] !== undefined) continue;
-    options[name] = value;
-  }
-  if (switchedGroup && forcedValue) options[switchedGroup] = forcedValue;
-  if (Object.keys(options).length === 0) return '';
-  var q = 'options=' + encodeURIComponent(JSON.stringify(options));
-  if (switchedGroup) q += '&switched=' + encodeURIComponent(switchedGroup);
-  return q;
-}
-```
-
----
-
-## 12. swapModalMedia
-
-Swap gallery images on color swatch click.
-
-```js
-function swapModalMedia(modal, optImg) {
-  if (!modal || !optImg) return;
-  var src = optImg.src || '';
-  if (!src) return;
-  var srcset = optImg.srcset || '';
-  var alt = optImg.alt || '';
-  var title = optImg.title || '';
-  var media = modal.querySelector('.eg-quickview-modal__media');
-  if (!media) return;
-  var main = media.querySelector('.gallery-slider-container .gallery-slider-image');
-  if (main) {
-    main.src = src;
-    if (srcset) main.srcset = srcset; else main.removeAttribute('srcset');
-    if (alt) main.alt = alt;
-    if (title) main.title = title;
-  }
-  var thumb = media.querySelector('.gallery-slider-thumbnails-image');
-  if (thumb) {
-    thumb.src = src;
-    if (srcset) thumb.srcset = srcset; else thumb.removeAttribute('srcset');
-    if (alt) thumb.alt = alt;
-    if (title) thumb.title = title;
-  }
-}
-```
-
----
-
-## 13. pinTnsTransform
-
-Re-assert tns inline transform as `!important` to beat theme CSS.
-
-```js
-function pinTnsTransform(modal) {
-  var tracks = modal.querySelectorAll('.tns-slider');
-  for (var i = 0; i < tracks.length; i++) {
-    var track = tracks[i];
-    var t = track.style.transform || '';
-    if (t) { try { track.style.setProperty('transform', t, 'important'); } catch (e) {} }
-    var tr = track.style.transition || '';
-    if (tr) { try { track.style.setProperty('transition', tr, 'important'); } catch (e) {} }
-  }
-}
-
-function watchTnsTransform(modal) {
-  if (modal.__egTnsWatcher) return modal.__egTnsWatcher;
-  var apply = function () { pinTnsTransform(modal); };
-  apply();
-  var mo = new MutationObserver(apply);
-  mo.observe(modal, { attributes: true, attributeFilter: ['class', 'style'], subtree: true });
-  modal.__egTnsWatcher = mo;
-  setTimeout(apply, 150);
-  setTimeout(apply, 500);
-  return mo;
-}
-```
-
----
-
-## 14. loadExternalLib
-
-Load external library on-demand with duplicate guard.
-
-```js
-function loadExternalLib(cssUrl, jsUrl, callback) {
-  if (document.querySelector('.eg-lib-loaded')) return;
-  var guard = document.createElement('div');
-  guard.className = 'eg-lib-loaded';
-  document.head.appendChild(guard);
-  if (cssUrl) {
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = cssUrl;
-    document.head.appendChild(link);
-  }
-  var script = document.createElement('script');
-  script.src = jsUrl;
-  script.onload = callback;
-  document.head.appendChild(script);
-}
-```
-
----
-
-## 15. sessionStorage helpers
-
-Simple flag for popup tracking.
-
-```js
-function getProductSlug(url) {
-  if (!url) return '';
-  var parts = url.split('/');
-  return parts[parts.length - 1].split('?')[0].split('#')[0];
-}
-
-function markShown(key, url) {
-  var slug = getProductSlug(url);
-  if (!slug) return;
-  sessionStorage.setItem(key, slug);
-}
-
-function isShown(key, url) {
-  var slug = getProductSlug(url);
-  return sessionStorage.getItem(key) === slug;
-}
-```
-
----
-
-## 16. matchMedia helper
-
-Device-aware class toggle.
-
-```js
-function deviceAware() {
-  var mq = window.matchMedia('(min-width: 992px)');
-  function apply() { document.body.classList.toggle('eg-desktop', mq.matches); }
-  apply();
-  mq.addEventListener('change', apply);
-}
-```
-
----
-
-## 17. XHR hook
-
-Re-apply changes after AJAX content loads.
-
-```js
-function hookXHR(callback) {
-  var origSend = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.send = function () {
-    this.addEventListener('load', function () { callback(this); });
-    return origSend.apply(this, arguments);
+function hookCartReapply(reApply){
+  var orig = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(){
+    this.addEventListener('load', function(){
+      if (this.responseURL && this.responseURL.includes('Cart-UpdateQuantity')) reApply();
+    });
+    return orig.apply(this, arguments);
   };
 }
+function parsePrice(el){ return parseFloat(el.innerText.replace(/[^0-9.]/g,'')); }
 ```
 
 ---
 
-## 18. getNoSizeValue / getSizeGroupId
+## Appendix — Archived (rare, 0-1.5% hit — keep for AWG only)
 
-Shopware 6 variant helpers.
-
-```js
-function getSizeGroupId(modal) {
-  var form = modal.querySelector('#variantSwitchForm');
-  var replace = form && form.getAttribute('data-variant-group-replace');
-  if (replace) return replace;
-  var group = modal.querySelector('.product-detail-configurator-group-size');
-  var first = group && group.querySelector('input[type="radio"]');
-  return first ? first.getAttribute('name') : '';
-}
-
-function getNoSizeValue(modal) {
-  var form = modal.querySelector('#variantSwitchForm');
-  var replace = form && form.getAttribute('data-variant-value-replace');
-  if (replace) return replace;
-  var radio = modal.querySelector('#variantSwitchForm input[type="radio"][aria-labelledby="noSize"]');
-  return radio ? radio.value : '';
-}
-
-function getFarbeGroupId(modal) {
-  var form = modal.querySelector('#variantSwitchForm');
-  var g = form && form.getAttribute('data-variant-group-ignore');
-  if (g) return g;
-  var sizeId = getSizeGroupId(modal);
-  var imgs = modal.querySelectorAll('.product-detail-configurator-option-image');
-  for (var i = 0; i < imgs.length; i++) {
-    var opt = imgs[i].closest('.product-detail-configurator-option');
-    var radio = opt && opt.querySelector('input[type="radio"]');
-    if (!radio) continue;
-    var name = radio.getAttribute('name');
-    if (name && name !== sizeId) return name;
-  }
-  return '';
-}
-```
+Shopware: `fetchPdpBlocks`, `sanitizeBuyBox`, `syncBuyState`, `updateVariantUi`, `getSwitchQuery`, `swapModalMedia`, `pinTnsTransform`, `getNoSizeValue`, `getSizeGroupId`, `getFarbeGroupId` — see `ab-test/AWG-MODE/AB044`.
+Others: `sameUrl` (0%), `sessionStorage slug helpers` (0%), `deviceAware matchMedia` (0.07% — use P12 inline width), `waitForLibrary` generic (0.9% vs waitForSlick 4.9%), `loadExternalLib` tiny-slider generic.

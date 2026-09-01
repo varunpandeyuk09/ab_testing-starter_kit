@@ -39,7 +39,7 @@ CLIENT/
 - [ ] Every `setInterval`/`setTimeout` clears itself.
 - [ ] MutationObservers scoped, guarded, disconnected.
 - [ ] Events use `live()` (see `SNIPPETS.md:2`). SPA tests use `listener()` (see `SNIPPETS.md:3`).
-- [ ] No `!important` unless required. No unscoped CSS.
+- [ ] CSS scoped under `.EG-xxx`/`.eg-xxx` (78% of real tests), <2 `!important` per file — see `PATTERNS.md:P16`.
 - [ ] CSS-first: hide/show in CSS, JS only for behavior.
 - [ ] Site functionality untouched.
 - [ ] `v1.json` created (+ `share.js` if tracking).
