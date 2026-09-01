@@ -10,11 +10,11 @@ CLIENT/
     variation1/
       variation.js
       variation.css
-    v1.json
-    share.js
-    metadata.json
-    AI_DATA/
-      user_qa.md
+    v1.json              ← must
+    share.js             ← if tracking
+    metadata.json        ← must
+    AI_DATA/             ← optional for low tests
+      user_qa.md           ← optional (skip for low complexity, keep for medium/high)
       user_inputs/
         test_images/
 ```
