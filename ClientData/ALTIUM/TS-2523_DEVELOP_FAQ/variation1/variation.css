@@ -1,0 +1,139 @@
+/* ==========================================================================
+   EG-ALTIUM-TS2523 — TS-2523 Develop FAQ Re-Add (P2 + P21)
+   All rules scoped under .EG-ALTIUM-TS2523
+   ========================================================================== */
+
+/* ── Section ───────────────────────────────────────────────────────────── */
+.EG-ALTIUM-TS2523 .eg-faq-section {
+  background: #fff;
+  padding: 56px 24px 64px;
+  border-top: 1px solid #e8e8e8;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__inner {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__title {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: #111;
+  margin: 0 0 36px;
+}
+
+/* ── List ──────────────────────────────────────────────────────────────── */
+.EG-ALTIUM-TS2523 .eg-faq__list {
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__item {
+  border-bottom: 1px solid #e6e6e6;
+  background: #fff;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__item:last-child {
+  border-bottom: none;
+}
+
+/* header button */
+.EG-ALTIUM-TS2523 .eg-faq__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__header:hover {
+  background: #fafafa;
+}
+
+/* icon — chevron */
+.EG-ALTIUM-TS2523 .eg-faq__icon {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  position: relative;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__icon::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid #111;
+  border-bottom: 2px solid #111;
+  transform: rotate(45deg);
+  transition: transform 0.25s ease;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__item--open .eg-faq__icon::before {
+  transform: rotate(-135deg);
+  top: 9px;
+}
+
+/* ── P21 Accordion Animation ──────────────────────────────────────────── */
+.EG-ALTIUM-TS2523 .eg-faq__content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s ease;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__item--open .eg-faq__content {
+  grid-template-rows: 1fr;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__content-inner {
+  overflow: hidden;
+  padding: 0 24px;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__item--open .eg-faq__content-inner {
+  padding: 0 24px 20px;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__content-inner p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6b7280;
+  margin: 0 0 10px;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__content-inner p:last-child {
+  margin-bottom: 0;
+}
+
+.EG-ALTIUM-TS2523 .eg-faq__item--open {
+  background: #f8f9fb;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+  .EG-ALTIUM-TS2523 .eg-faq-section {
+    padding: 32px 16px 40px;
+  }
+  .EG-ALTIUM-TS2523 .eg-faq__title {
+    font-size: 26px;
+    margin-bottom: 20px;
+  }
+  .EG-ALTIUM-TS2523 .eg-faq__header {
+    font-size: 14px;
+    padding: 16px;
+  }
+}

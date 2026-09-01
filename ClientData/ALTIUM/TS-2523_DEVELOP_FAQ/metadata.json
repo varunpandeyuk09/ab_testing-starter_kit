@@ -1,0 +1,21 @@
+{
+  "id": "EG-ALTIUM-TS2523",
+  "client": "ALTIUM",
+  "website_url": "https://www.altium.com/develop",
+  "type": "Platform Solutions: Develop - Re-Add FAQ Section to Bottom",
+  "platform": "Custom",
+  "website_type": "B2B SaaS",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": ["DOM insertion", "Accordion Animation", "delegated event binding", "idempotent insertion guard"],
+  "changes_made": [
+    "Inserted FAQ section with 5 items before html body .region-footer (above breadcrumb/footer)",
+    "Accordion uses P21 grid-template-rows 0fr -> 1fr animation, single-open behavior",
+    "First item open by default, matches Wayback design + screenshot",
+    "Scoped under EG-ALTIUM-TS2523, no !important"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation — FAQ re-added as per Wayback https://web.archive.org/web/20260419091421/altium.com/develop",
+  "complexity": "low",
+  "notes": "Anchor: html body .region-footer beforebegin. 5 Qs from screenshot, answers from Wayback + placeholder for 2-5 (update copy if needed)."
+}
