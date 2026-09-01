@@ -32,7 +32,7 @@ CLIENT/
 ## QA Checklist
 
 - [ ] Standard IIFE wrapper; `init()` is entry point.
-- [ ] `waitForElement` (50/15000) guards every init.
+- [ ] `waitForElement` (50/15000) guards every init — incl. `share.js` DOM reads (`[data-pid]` etc.).
 - [ ] Unique body class in `init()`; all CSS scoped to it.
 - [ ] Only stable selectors: semantic id/class/`data-*`.
 - [ ] All inserts/listeners/observers guarded against duplicates.

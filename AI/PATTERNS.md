@@ -103,7 +103,7 @@ mo.observe(document.querySelector('.target'), { childList: true, subtree: true }
 
 ## P7. Event Tracking
 **When:** Measure clicks on test elements.
-**Use:** `live()` in `share.js`. One per tracked interaction. Never mutate DOM in share.js.
+**Use:** `live()` in `share.js`. One per tracked interaction. Never mutate DOM in share.js. Any DOM read on load (e.g. `[data-pid]` → cookie) must be inside `waitForElement` — never top-level `querySelector`.
 
 ---
 
