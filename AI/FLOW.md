@@ -21,7 +21,7 @@ MATCH ──────── PATTERNS.md (find technique)
 SCAFFOLD ──── variation1/ + AI_DATA/
   │
   ▼
-CODE ───────── SNIPPETS.md + RULES.md
+CODE ───────── SNIPPETS.md
   │
   ▼
 QA ─────────── user_qa.md → USER TESTS
@@ -37,6 +37,6 @@ CAPTURE ────── PATTERNS.md (new technique)
 | ASK | Get all facts upfront | — |
 | MATCH | Find technique | PATTERNS.md |
 | SCAFFOLD | Create folders | — |
-| CODE | Write variation.js/css | SNIPPETS.md + RULES.md |
+| CODE | Write variation.js/css | SNIPPETS.md |
 | QA | Handover to user | user_qa.md |
 | CAPTURE | Save new technique | PATTERNS.md |
