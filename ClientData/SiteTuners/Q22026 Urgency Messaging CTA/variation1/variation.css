@@ -1,0 +1,30 @@
+/* ==========================================================================
+   EG-ST001 — Hero Urgency Messaging
+   All rules scoped under .EG-ST001 (body class added in variation.js)
+   ========================================================================== */
+
+/* ── Urgency Line ──────────────────────────────────────────────────────────
+   Inserted before .hero-banner-btn-group via variation.js.
+   ------------------------------------------------------------------------ */
+.EG-ST001 .eg-urgency-line {
+  display: block;
+  margin: 0 0 12px 0;
+  padding: 8px 16px;
+  background-color: #8476FE;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+  .EG-ST001 .eg-urgency-line {
+    font-size: 13px;
+    padding: 6px 12px;
+    margin-bottom: 10px;
+  }
+}

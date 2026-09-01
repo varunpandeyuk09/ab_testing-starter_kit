@@ -352,3 +352,13 @@ function ensure(card, cb) {
 - Keep original alive off-screen (`position: absolute; left: -9999px`)
 - Overlay over target with `position: fixed` + rAF loop to sync position
 **Gotcha:** `display:none` kills iframe render. Never move — always overlay.
+
+---
+
+## P35. Urgency/Scarcity Line Above CTA
+**When:** Insert urgency or scarcity messaging directly above a CTA button group.
+- Use `insertAdjacentElement('beforebegin', urgencyEl)` on the CTA container
+- Idempotent: check `previousElementSibling` class before inserting
+- MutationObserver on parent if hero section re-renders (SPA/AJAX)
+- CSS: semi-transparent or brand-color background, white text, rounded, centered
+**Gotcha:** CTA container may be inside a flex/grid parent — verify insertion doesn't break layout. Always test mobile viewport.

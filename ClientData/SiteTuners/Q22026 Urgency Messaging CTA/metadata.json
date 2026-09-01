@@ -1,0 +1,21 @@
+{
+  "id": "EG-ST001",
+  "client": "SiteTuners",
+  "website_url": "https://sitetuners.com/conversion-revenue-sprint/",
+  "type": "Hero Urgency Messaging",
+  "platform": "WordPress",
+  "website_type": "SaaS / Lead Gen",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": [
+    "DOM insertion",
+    "idempotent insertion guard"
+  ],
+  "changes_made": [
+    "Inserted urgency line above hero CTA: 'Next start date: September 15 · Only 3 audit spots open this month'"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation — urgency text inserted above primary CTA button group.",
+  "complexity": "low",
+  "notes": "Urgency messaging test for conversion-revenue-sprint page."
+}
