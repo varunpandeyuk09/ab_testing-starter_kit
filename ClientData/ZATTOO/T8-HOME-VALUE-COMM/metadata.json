@@ -1,0 +1,20 @@
+{
+  "id": "EG-ZATTOO-T8",
+  "client": "ZATTOO",
+  "website_url": "https://www.zattoo.com/de",
+  "type": "Home - Add Better Value Communication – All Devices",
+  "platform": "React",
+  "website_type": "Streaming",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": ["DOM insertion", "delegated event binding", "idempotent insertion guard"],
+  "changes_made": [
+    "Inserted value communication section immediately after Trust element",
+    "Left: title, sub-copy, 4 USP ticks, 2 CTAs",
+    "Right: collage background image (placeholder URL - replace COLLAGE_BG in JS)"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation - P2 insert after trust",
+  "complexity": "low",
+  "notes": "Stable trust selector resolver with fallback to nth-child(7). BG placeholder via COLLAGE_BG var."
+}

@@ -1,0 +1,136 @@
+/* ==========================================================================
+   EG-ZATTOO-T8 — T8: Home - Add Better Value Communication
+   All rules scoped under .EG-ZATTOO-T8
+   ========================================================================== */
+
+/* ── Value Section ─────────────────────────────────────────────────────── */
+.EG-ZATTOO-T8 .eg-value-section {
+  background: #0a0a0a;
+  color: #fff;
+  padding: 40px 24px;
+  margin: 0;
+  overflow: hidden;
+}
+
+.EG-ZATTOO-T8 .eg-value__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: stretch;
+  gap: 32px;
+  min-height: 360px;
+}
+
+.EG-ZATTOO-T8 .eg-value__left {
+  flex: 0 0 48%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.EG-ZATTOO-T8 .eg-value__title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 12px;
+  color: #fff;
+}
+
+.EG-ZATTOO-T8 .eg-value__sub {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #c8c8c8;
+  margin: 0 0 18px;
+}
+
+.EG-ZATTOO-T8 .eg-value__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px;
+}
+
+.EG-ZATTOO-T8 .eg-value__list li {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.EG-ZATTOO-T8 .eg-value__tick {
+  color: #ff6b00;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.EG-ZATTOO-T8 .eg-value__ctas {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.EG-ZATTOO-T8 .eg-value__cta {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 11px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  text-align: center;
+}
+
+.EG-ZATTOO-T8 .eg-value__cta--primary {
+  background: #ff6b00;
+  color: #fff;
+  border: 1px solid #ff6b00;
+}
+
+.EG-ZATTOO-T8 .eg-value__cta--secondary {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #ff6b00;
+}
+
+.EG-ZATTOO-T8 .eg-value__cta:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.EG-ZATTOO-T8 .eg-value__right {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  min-height: 320px;
+  /* placeholder — replace COLLAGE_BG url in JS */
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media screen and (max-width: 900px) {
+  .EG-ZATTOO-T8 .eg-value__inner {
+    flex-direction: column;
+  }
+  .EG-ZATTOO-T8 .eg-value__left {
+    flex: 1 1 auto;
+  }
+  .EG-ZATTOO-T8 .eg-value__right {
+    min-height: 240px;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .EG-ZATTOO-T8 .eg-value-section {
+    padding: 28px 16px;
+  }
+  .EG-ZATTOO-T8 .eg-value__title {
+    font-size: 22px;
+  }
+  .EG-ZATTOO-T8 .eg-value__cta {
+    flex: 1 1 100%;
+  }
+}
