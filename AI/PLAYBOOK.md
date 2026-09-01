@@ -32,13 +32,13 @@ CLIENT/
 ## QA Checklist
 
 - [ ] Standard IIFE wrapper; `init()` is entry point.
-- [ ] `waitForElement` (50/15000) guards every init — incl. `share.js` DOM reads (`[data-pid]` etc.).
+- [ ] `waitForElement` (50/15000) guards every init — incl. `share.js` DOM reads (`[data-pid]` etc.) → see `SNIPPETS.md:1`.
 - [ ] Unique body class in `init()`; all CSS scoped to it.
 - [ ] Only stable selectors: semantic id/class/`data-*`.
 - [ ] All inserts/listeners/observers guarded against duplicates.
 - [ ] Every `setInterval`/`setTimeout` clears itself.
 - [ ] MutationObservers scoped, guarded, disconnected.
-- [ ] Events use `live()`. SPA tests use `listener()`.
+- [ ] Events use `live()` (see `SNIPPETS.md:2`). SPA tests use `listener()` (see `SNIPPETS.md:3`).
 - [ ] No `!important` unless required. No unscoped CSS.
 - [ ] CSS-first: hide/show in CSS, JS only for behavior.
 - [ ] Site functionality untouched.

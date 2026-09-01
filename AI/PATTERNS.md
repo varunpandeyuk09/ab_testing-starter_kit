@@ -1,6 +1,6 @@
 # Patterns — Quick Reference
 
-Match brief → find pattern → adapt code. Functions in `SNIPPETS.md`.
+Match brief → find pattern → adapt code. Source: `SNIPPETS.md` — do not duplicate functions. Other files reference it.
 
 ---
 
@@ -103,7 +103,7 @@ mo.observe(document.querySelector('.target'), { childList: true, subtree: true }
 
 ## P7. Event Tracking
 **When:** Measure clicks on test elements.
-**Use:** `live()` in `share.js`. One per tracked interaction. Never mutate DOM in share.js. Any DOM read on load (e.g. `[data-pid]` → cookie) must be inside `waitForElement` — never top-level `querySelector`.
+**Use:** `live()` in `share.js` (see `SNIPPETS.md:2`). One per tracked interaction. Never mutate DOM in share.js. Any DOM read on load (e.g. `[data-pid]` → cookie) must be inside `waitForElement` (see `SNIPPETS.md:1`) — never top-level `querySelector`.
 
 ---
 
