@@ -1,0 +1,37 @@
+.EG-NB-22_03 .eg-model-badge {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  background: #fff;
+  color: #000000;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  padding: 6px 10px;
+  border-radius: 2px;
+  z-index: 2;
+  max-width: calc(100% - 24px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid #FFFFFF;
+}
+
+/* ensure image wrappers are positioning context */
+.EG-NB-22_03 .item-content {
+  position: relative;
+}
+
+
+@media screen and (max-width: 767px) {
+  .EG-NB-22_03 .eg-model-badge {
+    font-size: 10px;
+    padding: 5px 10px;
+    left: 50%;
+    right: auto;
+    bottom: 10px;
+    transform: translateX(-50%);
+    text-align: center;
+    white-space: nowrap;
+  }
+}

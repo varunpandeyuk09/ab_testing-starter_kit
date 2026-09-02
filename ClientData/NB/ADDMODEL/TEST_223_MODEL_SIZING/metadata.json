@@ -1,0 +1,21 @@
+{
+  "id": "EG-NB-22_03",
+  "client": "NB",
+  "website_url": "https://www.newbalance.com.au/pd/trackside-fleece-hoodie/MT62Y14P.html",
+  "type": "PDP Model Sizing Overlay",
+  "platform": "Salesforce",
+  "website_type": "E-commerce",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": ["DOM insertion", "Overlay badge", "data-modelinfo parse", "MutationObserver"],
+  "changes_made": [
+    "Parse img[data-modelinfo] to short badge 'Model is 6'2\" (188cm) and wears a size M'",
+    "Inject .eg-model-badge overlay bottom-left of .item-content image wrapper",
+    "Figma Option #1: second image on desktop, carousel on mobile (all model images)",
+    "Scoped under EG-NB-22_03, 11px/10px responsive"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation - overlay badge from data-modelinfo",
+  "complexity": "low",
+  "notes": "Source: carouselhtml.html data-modelinfo. API not needed - client enables data. Add more URLs when available."
+}
