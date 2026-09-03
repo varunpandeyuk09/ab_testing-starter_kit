@@ -7,20 +7,20 @@
 
 ---
 
-## Top Techniques Used
+## Top Techniques Used — audit 4344 variation.js (2026-09-01) — single source
 
 | # | Technique | Usage | Where Used |
 |---|-----------|-------|------------|
-| 1 | `waitForElement` + polling | 95% | Every test (boilerplate) |
-| 2 | `querySelector` / DOM access | 98% | Every test |
-| 3 | `insertAdjacentHTML` | 90% | Insert banners, badges, CTAs, trust sections |
-| 4 | `classList.add` / CSS class injection | 80% | Scoping styles, triggering CSS-only changes |
-| 5 | `live()` delegated events | 75% | Click tracking, button overrides |
-| 6 | Sticky elements (ATC, headers, CTAs) | 20% | PLP filters, PDP ATC, checkout CTA |
-| 7 | Cookie get/set/delete | 15% | Promo codes, user tracking, A/B state |
-| 8 | Slick/Carousel loading | 12% | Product carousels, review sliders, cross-sell |
-| 9 | XHR/Fetch hooks | 10% | Re-apply after AJAX (cart, filters, search) |
-| 10 | MutationObserver | 5% | SPA re-render resilience |
+| 1 | `waitForElement` + polling | 97.5% | Every test (boilerplate) |
+| 2 | `querySelector` / DOM access | 99.4% | Every test |
+| 3 | `insertAdjacentHTML/Element` | 75.3% | Insert banners, badges, CTAs, trust sections |
+| 4 | `classList.add` / CSS class injection | 68.4% | Scoping styles, triggering CSS-only changes |
+| 5 | `live()` delegated events | 28.7% var / 95.8% share | Click tracking (variation 28.7%, share.js 95.8%) |
+| 6 | Sticky elements (ATC, headers, CTAs) | 12.9% | PLP filters, PDP ATC, checkout CTA |
+| 7 | Cookie get/set/delete | 4.3% | Promo codes, user tracking, A/B state |
+| 8 | Slick/Carousel loading | 5.4% slick / 21.7% CDN inject | Product carousels, review sliders |
+| 9 | XHR/Fetch hooks | 11.2% | Re-apply after AJAX (cart 4.6%) |
+| 10 | MutationObserver | 8.6% | SPA re-render resilience |
 
 ---
 

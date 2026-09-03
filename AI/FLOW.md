@@ -6,37 +6,46 @@
 BRIEF
   │
   ▼
-PARSE ──────── extract client code, test ID, name from brief
+PARSE ──────── goal, page/site, user behavior, expected outcome, constraints, success criteria
   │
   ▼
-ANALYZE ────── read brief → list what you need from user
-  │            (selectors, endpoints, behavior, DOM structure)
-  ▼
-ASK ────────── get ALL facts before coding
+ANALYZE ────── page type, platform/framework, DOM architecture, SPA/dynamic, responsive, dependencies, unknowns
   │
   ▼
-MATCH ──────── PATTERNS.md (find technique)
+ASK ────────── only blocking questions (do not ask inferable from brief/patterns/site)
   │
   ▼
-SCAFFOLD ──── variation1/ + AI_DATA/
+MATCH ──────── PATTERNS.md + SNIPPETS.md + historical/client precedent — Adapt, do not blindly copy
   │
   ▼
-CODE ───────── SNIPPETS.md
+SCAFFOLD ──── variation1/ + AI_DATA/ + guards/observers/responsive/cleanup strategy
   │
   ▼
-QA ─────────── user_qa.md → USER TESTS
+CODE ───────── smallest solution — kit conventions + platform constraints + idempotency
   │
   ▼
-CAPTURE ────── PATTERNS.md (new technique)
+QA ─────────── verify brief/selectors/duplicates/SPA/observers/listeners/responsive/scope/edge cases
+  │           If QA fails → CODE → QA
+  │           If QA passes → HANDOFF
+  ▼
+HANDOFF ───── final impl + files/changes + assumptions + QA status + browser verification needed
+  │
+  ▼
+CAPTURE ────── genuinely new technique?
+              ├── No → finish
+              └── Yes → reusable? validated? non-obvious?
+                       ├── No → do not add
+                       └── Yes → PATTERNS.md exists? → update : add new P#
 ```
 
 | Step | Action | File |
 |---|---|---|
-| PARSE | Extract client + test | — |
-| ANALYZE | What do I need from user? | — |
-| ASK | Get all facts upfront | — |
-| MATCH | Find technique | PATTERNS.md |
-| SCAFFOLD | Create folders | — |
-| CODE | Write variation.js/css | SNIPPETS.md |
-| QA | Handover to user | user_qa.md |
-| CAPTURE | Save new technique | PATTERNS.md |
+| PARSE | Extract goal, page, behavior, outcome, constraints, success | — |
+| ANALYZE | Determine page type, platform, DOM, SPA, responsive, deps, unknowns | — |
+| ASK | Only blocking questions | — |
+| MATCH | Find closest pattern/snippet/precedent | PATTERNS.md |
+| SCAFFOLD | Create folders + init strategy | — |
+| CODE | Smallest solution per conventions | SNIPPETS.md |
+| QA | Verify 9 checks; loop if fail | user_qa.md |
+| HANDOFF | Provide impl + QA status + verification | — |
+| CAPTURE | If new + reusable + validated + non-obvious → PATTERNS.md | PATTERNS.md |

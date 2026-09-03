@@ -47,6 +47,18 @@ CLIENT/
 
 ---
 
+## Automated QA (pre-handover) — run `python scripts/qa_validate.py <TEST_PATH>`
+
+- [ ] syntax check (brace balance)
+- [ ] duplicate selector check
+- [ ] unscoped CSS check (<2 `!important`, scoped under `.EG-` — P16)
+- [ ] setInterval/setTimeout cleanup check
+- [ ] missing `v1.json` / `variation.js/css` check
+- [ ] `share.js` DOM mutation check (P7)
+- [ ] anti-pattern scan (`[data-pid]` without waitForElement, `innerHTML=`)
+
+---
+
 ## Tips
 
 1. Minified HTML/JS — use `Select-String` or regex. Save fetched assets once, reuse.

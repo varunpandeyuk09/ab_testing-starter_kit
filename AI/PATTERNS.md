@@ -151,19 +151,29 @@ waitForElement('.stable-anchor', init, 50, 15000);
 ---
 
 ## P12. Viewport Branch + Resize Rebuild
-**When:** Different DOM/position on mobile vs desktop. (35% use screen.width)
+**When:** Different DOM/position on mobile vs desktop.
+*History:* 35% of 4344 tests used `window.innerWidth < 767` + `resize` rebuild. `deviceAware()` matchMedia was only 0.07% — legacy.
+*Modern options — choose per site:*
 ```js
-function build() {
+// A) Legacy inline + rebuild (works, simple)
+function buildA() {
   var isMobile = window.innerWidth < 767;
   if (document.querySelector('.eg-details')) document.querySelector('.eg-details').remove();
   var anchor = document.querySelector(isMobile ? '.mobile-anchor' : '.desktop-anchor');
   if (!anchor || document.querySelector('.eg-details')) return;
   anchor.insertAdjacentHTML('afterend', '<div class="eg-details">...</div>');
 }
-waitForElement('.desktop-anchor', build, 50, 15000);
-window.addEventListener('resize', function(){ setTimeout(build, 200); });
+waitForElement('.desktop-anchor', buildA, 50, 15000);
+window.addEventListener('resize', function(){ setTimeout(buildA, 200); });
+
+// B) matchMedia (preferred for viewport) + ResizeObserver (element size)
+var mq = window.matchMedia('(max-width: 767px)');
+mq.addEventListener('change', buildA);
+// or ResizeObserver for container queries: new ResizeObserver(buildA).observe(anchor);
+
+// C) CSS-only when possible — @media hide/show, no JS rebuild needed
 ```
-**Gotcha:** Replace old `deviceAware()` matchMedia (0.07% hit) — real tests use inline `screen.width` + rebuild.
+**Gotcha:** Use `screen.width` only if site lacks matchMedia support. Prefer CSS or matchMedia for modern responsive.
 
 ---
 

@@ -26,9 +26,8 @@ BEFORE writing code, read these files IN ORDER:
 1. AI/FLOW.md         — process flow (start here)
 2. AI/PATTERNS.md     — technique recipes (find matching P#)
 3. AI/SNIPPETS.md     — reusable functions (copy what you need)
-4. AI/RULES.md        — coding standards
-5. AI/PLAYBOOK.md     — QA checklist
-6. ClientData/examples/EG-EXAMPLE-SM01/ — reference example
+4. AI/PLAYBOOK.md     — QA checklist (coding standards inside)
+5. ClientData/examples/EG-EXAMPLE-SM01/ — reference example
 
 AFTER reading, state and CONFIRM with user:
 - CLIENT folder name
@@ -85,10 +84,9 @@ ab_testing-starter_kit/
   v1.json
   AI/
     FLOW.md               ← START HERE
-    PATTERNS.md           ← P1-P34 techniques
-    SNIPPETS.md           ← reusable functions
-    RULES.md              ← coding standards
-    PLAYBOOK.md           ← QA checklist
+    PATTERNS.md           ← P1-P17 techniques
+    SNIPPETS.md           ← reusable functions (7 core)
+    PLAYBOOK.md           ← QA checklist + coding standards
     README.md             ← this file
   ClientData/
     examples/
@@ -117,5 +115,9 @@ ab_testing-starter_kit/
 
 ## Knowledge Loop (after every test)
 
-- New technique → PATTERNS.md as next P#
+- New technique → PATTERNS.md **only if qualifies**:
+  1. Generic (not client-specific) + reusable across ≥2 clients or ≥3 tests
+  2. Distinct technique not covered by P1-P17
+  3. Has copy-paste snippet + gotcha
+  4. Else → keep in test's `notes` or Appendix, not new P#
 - Any kit change → update this file
