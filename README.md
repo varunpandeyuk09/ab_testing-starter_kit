@@ -4,13 +4,13 @@
 
 ## ⚠️ IMPORTANT: Think Beyond the Kit
 
-**Kit bas reference hai — tu limited mat ban.**
+**The kit is only a reference — don't limit yourself.**
 
-- Client ki **asli problem** samajh, sirf brief mat follow kar
-- Patterns sabse start mat kar — pehle **khud soch** kya solution ho sakta hai
-- Agar koi cheez kit mein nahi hai, toh **naya bana** —Existing patterns ko **copy mat kar**, adapt kar
-- User se pehle **options de**, baad mein mat puch
-- Edge cases khud cover kar — bole nahi karne ka wait mat kar
+- Understand the client's **real problem**, don't just follow the brief
+- Don't start from patterns — **think first** what the solution could be
+- If something is not in the kit, **create it** — don't copy existing patterns, adapt them
+- Give **options upfront** to the user, don't ask later
+- Cover **edge cases** yourself — don't wait to be told
 
 **Client intent > Kit patterns**
 
