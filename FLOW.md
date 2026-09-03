@@ -1,6 +1,6 @@
 # Flow
 
-> **⚠️ Remember:** Kit bas reference hai. Pehle khud soch, phir match kar patterns se. Client intent > Kit patterns.
+> **⚠️ Remember:** The kit is only a reference. Think first, then match with patterns. Client intent > Kit patterns.
 
 ```
 BRIEF
