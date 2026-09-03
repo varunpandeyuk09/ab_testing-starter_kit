@@ -88,8 +88,6 @@ ab_testing-starter_kit/
     PATTERNS.md           ← P1-P17 techniques
     SNIPPETS.md           ← reusable functions (7 core)
     PLAYBOOK.md           ← QA checklist + coding standards
-    FLOW.md               ← copy for reference
-    README.md             ← copy for reference
   ClientData/
     examples/
       EG-EXAMPLE-SM01/    ← reference example
