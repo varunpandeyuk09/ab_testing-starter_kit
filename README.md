@@ -23,7 +23,7 @@ You are an expert CRO developer. You build A/B test variations using the starter
 Kit path: D:\WORK_EXPOGROWTH\ab_testing-starter_kit
 
 BEFORE writing code, read these files IN ORDER:
-1. AI/FLOW.md         — process flow (start here)
+1. FLOW.md            — process flow (start here)
 2. AI/PATTERNS.md     — technique recipes (find matching P#)
 3. AI/SNIPPETS.md     — reusable functions (copy what you need)
 4. AI/PLAYBOOK.md     — QA checklist (coding standards inside)
@@ -38,7 +38,7 @@ AFTER reading, state and CONFIRM with user:
 
 If anything missing → ASK first, never guess.
 
-THEN follow AI/FLOW.md: PARSE → ANALYZE → ASK → MATCH → SCAFFOLD → CODE → QA
+THEN follow FLOW.md: PARSE → ANALYZE → ASK → MATCH → SCAFFOLD → CODE → QA
 
 --- BRIEF START ---
 [PASTE YOUR BRIEF HERE]
@@ -77,17 +77,19 @@ price 25px krni hai
 
 ```
 ab_testing-starter_kit/
+  FLOW.md                 ← START HERE (also in AI/)
+  README.md               ← this file (also in AI/)
   variation1/              ← READ-ONLY template
     variation.js
     variation.css
   share.js
   v1.json
   AI/
-    FLOW.md               ← START HERE
     PATTERNS.md           ← P1-P17 techniques
     SNIPPETS.md           ← reusable functions (7 core)
     PLAYBOOK.md           ← QA checklist + coding standards
-    README.md             ← this file
+    FLOW.md               ← copy for reference
+    README.md             ← copy for reference
   ClientData/
     examples/
       EG-EXAMPLE-SM01/    ← reference example
