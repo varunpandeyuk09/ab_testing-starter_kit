@@ -1,0 +1,21 @@
+{
+  "id": "EG-LP-1_11",
+  "client": "LP",
+  "website_url": "https://www.lepinefunerals.com.au/",
+  "type": "Home Page Redesign Desktop",
+  "platform": "Custom",
+  "website_type": "Lead Gen",
+  "framework": "vanilla js",
+  "devices": ["desktop"],
+  "techniques": ["DOM insertion", "Text replacement", "Viewport gating", "CSS scope guard"],
+  "changes_made": [
+    "Reduced hero height to 520-560px and raised copy overlay",
+    "Primary CTA href -> /pricing/, secondary -> /funerals/upcoming-funerals/",
+    "Inserted 3 cards after .jw-hero-homepage: Plan a Funeral Now, Pre-plan, Explore Pricing",
+    "Desktop only via window.innerWidth >=992 gate, hidden on mobile"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation — 3 cards beneath hero per Figma, hero reduced",
+  "complexity": "low",
+  "notes": "Anchor: .jw-hero-homepage beforebegin/afterend. Verify hero CTA text remains 'Plan a funeral'/'Contact us' but href updated. Cards overlapping hero -40px per Figma."
+}

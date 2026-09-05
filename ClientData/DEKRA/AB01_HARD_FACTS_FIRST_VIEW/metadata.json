@@ -1,0 +1,12 @@
+{
+  "testId": "EG-DEKRA-AB01",
+  "testName": "AB01 | Hard Facts in First View",
+  "client": "DEKRA",
+  "description": "Add compact Info Box below H1 with Next Date, Location, Prerequisites, Price, CTAs. Scrape data from existing page elements.",
+  "targetUrls": [
+    "https://www.dekra-akademie.de/produkte/berufskraftfahrer-weiterbildung-lkwbus-modul-1-wirtschaftlich-fahren",
+    "https://www.dekra-akademie.de/produkte/brandschutzhelfer-schulung"
+  ],
+  "patterns": ["P2", "P10", "P12"],
+  "complexity": "high"
+}

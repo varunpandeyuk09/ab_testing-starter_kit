@@ -1,0 +1,159 @@
+/* ==========================================================================
+   EG-LP-1_11 — Home Page Redesign Desktop — P2 3-cards + hero overlay
+   All rules scoped under .EG-LP-1_11 — Desktop only (≥992px)
+   ========================================================================== */
+
+/* — Hero reduced + copy higher overlay + Figma extras — */
+@media screen and (min-width: 992px) {
+  .EG-LP-1_11 .jw-hero-homepage {
+    min-height: 520px !important;
+    max-height: 560px !important;
+    position: relative;
+    overflow: visible !important;
+  }
+  .EG-LP-1_11 .jw-hero-homepage .jw-hero-homepage__content {
+    padding-top: 60px !important;
+  }
+  .EG-LP-1_11 .eg-hero-tag {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.18) !important;
+    color: #fff !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    padding: 6px 12px !important;
+    border-radius: 9999px !important;
+    margin-bottom: 18px !important;
+    margin-top: 0 !important;
+    backdrop-filter: blur(6px);
+    position: relative !important;
+    z-index: 3 !important;
+    border: 1px solid rgba(255,255,255,0.18) !important;
+  }
+  .EG-LP-1_11 .eg-hero-tag__avatars { font-size: 14px; }
+  .EG-LP-1_11 .eg-usp-icon {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    margin-right: 4px;
+  }
+  .EG-LP-1_11 .jw-hero-homepage h1 {
+    margin-top: 0 !important;
+  }
+  .EG-LP-1_11 .eg-hero-tag__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2ecc71;
+    display: inline-block;
+  }
+  .EG-LP-1_11 .eg-hero-usps {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.92);
+  }
+  .EG-LP-1_11 .eg-hero-reviews {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    background: #fff;
+    color: #111;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .EG-LP-1_11 .eg-hero-reviews__score {
+    color: #0b7a3a;
+  }
+}
+
+/* — 3 cards beneath hero — negative overlap per Figma — */
+.EG-LP-1_11 .eg-hero-cards {
+  background: #f2f4f6;
+  padding: 0 24px 40px;
+  margin-top: -56px;
+  position: relative;
+  z-index: 3;
+}
+
+.EG-LP-1_11 .eg-hero-cards__inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.EG-LP-1_11 .eg-card {
+  flex: 1 1 0;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.EG-LP-1_11 .eg-card__icon {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  line-height: 28px;
+  text-align: center;
+  border: 1px solid #dfe3e8;
+  border-radius: 50%;
+  margin-bottom: 14px;
+  color: #0b3a5f;
+}
+
+.EG-LP-1_11 .eg-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0b1a2a;
+  margin: 0 0 8px;
+}
+
+.EG-LP-1_11 .eg-card__copy {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5a6b7a;
+  margin: 0 0 18px;
+  flex: 1;
+}
+
+.EG-LP-1_11 .eg-card__cta {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #0b3a5f;
+  padding: 9px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.EG-LP-1_11 .eg-card__cta:hover {
+  background: #0e4a78;
+}
+
+/* — Hide on mobile/tablet — Figma desktop only — */
+@media screen and (max-width: 991px) {
+  .EG-LP-1_11 .eg-hero-cards {
+    display: none !important;
+  }
+  .EG-LP-1_11 .jw-hero-homepage {
+    min-height: auto !important;
+  }
+}
