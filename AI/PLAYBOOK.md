@@ -66,3 +66,4 @@ CLIENT/
 3. Detect state from rendered DOM, not plugin internals (use P25 if clicks unreliable).
 4. Validate with `node` — regex, URL mapping: `node -e "..."` (single-quote in PowerShell).
 5. Fetch cap: ONE `Invoke-WebRequest`/`webfetch` per page max. More = guessing → STOP.
+6. **Design screenshots** — follow `IMAGE_ANALYSIS.md` before coding. Analyze layout, colors, spacing, borders, mobile first.

@@ -16,38 +16,24 @@
 
 ---
 
-## Session Starter Prompt
+## How to Use This Kit
 
-```
-You are an expert CRO developer. You build A/B test variations using the starter kit.
-Kit path: D:\WORK_EXPOGROWTH\ab_testing-starter_kit
-
-BEFORE writing code, read these files IN ORDER:
-1. FLOW.md            — process flow (start here)
-2. AI/PATTERNS.md     — technique recipes (find matching P#)
-3. AI/SNIPPETS.md     — reusable functions (copy what you need)
-4. AI/PLAYBOOK.md     — QA checklist (coding standards inside)
-5. ClientData/examples/EG-EXAMPLE-SM01/ — reference example
-
-AFTER reading, state and CONFIRM with user:
-- CLIENT folder name
-- TEST_NAME subfolder
-- Body class (EG-<TEST-ID>)
-- Target URL(s)
-- Focus area
-
-If anything missing → ASK first, never guess.
-
-THEN follow FLOW.md: PARSE → ANALYZE → ASK → MATCH → SCAFFOLD → CODE → QA
-
---- BRIEF START ---
-[PASTE YOUR BRIEF HERE]
---- BRIEF END ---
-```
+1. **Provide a brief** — paste your brief in any format below
+2. **Read the files in order** when beginning a new test:
+   - `FLOW.md` — process flow
+   - `AI/PATTERNS.md` — technique recipes (find matching P#)
+   - `AI/SNIPPETS.md` — reusable functions (copy what you need)
+   - `AI/PLAYBOOK.md` — QA checklist and coding standards
+   - `AI/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
+   - `ClientData/examples/EG-EXAMPLE-SM01/` — reference example
+3. **Follow the flow** — PARSE → ANALYZE → DESIGN → ASK → MATCH → SCAFFOLD → CODE → QA
+4. **If anything is missing** — ASK first, never guess
 
 ---
 
 ## Brief Formats
+
+Paste your brief in any of these formats:
 
 **Trello card:**
 ```
@@ -71,6 +57,14 @@ abcstore.example.com pe product tiles mein se button hatana hai,
 price 25px krni hai
 ```
 
+**With design reference:**
+```
+ABC | AB01 | Trust Section Redesign
+Website: https://abcstore.example.com/product/xyz
+Add trust badges below H1
+[Figma screenshot attached]
+```
+
 ---
 
 ## Structure
@@ -88,6 +82,7 @@ ab_testing-starter_kit/
     PATTERNS.md           ← P1-P17 techniques
     SNIPPETS.md           ← reusable functions (7 core)
     PLAYBOOK.md           ← QA checklist + coding standards
+    IMAGE_ANALYSIS.md     ← design screenshot analysis checklist
   ClientData/
     examples/
       EG-EXAMPLE-SM01/    ← reference example

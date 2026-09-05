@@ -2,11 +2,11 @@
  * EG-SPA-HELPER — Universal React / Angular / Vue Re-Render Safe Snippet
  * ──────────────────────────────────────────────────────────────────────
  * Usage:
- *   1. Developer sirf `init()` mein changes likhta hai
- *   2. Ye snippet automatically:
- *      - Page load pe apply karta hai
- *      - Element delete/re-render hone pe re-apply karta hai
- *      - SPA route change pe bhi apply karta hai
+ *   1. Developer only writes changes in `init()`
+ *   2. This snippet automatically:
+ *      - Applies on page load
+ *      - Re-applies when element is deleted/re-rendered
+ *      - Re-applies on SPA route change
  *
  * Example:
  *   EG_SPA_HELP.init = function () {
@@ -30,10 +30,10 @@ var EG_SPA_HELP = (function () {
     setTimeout(function () { clearInterval(i); }, timeout || 20000);
   }
 
-  // Developer ye change karega
+  // Developer will change this
   var initFn = function () {};
 
-  // Kisi bhi element ke liye changes apply karo
+  // Apply changes for any element
   function apply(selector) {
     if (applied[selector]) return;
     var el = document.querySelector(selector);
@@ -42,12 +42,12 @@ var EG_SPA_HELP = (function () {
     initFn();
   }
 
-  // Reset — jab React element delete kare toh dubara apply ho sake
+  // Reset — so it can be re-applied when React deletes/re-renders element
   function reset(selector) {
     delete applied[selector];
   }
 
-  // MutationObserver — body pe, saare DOM changes catch karta hai
+  // MutationObserver — on body, catches all DOM changes
   function startObserving() {
     if (observer) return;
 
@@ -55,13 +55,13 @@ var EG_SPA_HELP = (function () {
       for (var i = 0; i < mutations.length; i++) {
         var m = mutations[i];
 
-        // Added nodes — naya element aaya
+        // Added nodes — new element appeared
         if (m.addedNodes.length > 0) {
           for (var j = 0; j < m.addedNodes.length; j++) {
             var node = m.addedNodes[j];
-            if (node.nodeType !== 1) continue; // sirf elements
+            if (node.nodeType !== 1) continue; // only elements
 
-            // Check karo ki koi watched selector is node ke andar hai ya ye khud hai
+            // Check if any watched selector is inside this node or is this node
             for (var sel in applied) {
               if (node.matches && node.matches(sel)) {
                 reset(sel);
@@ -71,13 +71,13 @@ var EG_SPA_HELP = (function () {
               }
             }
           }
-          // Re-apply sab
+          // Re-apply all
           for (var sel in applied) {
             apply(sel);
           }
         }
 
-        // Removed nodes — element delete hua
+        // Removed nodes — element was deleted
         if (m.removedNodes.length > 0) {
           for (var j = 0; j < m.removedNodes.length; j++) {
             var node = m.removedNodes[j];
@@ -91,13 +91,13 @@ var EG_SPA_HELP = (function () {
               }
             }
           }
-          // Re-apply sab
+          // Re-apply all
           for (var sel in applied) {
             wait(sel, function () { apply(sel); }, 100, 5000);
           }
         }
 
-        // Attribute change — class ya data attribute change
+        // Attribute change — class or data attribute changed
         if (m.type === 'attributes') {
           var target = m.target;
           for (var sel in applied) {
@@ -154,14 +154,14 @@ var EG_SPA_HELP = (function () {
     set init(fn) { initFn = fn; },
     get init() { return initFn; },
 
-    // Kisi specific selector ko watch karo (optional — agar sirf kuch elements track karne ho)
+    // Watch a specific selector (optional — when tracking only certain elements)
     watch: function (selector) {
       applied[selector] = false;
       wait(selector, function () { apply(selector); }, 100, 15000);
       startObserving();
     },
 
-    // Sab selectors ko ek saath watch karo (init ke andar se)
+    // Watch all selectors together (call from init)
     start: function () {
       startObserving();
       hookHistory();

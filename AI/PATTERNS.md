@@ -258,3 +258,38 @@ function addBusinessDays(startDate, days) {
   return d;
 }
 ```
+
+---
+
+## P18. YouTube / Video Integration
+**When:** Add YouTube video to gallery, lightbox, or custom player.
+```js
+// 1. Parse YouTube URL — handles all formats
+function extractYoutubeId(url) {
+  var patterns = [
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/,
+    /youtu\.be\/([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/v\/([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/
+  ];
+  for (var i = 0; i < patterns.length; i++) {
+    var match = url.match(patterns[i]);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// 2. Auto-generate thumbnail from video ID
+var thumbUrl = 'https://img.youtube.com/vi/' + videoId + '/mqdefault.jpg';
+
+// 3. Idempotent guard — skip if already added
+if (gallery.querySelector('[data-video-type="youtube"]')) return;
+
+// 4. Re-init jQuery plugin (lightGallery etc.)
+if ($lg.data('lightGallery')) {
+  $lg.data('lightGallery').destroy(true);
+}
+$lg.lightGallery({ selector: 'a[data-video-type="youtube"]', videojs: true });
+```
+**Gotcha:** Always `destroy(true)` before re-init. Use `mqdefault.jpg` for thumbnails (120x90). Watch URL preferred over embed URL for lightGallery detection.

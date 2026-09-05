@@ -1,0 +1,12 @@
+{
+  "testId": "EG-DEKRA-TRUST",
+  "testName": "TRUST_SECTION | Trust Cards Section",
+  "client": "DEKRA",
+  "description": "Insert trust cards section below H1 based on tile category detection (ÖG/FK/MIXED). Shows relevant value propositions per seminar type.",
+  "targetUrls": [
+    "https://www.dekra-akademie.de/produkte/berufskraftfahrer-weiterbildung-lkwbus-modul-1-wirtschaftlich-fahren",
+    "https://www.dekra-akademie.de/produkte/brandschutzhelfer-schulung"
+  ],
+  "patterns": ["P2", "P10"],
+  "complexity": "medium"
+}

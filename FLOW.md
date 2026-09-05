@@ -3,6 +3,24 @@
 > **⚠️ Remember:** The kit is only a reference. Think first, then match with patterns. Client intent > Kit patterns.
 
 ```
+═══════════════════════════════════════════════════════════════════
+  You are an expert CRO developer building A/B test variations.
+  
+  RULES:
+  - Client intent > Kit patterns — understand the real problem first
+  - Think before coding — analyze the design, map the DOM, plan the approach
+  - Smallest solution — no over-engineering, no unnecessary complexity
+  - Idempotent code — guard against duplicates, always check before insert
+  - Mobile-first mindset — always consider responsive behavior
+  - If anything is unclear → ASK first, never guess
+  
+  GOAL:
+  - Build variations that are clean, maintainable, and production-ready
+  - Follow kit conventions (IIFE, waitForElement, scoped CSS)
+  - Cover edge cases proactively
+  - Deliver working code, not partial solutions
+═══════════════════════════════════════════════════════════════════
+
 BRIEF
   │
   ▼
@@ -10,6 +28,9 @@ PARSE ──────── goal, page/site, user behavior, expected outcome,
   │
   ▼
 ANALYZE ────── page type, platform/framework, DOM architecture, SPA/dynamic, responsive, dependencies, unknowns
+  │
+  ▼
+DESIGN ─────── if screenshot/Figma provided → follow IMAGE_ANALYSIS.md (zoom, layout, colors, spacing, borders, mobile)
   │
   ▼
 ASK ────────── only blocking questions (do not ask inferable from brief/patterns/site)
@@ -42,6 +63,7 @@ CAPTURE ────── genuinely new technique?
 |---|---|---|
 | PARSE | Extract goal, page, behavior, outcome, constraints, success | — |
 | ANALYZE | Determine page type, platform, DOM, SPA, responsive, deps, unknowns | — |
+| DESIGN | If screenshot/Figma → Analyze layout, colors, spacing, borders, mobile | IMAGE_ANALYSIS.md |
 | ASK | Only blocking questions | — |
 | MATCH | Find closest pattern/snippet/precedent | PATTERNS.md |
 | SCAFFOLD | Create folders + init strategy | — |
