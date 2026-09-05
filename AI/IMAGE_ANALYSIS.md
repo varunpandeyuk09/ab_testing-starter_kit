@@ -15,20 +15,25 @@
 
 ## Step 2: Identify Component Type
 
-What are you building? Match with real test patterns:
+What are you building?
 
-| Component | What to Check | Reference |
-|-----------|---------------|-----------|
-| **Info Box / Detail Card** | Two-column layout? Left/right split? Border separator? | DEKRA-AB01 |
-| **Product Card** | Image aspect ratio, price position, badge overlay, hover state | NB-RECENTLY-VIEWED |
-| **Tab Navigation** | Active tab indicator (underline/highlight), scroll behavior | DEKRA-PLP-TABS |
-| **Badge / Tag** | Position (absolute?), shape (pill?), background color | NB-ADDMODEL, LP-1.11 |
-| **CTA Button** | Color, size, border radius, icon, hover effect | DEKRA-AB01, LP-1.11 |
-| **Carousel / Slider** | Navigation arrows, thumbnails, dots, slides visible | VIDABOX, NB-RECENTLY-VIEWED |
-| **Trust Section** | Cards connected or with gap? Separator lines? Icons? | DEKRA-TRUST |
-| **Hero Enhancement** | Overlap effect? Social proof? USP bar? | LP-1.11 |
-| **Price Display** | Sale vs regular, strikethrough, MwSt badge, funded badge | DEKRA-AB01, NB-RECENTLY-VIEWED |
-| **Benefits List** | Checkmark icons, spacing, separator lines | DEKRA-AB01 |
+| Component | What to Check |
+|-----------|---------------|
+| **Info Box / Detail Card** | Two-column layout? Left/right split? Border separator? |
+| **Product Card** | Image aspect ratio, price position, badge overlay, hover state |
+| **Tab Navigation** | Active tab indicator (underline/highlight), scroll behavior |
+| **Badge / Tag** | Position (absolute?), shape (pill?), background color |
+| **CTA Button** | Color, size, border radius, icon, hover effect |
+| **Carousel / Slider** | Navigation arrows, thumbnails, dots, slides visible |
+| **Trust Section** | Cards connected or with gap? Separator lines? Icons? |
+| **Hero Enhancement** | Overlap effect? Social proof? USP bar? |
+| **Price Display** | Sale vs regular, strikethrough, badges |
+| **Benefits List** | Checkmark icons, spacing, separator lines |
+| **Form** | Input borders, focus state, labels, error state |
+| **Modal / Popup** | Overlay color, close position, padding |
+| **Banner** | Full-width or contained? Close button? |
+| **Navigation** | Active state, underline, color change |
+| **Table** | Header style, row borders, zebra striping |
 
 ---
 
@@ -38,27 +43,27 @@ What are you building? Match with real test patterns:
 |-------|------------------|
 | **Grid vs Flex** | CSS Grid (rows+columns) or Flexbox (one direction)? |
 | **Columns** | How many? Equal or asymmetric? |
-| **Overlap** | Any negative margin overlap (hero cards)? |
+| **Overlap** | Any negative margin overlap? |
 | **Alignment** | Left, center, right aligned? |
 | **Hierarchy** | Which element is bigger/primary? |
 
-### Layout Patterns (from real tests):
+### Common Layouts:
 
 ```
-TWO-COLUMN (DEKRA-AB01):
+TWO-COLUMN:
 ┌─────────────┬─────────────┐
 │  Left Col   │  Right Col  │
 │  (flex: 1)  │  (max-w)    │
 │  border-r   │  border     │
 └─────────────┴─────────────┘
 
-THREE-CARD GRID (LP-1.11):
+THREE-CARD GRID:
 ┌───────┐ ┌───────┐ ┌───────┐
 │ Card1 │ │ Card2 │ │ Card3 │
 └───────┘ └───────┘ └───────┘
   flex: 1    flex: 1    flex: 1
 
-TAB NAVIGATION (DEKRA-PLP-TABS):
+TAB NAVIGATION:
 [Tab1] [Tab2] [Tab3]  ← horizontal scroll on mobile
 ─────────────────────
     Tab Content
@@ -74,7 +79,7 @@ TAB NAVIGATION (DEKRA-PLP-TABS):
 | **Section Margin** | Between sections | 24px, 32px, 40px, 48px |
 | **Grid Gap** | Between cards/items | 0 (connected), 8px, 12px, 16px, 24px |
 | **Icon Gap** | Between icon and text | 8px, 10px, 12px, 14px |
-| **Border Radius** | Corner roundness | 0 (sharp), 4px, 6px, 8px, 12px, 19px, 9999px (pill) |
+| **Border Radius** | Corner roundness | See guide below |
 
 ### Border Radius Guide:
 
@@ -101,14 +106,18 @@ TAB NAVIGATION (DEKRA-PLP-TABS):
 | **Border/Separator** | Line color (#e5e7eb common) |
 | **Status Colors** | Green (success), red (error), yellow (warning) |
 
-### Color Patterns (from real tests):
+### Common Color Palette:
 
 ```
-DEKRA GREEN:    #185F24 (primary), #007d40 (CTA), #dcfce7 (icon bg)
-LP GREEN:       #2ecc71 (status dot), #0b7a3a (review score)
-NB GREEN:       #1a7a3c (badge bg)
-GRAY SCALE:     #1a1a1a (black), #374151 (dark gray), #6b7280 (gray), #9ca3af (light gray)
-BORDERS:        #e5e7eb (common), #d1d5db (alternative)
+BLACKS:     #1a1a1a, #111827
+DARK GRAY:  #374151
+GRAY:       #6b7280
+LIGHT GRAY: #9ca3af, #d1d5db
+BORDERS:    #e5e7eb, #d1d5db
+OFF-WHITE:  #f8f9fa, #f9fafc, #f3f4f6
+GREEN:      #185F24, #007d40, #2ecc71, #1a7a3c
+RED:        #ef4444, #dc2626
+BLUE:       #3b82f6, #2563eb
 ```
 
 ---
@@ -147,14 +156,14 @@ HEADINGS:   22-32px, bold
 ### Separator Patterns:
 
 ```
-VERTICAL SEPARATOR (DEKRA-AB01):
+VERTICAL SEPARATOR:
 ┌─────────────│─────────────┐
 │  Left Col   │  Right Col  │
 │             │  border-r   │
 └─────────────│─────────────┘
               1px solid #e5e7eb
 
-HORIZONTAL SEPARATOR (DEKRA-TRUST mobile):
+HORIZONTAL SEPARATOR:
 ┌─────────────┐
 │   Card 1    │
 ├─────────────┤ ← border-bottom
@@ -163,7 +172,7 @@ HORIZONTAL SEPARATOR (DEKRA-TRUST mobile):
 │   Card 3    │
 └─────────────┘
 
-NO SEPARATOR (connected cards):
+CONNECTED (no gap):
 ┌─────────────┬─────────────┬─────────────┐
 │   Card 1    │   Card 2    │   Card 3    │
 └─────────────┴─────────────┘
@@ -220,7 +229,7 @@ HORIZONTAL SCROLL (tabs):
 Mobile:  [Tab1] [Tab2] [Tab3] → (scrollable)
 
 HIDDEN ON MOBILE:
-if (window.innerWidth < 767) return; // skip on mobile
+@media (max-width: 767px) { .element { display: none; } }
 ```
 
 ---
