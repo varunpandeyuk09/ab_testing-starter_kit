@@ -12,7 +12,7 @@
 
 | File | Purpose |
 |------|---------|
-| `AI/IMAGE_ANALYSIS.md` | Design screenshot analysis checklist — follow before coding |
+| `AI/IMAGE_ANALYSIS.md` | Design screenshot analysis checklist — based on real test patterns from DEKRA, NB, LP, ZATTOO, VIDABOX |
 
 ---
 
@@ -42,6 +42,16 @@
 
 #### AI/PATTERNS.md
 - Added P18: YouTube / Video Integration pattern
+
+#### AI/IMAGE_ANALYSIS.md
+- Complete rewrite based on real test patterns (DEKRA, NB, LP, ZATTOO, VIDABOX)
+- Added component type matching (Info Box, Product Card, Tab Nav, Badge, CTA, Carousel, Trust Section, Hero Enhancement)
+- Added layout patterns with ASCII diagrams
+- Added color patterns from real tests (DEKRA green, LP green, NB green)
+- Added spacing/radius/shadow guides
+- Added separator patterns (vertical, horizontal, connected)
+- Added special elements (icons, status dots, badges, ARIA)
+- Added mobile patterns
 
 ---
 
