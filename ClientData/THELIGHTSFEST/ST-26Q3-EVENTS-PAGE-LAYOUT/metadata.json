@@ -1,0 +1,33 @@
+{
+  "id": "ST-26Q3-EVENTS-PAGE-LAYOUT",
+  "client": "THELIGHTSFEST",
+  "website_url": "https://register3.thelightsfest.com/event/the-lights-kansas-city-area-10-3-2026",
+  "type": "Events Page Layout Optimization",
+  "platform": "Custom Ticketing Platform",
+  "website_type": "Event Registration",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": [
+    "DOM insertion",
+    "DOM element move",
+    "idempotent insertion guard",
+    "DOM content restructure",
+    "tooltip on hover",
+    "sticky bottom bar"
+  ],
+  "changes_made": [
+    "Hidden original Buy Tickets button from header",
+    "Moved MEDIA section below two-column layout (full width)",
+    "Moved VIDEOS section below two-column layout (full width)",
+    "Added benefits/checkmarks section after hero image",
+    "Restructured WHAT YOU GET section with checkmarks",
+    "Restructured ABOUT THIS EVENT section with checkmarks",
+    "Added trust section in right column (BUY TICKETS + card logos + guarantee badge + thumbnail)",
+    "Added mobile sticky bottom bar with Buy Tickets CTA and trust badges",
+    "Added tooltip on guarantee badge hover"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation restructuring page layout and adding trust elements to increase purchase conversions.",
+  "complexity": "medium",
+  "notes": "Targets purchase conversion by restructuring content flow, adding trust signals (card logos, guarantee badge) near CTA, and ensuring mobile CTA is always visible via sticky bar."
+}

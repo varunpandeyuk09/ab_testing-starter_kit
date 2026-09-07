@@ -1,0 +1,368 @@
+/* ==========================================================================
+   ST | 26Q3 | Events Page Layout — THELIGHTSFEST
+   All rules scoped under .EG-ST-26Q3-EVENTS-PAGE-LAYOUT (body class)
+   ========================================================================== */
+
+/* ── Hide Original Buy Button ────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT #buyTicketsContainer .btn-active {
+  display: none !important;
+}
+
+/* ── Moved Sections (MEDIA + VIDEOS below two-column) ──────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-moved-sections {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-moved-sections #mediaContainer,
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-moved-sections #additionalContent_182 {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ── Section Title (reusable) ────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-section-title {
+  color: #A74695;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+/* ── Benefits Section (after hero) ───────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-benefits-section {
+  margin: 16px 0 24px 0;
+}
+
+/* ── Hero Thumbnail (below benefits, pink border) ────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-hero-thumbnail {
+  margin-bottom: 24px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-hero-thumbnail img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 2px solid #A74695;
+  border-radius: 4px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-benefits-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #131a27;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-benefits-list .eg-check {
+  color: #A74695;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Check List (reusable) ───────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-check-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px 0;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  color: #131a27;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-check-list .eg-check {
+  color: #A74695;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Subheading ──────────────────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-subheading {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* ── Note (italic) ───────────────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-note {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+
+/* ── What You Get Section ────────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-what-you-get {
+  margin-bottom: 24px;
+}
+
+/* ── About Section ───────────────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-about-section {
+  margin-bottom: 16px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-about-section p {
+  font-size: 14px;
+  color: #131a27;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+/* ── Moved Media (left column) ──────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-media-moved {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-media-moved .lightgalleryBlock {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-media-moved .lightgalleryBlock img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT #mediaContainer.eg-hidden,
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT #additionalContent_182.eg-hidden {
+  display: none !important;
+}
+
+/* ── Trust Section (Right Column) ────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-trust-section {
+  margin-top: 0;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-buy-tickets-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background-color: #ff6934;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 16px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-buy-tickets-btn:hover {
+  background-color: #e55a28;
+}
+
+/* ── Trust Row (card logos + guarantee on same line) ─────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* ── Card Logos ──────────────────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-card-logos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-card-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-card-visa {
+  background-color: #1a1f71;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-card-mc {
+  background-color: #eb001b;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-card-amex {
+  background-color: #006fcf;
+}
+
+/* ── Guarantee Badge ────────────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-guarantee-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #166534;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-guarantee-icon {
+  font-size: 14px;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-guarantee-text {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-guarantee-tooltip-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #d1d5db;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: help;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-guarantee-tooltip-trigger:hover {
+  background-color: #9ca3af;
+}
+
+/* ── Tooltip ────────────────────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-guarantee-tooltip {
+  position: absolute;
+  z-index: 10000;
+  max-width: 280px;
+  padding: 12px 14px;
+  background-color: #1e293b;
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  white-space: normal;
+}
+
+/* ── Mobile Sticky Bottom Bar ────────────────────────────────────────────── */
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-mobile-sticky-bar {
+  display: none;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-mobile-sticky-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #fff;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-mobile-buy-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background-color: #ff6934;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-mobile-buy-btn:hover {
+  background-color: #e55a28;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-mobile-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-mobile-trust-row .eg-card-logos {
+  margin-bottom: 0;
+}
+
+.EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-mobile-trust-row .eg-guarantee-badge {
+  font-size: 12px;
+}
+
+/* ── Responsive — Mobile ─────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+  .EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-mobile-sticky-bar {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+  }
+
+  .EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-trust-section {
+    display: none;
+  }
+
+  .EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-card-logo {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-benefits-list li {
+    font-size: 13px;
+  }
+
+  .EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-check-list li {
+    font-size: 13px;
+  }
+
+  .EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-section-title {
+    font-size: 13px;
+  }
+}
+
+/* ── Responsive — Tablet ─────────────────────────────────────────────────── */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-trust-section {
+    padding: 12px;
+  }
+
+  .EG-ST-26Q3-EVENTS-PAGE-LAYOUT .eg-buy-tickets-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
