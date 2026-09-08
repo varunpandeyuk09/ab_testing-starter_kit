@@ -293,3 +293,34 @@ if ($lg.data('lightGallery')) {
 $lg.lightGallery({ selector: 'a[data-video-type="youtube"]', videojs: true });
 ```
 **Gotcha:** Always `destroy(true)` before re-init. Use `mqdefault.jpg` for thumbnails (120x90). Watch URL preferred over embed URL for lightGallery detection.
+
+---
+
+## P19. CSS-Only Reorder (Visual Only)
+**When:** Reorder elements visually without touching DOM. Safer alternative to P4 when only visual position matters.
+```css
+/* 1. Make parent a flex column container */
+.EG-TEST-ID .parent-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 2. Move target elements to top using negative order */
+.EG-TEST-ID .parent-container > .target-child {
+  order: -2;
+}
+
+/* 3. Optionally keep first child at top */
+.EG-TEST-ID .parent-container > .first-child,
+.EG-TEST-ID .parent-container > .target-child {
+  order: -2;
+}
+```
+```js
+/* JS only adds body class — no DOM manipulation */
+function init() {
+  document.body.classList.add('EG-TEST-ID');
+}
+waitForElement('.parent-container', init, 50, 15000);
+```
+**Gotcha:** Visual-only reorder — DOM order unchanged. Screen readers follow DOM, not visual. Use P4 (JS reorder) when DOM order must match visual. Avoid if parent has existing `display: grid` or `flex` with complex properties. Test with `!important` only if site CSS conflicts.

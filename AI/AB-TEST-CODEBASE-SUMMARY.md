@@ -36,7 +36,14 @@
 - All changes in CSS via `.EG-TEST-ID .element`
 - Fastest to build, no DOM mutation
 
-### 3. Sticky Elements (headers, ATC, filters, CTAs)
+### 3. CSS-Only Reorder (visual only)
+- JS just adds body class — no DOM manipulation
+- CSS `display: flex` + `order` property reorders visually
+- Safer than P4 (JS reorder) — no event listener breakage
+- DOM order unchanged, screen readers follow DOM
+- Use when only visual position matters
+
+### 4. Sticky Elements (headers, ATC, filters, CTAs)
 - `position: sticky; top: 0` in CSS
 - JS adds class on scroll threshold
 - Common: sticky ATC on mobile PDP, sticky filter on PLP

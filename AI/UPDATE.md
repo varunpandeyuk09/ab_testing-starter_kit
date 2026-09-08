@@ -6,7 +6,23 @@
 
 ---
 
-## Latest Update: 2026-09-05
+## Latest Update: 2026-09-08
+
+### Files Updated
+
+#### AI/PATTERNS.md
+- Added P19: CSS-Only Reorder (Visual Only) — safer alternative to P4 for visual reordering without DOM manipulation
+- Uses `display: flex` + `order` property
+- No event listener breakage, no MutationObserver needed
+- Example from DublinMaths AB001 test
+
+#### AI/AB-TEST-CODEBASE-SUMMARY.md
+- Added "CSS-Only Reorder" as test type #3 in Most Common Test Types
+- Documented advantages over JS reorder (P4)
+
+---
+
+## Previous Updates: 2026-09-05
 
 ### New Files Added
 
