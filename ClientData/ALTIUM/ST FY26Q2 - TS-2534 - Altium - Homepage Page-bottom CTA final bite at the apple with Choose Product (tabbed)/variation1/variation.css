@@ -1,0 +1,95 @@
+/* — EG-ALTIUM-TS2534 Final Bite Section — */
+
+.EG-ALTIUM-TS2534 .eg-final-bite-section {
+  position: relative;
+  width: 100%;
+  padding: 60px 20px;
+  background-image: url('https://i.ibb.co/TxVyDt5V/bg-Image.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.EG-ALTIUM-TS2534 .eg-final-bite-card {
+  max-width: 879px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 48px 40px;
+  text-align: center;
+}
+
+.EG-ALTIUM-TS2534 .eg-final-bite-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #222222;
+  margin: 0 0 12px;
+  line-height: 1.3;
+}
+
+.EG-ALTIUM-TS2534 .eg-final-bite-subtitle {
+  font-size: 18px;
+  color: #4A4A4A;
+  margin: 0 0 28px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.EG-ALTIUM-TS2534 .eg-final-bite-cta {
+  display: inline-block;
+  padding: 14px 32px;
+  background: #0074FC;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.EG-ALTIUM-TS2534 .eg-final-bite-cta:hover {
+  background: #0067c7;
+}
+
+.EG-ALTIUM-TS2534 .eg-final-bite-trust {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #8E8E8E;
+}
+
+.EG-ALTIUM-TS2534 .eg-final-bite-trust svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* — Mobile — */
+@media screen and (max-width: 767px) {
+  .EG-ALTIUM-TS2534 .eg-final-bite-section {
+    padding: 40px 16px;
+  }
+
+  .EG-ALTIUM-TS2534 .eg-final-bite-card {
+    padding: 32px 20px;
+    border-radius: 12px;
+  }
+
+  .EG-ALTIUM-TS2534 .eg-final-bite-title {
+    font-size: 22px;
+  }
+
+  .EG-ALTIUM-TS2534 .eg-final-bite-subtitle {
+    font-size: 14px;
+  }
+
+  .EG-ALTIUM-TS2534 .eg-final-bite-cta {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,54 @@
+/* Base SVG icon style */
+.EG-ALTIUM-TS2532-V2 .eg-svg-icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* — CTA Microcopy Section — */
+.EG-ALTIUM-TS2532-V2 .eg-cta-microcopy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.EG-ALTIUM-TS2532-V2 .eg-microcopy-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  color: #7E7F7F;
+  line-height: 1.4;
+  text-align: left;
+  justify-content: center;
+}
+
+.EG-ALTIUM-TS2532-V2 .eg-microcopy-row .eg-svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.EG-ALTIUM-TS2532-V2 .eg-trust-rating-bar > div {
+    background: white  !important;
+    border: 1px solid #E3E3E3;
+    margin-top: 25px;
+}
+
+.EG-ALTIUM-TS2532-V2 .region-content .s-hero .s-hero__text + div{
+  display:none !important;
+}
+
+/* — Mobile — */
+@media screen and (max-width: 767px) {
+  .EG-ALTIUM-TS2532-V2 .eg-cta-microcopy {
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .EG-ALTIUM-TS2532-V2 .eg-microcopy-row {
+    font-size: 11px;
+  }
+}
