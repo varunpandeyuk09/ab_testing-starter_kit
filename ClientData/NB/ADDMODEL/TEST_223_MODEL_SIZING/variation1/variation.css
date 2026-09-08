@@ -35,3 +35,9 @@
     white-space: nowrap;
   }
 }
+
+/* flicker fix: desktop hides badges until JS marks ready */
+@media screen and (min-width: 768px) {
+  .EG-NB-22_03 .eg-model-badge { opacity: 0; }
+  .EG-NB-22_03 .eg-model-badge.eg-ready { opacity: 1; transition: opacity 0.15s; }
+}
