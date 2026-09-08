@@ -8,6 +8,8 @@
  * PATTERN: P2 Insert Section
  * ============================================================
  */
+
+
 (function () {
   try {
     var debug = 0;
