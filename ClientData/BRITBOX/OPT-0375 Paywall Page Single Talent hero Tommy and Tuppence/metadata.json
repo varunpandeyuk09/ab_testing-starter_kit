@@ -1,0 +1,23 @@
+{
+  "id": "EG-BRITBOX-0375",
+  "client": "BRITBOX",
+  "website_url": "https://www.britbox.com/us",
+  "type": "Single Talent Hero — Paywall Page",
+  "platform": "Custom / Optimizely",
+  "website_type": "Streaming / Subscription",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": [
+    "DOM insertion",
+    "idempotent insertion guard",
+    "CSS-only hide"
+  ],
+  "changes_made": [
+    "Inserted single-show hero (Tommy & Tuppence) after .wrapper-full-home-notlogged > figure",
+    "Hidden USP bar on logged-out homepage"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation — hero banner with show title, description, and CTA.",
+  "complexity": "medium",
+  "notes": "Launch date: 15th August. Audience from paid social with tracking."
+}
