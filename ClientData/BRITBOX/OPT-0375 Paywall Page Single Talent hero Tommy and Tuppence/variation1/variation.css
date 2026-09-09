@@ -1,0 +1,186 @@
+/* ==========================================================================
+   EG-BRITBOX-0375 — Single Talent Hero (Tommy & Tuppence)
+   All rules scoped under .EG-BRITBOX-0375
+   ========================================================================== */
+
+/* ── Hide USP Bar ────────────────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .usp-bar,
+.EG-BRITBOX-0375 .wrapper-usp,
+.EG-BRITBOX-0375 [class*="usp"],
+.EG-BRITBOX-0375 .wrapper-full-home-notlogged > figure {
+  display: none !important;
+}
+
+/* ── Hero Container ──────────────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  overflow: hidden;
+}
+
+/* ── Background Image ────────────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+}
+
+/* ── Dark Overlay ────────────────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);
+}
+
+/* ── Content ─────────────────────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: 0 48px;
+  max-width: 600px;
+}
+
+/* ── Subtitle (Agatha Christie's) ────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy__subtitle {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 8px 0;
+}
+
+/* ── Title (Tommy & Tuppence) ────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy__title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 52px;
+  font-weight: 700;
+  color: #F5C518;
+  line-height: 1.1;
+  margin: 0 0 12px 0;
+}
+
+/* ── Brand (britbox original) ────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy__brand {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+  letter-spacing: 1px;
+}
+
+.EG-BRITBOX-0375 .eg-hero-tommy__brand span {
+  font-style: italic;
+}
+
+/* ── Description ─────────────────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy__desc {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #d1d5db;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+  max-width: 400px;
+}
+
+/* ── CTA Button ──────────────────────────────────────────────────────────── */
+.EG-BRITBOX-0375 .eg-hero-tommy__cta {
+  display: inline-block;
+  background-color: #5bc0de;
+  color: #1a1a2e;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 12px 32px;
+  border-radius: 4px;
+  text-align: center;
+  width: fit-content;
+  transition: background-color 0.2s ease;
+}
+
+.EG-BRITBOX-0375 .eg-hero-tommy__cta:hover {
+  background-color: #46b5d6;
+}
+
+/* ── iPad (768px - 1024px) ───────────────────────────────────────────────── */
+@media screen and (min-width: 768px) and (max-width: 1024px) {
+  .EG-BRITBOX-0375 .eg-hero-tommy {
+    height: 480px;
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__bg {
+    background-position: center;
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__overlay {
+    background: linear-gradient(90deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%);
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__content {
+    padding: 0 40px;
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__title {
+    font-size: 44px;
+  }
+}
+
+/* ── Mobile (< 768px) ────────────────────────────────────────────────────── */
+@media screen and (max-width: 767px) {
+  .EG-BRITBOX-0375 .eg-hero-tommy {
+    height: auto;
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__bg {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    background-position: center top;
+    background-size: cover;
+    flex-shrink: 0;
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 280px;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__content {
+    position: relative;
+    padding: 24px 20px 32px;
+    max-width: 100%;
+    background-color: #1a1a2e;
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__title {
+    font-size: 36px;
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__desc {
+    font-size: 13px;
+  }
+
+  .EG-BRITBOX-0375 .eg-hero-tommy__cta {
+    width: 100%;
+    text-align: center;
+    padding: 14px 24px;
+  }
+}
