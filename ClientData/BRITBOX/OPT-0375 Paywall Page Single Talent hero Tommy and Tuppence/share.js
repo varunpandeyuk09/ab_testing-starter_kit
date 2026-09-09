@@ -52,8 +52,8 @@
     }
 
     function init() {
-      live('.eg-hero-tommy__cta', 'click', function () {
-        console.log('EG-BRITBOX-0375: Start Watching Free CTA clicked');
+      live('a[href*="/account/signup"]', 'click', function () {
+        console.log('CTR / Cart starts / signups');
       });
     }
 
