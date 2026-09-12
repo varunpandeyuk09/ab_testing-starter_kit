@@ -80,6 +80,7 @@ ab_testing-starter_kit/
     variation.css
   share.js
   v1.json
+  UPDATE.md               ← log (outside AI, was AI/UPDATE.md)
   AI/
     guides/               ← grouped knowledge (AI must read)
       PATTERNS.md         ← P1-P20 techniques
@@ -91,7 +92,6 @@ ab_testing-starter_kit/
       share.js
       v1.json
       EG-SPA-HELPER.js
-    UPDATE.md
   docs/                   ← generic setup docs (outside AI)
     SHOPIFY-GIT-SETUP.md
   ClientData/
