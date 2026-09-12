@@ -10,6 +10,25 @@
 
 ### Files Updated
 
+#### UPDATE.md (moved outside AI)
+- Moved `AI/UPDATE.md` → `UPDATE.md` at root (outside `AI/` as per user request). Now outside `AI/` — single log at kit root.
+
+#### README.md
+- Removed stale `variation1/`, `share.js`, `v1.json` block from root Structure (now in `AI/templates/` and `ClientData/examples/`).
+- Added `Do NOT read UPDATE.md initially` and `Do NOT read ClientData/<CLIENT>/ — only ClientData/examples/` to How to Use and Structure notes.
+
+#### FLOW.md
+- Added `Do NOT read UPDATE.md initially` and `Do NOT read ClientData/<CLIENT>/ — only ClientData/examples/` to RULES.
+
+#### SHOPIFY-GIT-SETUP.md
+- Removed duplicate `SHOPIFY-GIT-SETUP.md` from root, kept only `docs/SHOPIFY-GIT-SETUP.md` (generic folder outside AI).
+
+---
+
+## Previous Update: 2026-09-13
+
+### Files Updated
+
 #### README.md
 - Updated `How to Use This Kit` step 2 to `AI/guides/...` paths and `Do NOT read communications/`.
 - Rewrote `Structure` diagram to grouped layout: `AI/guides/` (PATTERNS, SNIPPETS, PLAYBOOK, IMAGE_ANALYSIS, AB-TEST-CODEBASE-SUMMARY), `AI/templates/` (share.js, v1.json, EG-SPA-HELPER.js), `docs/SHOPIFY-GIT-SETUP.md`, `communications/` (gitignored), `AB-test/<CLIENT>/<TEST>/shopify/theme`.
@@ -21,7 +40,7 @@
 - Moved `AB-TEST-CODEBASE-SUMMARY.md`, `PATTERNS.md`, `SNIPPETS.md`, `PLAYBOOK.md`, `IMAGE_ANALYSIS.md` → `AI/guides/`
 - Moved `share.js`, `v1.json`, `EG-SPA-HELPER.js` → `AI/templates/`
 - Moved `SHOPIFY-GIT-SETUP.md` (from `AI/`) → `docs/SHOPIFY-GIT-SETUP.md` (outside AI, generic folder)
-- Updated all cross-references in `README.md`, `FLOW.md`, and `AI/UPDATE.md` to new paths.
+- Updated all cross-references in `README.md`, `FLOW.md`, and `UPDATE.md` to new paths.
 
 ---
 
