@@ -15,6 +15,7 @@
    - If anything is unclear → ASK first, never guess
    - Do NOT read communications/ — private, gitignored folder
    - Do NOT read UPDATE.md initially — only for logging after test
+   - Do NOT read ClientData/<CLIENT>/ — only ClientData/examples/ for initial read
   
   GOAL:
   - Build variations that are clean, maintainable, and production-ready
