@@ -26,6 +26,7 @@
    - `AI/PLAYBOOK.md` — QA checklist and coding standards
    - `AI/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
    - `ClientData/examples/EG-EXAMPLE-SM01/` — reference example
+   - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
 3. **Follow the flow** — PARSE → ANALYZE → DESIGN → ASK → MATCH → SCAFFOLD → CODE → QA
 4. **If anything is missing** — ASK first, never guess
 
@@ -73,6 +74,7 @@ Add trust badges below H1
 ab_testing-starter_kit/
   FLOW.md                 ← START HERE (also in AI/)
   README.md               ← this file (also in AI/)
+  communications/         ← PRIVATE, gitignored — DO NOT READ (client/manager comms)
   variation1/              ← READ-ONLY template
     variation.js
     variation.css
@@ -86,8 +88,8 @@ ab_testing-starter_kit/
   ClientData/
     examples/
       EG-EXAMPLE-SM01/    ← reference example
-  ../ABTESTSWITHAI/CLIENT/
-    TEST_NAME/
+  ../AB-test/<CLIENT>/
+    <TEST_NAME>/
       variation1/         ← JS + CSS only
         variation.js
         variation.css
@@ -95,6 +97,8 @@ ab_testing-starter_kit/
       share.js            ← tracking
       metadata.json       ← RAG metadata
       AI_DATA/            ← working data
+      shopify/
+        theme/            ← Shopify theme if needed (AB-test/<CLIENT>/<TEST>/shopify/theme)
 ```
 
 ---
