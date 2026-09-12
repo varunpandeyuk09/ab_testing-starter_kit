@@ -21,10 +21,10 @@
 1. **Provide a brief** — paste your brief in any format below
 2. **Read the files in order** when beginning a new test:
    - `FLOW.md` — process flow
-   - `AI/PATTERNS.md` — technique recipes (find matching P#)
-   - `AI/SNIPPETS.md` — reusable functions (copy what you need)
-   - `AI/PLAYBOOK.md` — QA checklist and coding standards
-   - `AI/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
+   - `AI/guides/PATTERNS.md` — technique recipes (find matching P#)
+   - `AI/guides/SNIPPETS.md` — reusable functions (copy what you need)
+   - `AI/guides/PLAYBOOK.md` — QA checklist and coding standards
+   - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
    - `ClientData/examples/EG-EXAMPLE-SM01/` — reference example
    - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
 3. **Follow the flow** — PARSE → ANALYZE → DESIGN → ASK → MATCH → SCAFFOLD → CODE → QA
@@ -81,10 +81,19 @@ ab_testing-starter_kit/
   share.js
   v1.json
   AI/
-    PATTERNS.md           ← P1-P17 techniques
-    SNIPPETS.md           ← reusable functions (7 core)
-    PLAYBOOK.md           ← QA checklist + coding standards
-    IMAGE_ANALYSIS.md     ← design screenshot analysis checklist
+    guides/               ← grouped knowledge (AI must read)
+      PATTERNS.md         ← P1-P20 techniques
+      SNIPPETS.md         ← reusable functions (8 core)
+      PLAYBOOK.md         ← QA checklist + coding standards
+      IMAGE_ANALYSIS.md   ← design screenshot analysis
+      AB-TEST-CODEBASE-SUMMARY.md
+    templates/            ← boilerplate (AI read if needed)
+      share.js
+      v1.json
+      EG-SPA-HELPER.js
+    UPDATE.md
+  docs/                   ← generic setup docs (outside AI)
+    SHOPIFY-GIT-SETUP.md
   ClientData/
     examples/
       EG-EXAMPLE-SM01/    ← reference example

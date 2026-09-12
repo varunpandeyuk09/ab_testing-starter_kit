@@ -38,16 +38,16 @@
 
 ### Files Updated
 
-#### AI/PATTERNS.md
+#### AI/guides/PATTERNS.md
 - Added P20: ScrollSpy — Sticky Nav Auto-Highlight (Click + Scroll Sync) — fixes ALTIUM TS-2501 pill jitter (offsetTop broke after DOM move, click vs scroll race). Uses getBoundingClientRect() + isClickScrolling flag + rAF throttle, dynamic stickyOffset.
 
-#### AI/SNIPPETS.md
+#### AI/guides/SNIPPETS.md
 - Added Snippet 8: ScrollSpy — Sticky Nav Auto-Highlight — copy-paste helpers getStickyOffset/updateActiveOnScroll/onScrollSpy with isClickScrolling guard (900ms) and rAF throttle. References P20.
 
-#### AI/AB-TEST-CODEBASE-SUMMARY.md
+#### AI/guides/AB-TEST-CODEBASE-SUMMARY.md
 - Added ScrollSpy to Most Common Test Types (sticky nav pattern).
 
-#### SHOPIFY-GIT-SETUP.md + AI/SHOPIFY-GIT-SETUP.md
+#### SHOPIFY-GIT-SETUP.md + docs/SHOPIFY-GIT-SETUP.md
 - Moved Shopify themes out of `starter_kit` to keep it lightweight. New standard: `AB-test/<CLIENT>/<TEST_NAME>/shopify/theme` (e.g., `AB-test/ScrapArmor/T01-Home-Hero/shopify/theme`). Updated all paths, workflow diagram, and quick ref. Handles per-developer `D:` drive via `../AB-test` relative path. Removed `shopify/XYZ/theme` from starter_kit.
 
 #### scripts/shopify_browser_downloader.js
@@ -65,13 +65,13 @@
 
 ### Files Updated
 
-#### AI/PATTERNS.md
+#### AI/guides/PATTERNS.md
 - Added P19: CSS-Only Reorder (Visual Only) — safer alternative to P4 for visual reordering without DOM manipulation
 - Uses `display: flex` + `order` property
 - No event listener breakage, no MutationObserver needed
 - Example from DublinMaths AB001 test
 
-#### AI/AB-TEST-CODEBASE-SUMMARY.md
+#### AI/guides/AB-TEST-CODEBASE-SUMMARY.md
 - Added "CSS-Only Reorder" as test type #3 in Most Common Test Types
 - Documented advantages over JS reorder (P4)
 
@@ -83,7 +83,7 @@
 
 | File | Purpose |
 |------|---------|
-| `AI/IMAGE_ANALYSIS.md` | Design screenshot analysis checklist — based on real test patterns from DEKRA, NB, LP, ZATTOO, VIDABOX |
+| `AI/guides/IMAGE_ANALYSIS.md` | Design screenshot analysis checklist — based on real test patterns from DEKRA, NB, LP, ZATTOO, VIDABOX |
 
 ---
 
@@ -99,22 +99,22 @@
 - Updated **Brief Formats** — added "With design reference" format
 - Updated **Structure** — added IMAGE_ANALYSIS.md in AI folder
 
-#### AI/PLAYBOOK.md
+#### AI/guides/PLAYBOOK.md
 - Added Tip #6: Design screenshots — follow IMAGE_ANALYSIS.md
 
-#### AI/v1.json
+#### AI/templates/v1.json
 - Fixed extra angle bracket in URL
 
-#### AI/EG-SPA-HELPER.js
+#### AI/templates/EG-SPA-HELPER.js
 - Converted all Hindi comments to English
 
 #### FLOW.md
 - Fixed Hindi text "follow karo" → "follow" in DESIGN step
 
-#### AI/PATTERNS.md
+#### AI/guides/PATTERNS.md
 - Added P18: YouTube / Video Integration pattern
 
-#### AI/IMAGE_ANALYSIS.md
+#### AI/guides/IMAGE_ANALYSIS.md
 - Complete rewrite based on real test patterns (DEKRA, NB, LP, ZATTOO, VIDABOX)
 - Added component type matching (Info Box, Product Card, Tab Nav, Badge, CTA, Carousel, Trust Section, Hero Enhancement)
 - Added layout patterns with ASCII diagrams
