@@ -1,7 +1,27 @@
 # Shopify + Git Local Development Setup
 
 > Complete guide for Shopify theme development with Git version control.
-> Last updated: 2026-09-08
+> Last updated: 2026-09-10 — **Moved Shopify themes out of starter_kit to keep it lightweight.**
+> **New standard:** Shopify themes live in main `AB-test` repo: `AB-test/<CLIENT>/<TEST_NAME>/shopify/theme`
+
+---
+
+## Why Moved?
+
+`ab_testing-starter_kit` is now **lightweight** (only `AI/`, `ClientData/`, `scripts/`). Heavy theme files (`assets/`, `sections/` etc.) live in sibling `AB-test` repo under each test:
+```
+D:\WORK_EXPOGROWTH\
+├── ab_testing-starter_kit\   ← docs/patterns only
+└── AB-test\                  ← actual tests + Shopify themes
+    └── <CLIENT>\
+        └── <TEST_NAME>\
+            ├── variation1\   (CRO)
+            └── shopify\
+                └── theme\    ← Shopify theme (shopify/<client>/theme per test)
+```
+Example: `D:\WORK_EXPOGROWTH\AB-test\ScrapArmor\T01-Home-Hero\shopify\theme`
+
+> **Path note:** `AB-test` location may vary per developer (`D:`, `C:`, `~/`). Use **relative** `../AB-test` from `starter_kit` or set env var `AB_TEST_ROOT`.
 
 ---
 
@@ -53,14 +73,16 @@ Note down the **Copy Theme ID** (starts with #).
 
 ---
 
-## Step 4: Create Project Folder
+## Step 4: Create Project Folder (in AB-test, not starter_kit)
 
 ```bash
-# Navigate to your working directory
-cd D:\WORK_EXPOGROWTH\ab_testing-starter_kit
+# Navigate to AB-test client test folder (sibling to starter_kit on D: drive)
+cd D:\WORK_EXPOGROWTH\AB-test
 
-# Create folder for Shopify themes
-mkdir shopify-themes\copy-theme
+# Create Shopify theme folder inside the specific test
+mkdir ScrapArmor\T01-Home-Hero\shopify\theme
+# Generic: mkdir <CLIENT>\<TEST_NAME>\shopify\theme
+# Relative from starter_kit: mkdir ..\AB-test\<CLIENT>\<TEST_NAME>\shopify\theme
 ```
 
 ---
@@ -68,12 +90,14 @@ mkdir shopify-themes\copy-theme
 ## Step 5: Pull Copy Theme Locally
 
 ```bash
-shopify theme pull --theme "#THEME_ID" --path ./shopify-themes/copy-theme --store your-store.myshopify.com
+shopify theme pull --theme "#THEME_ID" --path "D:\WORK_EXPOGROWTH\AB-test\ScrapArmor\T01-Home-Hero\shopify\theme" --store your-store.myshopify.com
+# Generic: --path "D:\WORK_EXPOGROWTH\AB-test\<CLIENT>\<TEST_NAME>\shopify\theme"
+# Relative: --path ../AB-test/<CLIENT>/<TEST_NAME>/shopify/theme
 ```
 
 Example:
 ```bash
-shopify theme pull --theme "#163786653953" --path ./shopify-themes/copy-theme --store teststore-k0li1x4i.myshopify.com
+shopify theme pull --theme "#163786653953" --path "D:\WORK_EXPOGROWTH\AB-test\ScrapArmor\T01-Home-Hero\shopify\theme" --store teststore-k0li1x4i.myshopify.com
 or try without "#"
 ```
 
@@ -84,7 +108,7 @@ Enter store password when prompted.
 ## Step 6: Initialize Git Repository
 
 ```bash
-cd shopify-themes\copy-theme
+cd D:\WORK_EXPOGROWTH\AB-test\ScrapArmor\T01-Home-Hero\shopify\theme
 git init
 git add .
 git commit -m "shopify copy theme pull"
@@ -97,7 +121,7 @@ git commit -m "shopify copy theme pull"
 **Important:** You must be in the theme directory first!
 
 ```bash
-cd D:\WORK_EXPOGROWTH\ab_testing-starter_kit\shopify-themes\copy-theme
+cd D:\WORK_EXPOGROWTH\AB-test\ScrapArmor\T01-Home-Hero\shopify\theme
 shopify theme dev --store your-store.myshopify.com
 ```
 
@@ -108,7 +132,7 @@ Open in browser: `http://127.0.0.1:9292`
 ## Step 8: Make Changes & Push to Shopify
 
 ### Edit files locally
-Make changes in `sections/`, `templates/`, `snippets/`, etc.
+Make changes in `sections/`, `templates/`, `snippets/`, etc. inside `AB-test/<CLIENT>/<TEST>/shopify/theme`
 
 ### Commit changes to Git
 ```bash
@@ -131,7 +155,7 @@ shopify theme push --theme "#THEME_ID" --store your-store.myshopify.com
 shopify theme list --store your-store.myshopify.com
 
 # Pull specific theme
-shopify theme pull --theme "#THEME_ID" --path ./path --store your-store.myshopify.com
+shopify theme pull --theme "#THEME_ID" --path "D:\WORK_EXPOGROWTH\AB-test\<CLIENT>\<TEST>\shopify\theme" --store your-store.myshopify.com
 
 # Push changes to theme
 shopify theme push --theme "#THEME_ID" --store your-store.myshopify.com
@@ -184,20 +208,28 @@ git log --oneline
 ## Project Structure
 
 ```
-ab_testing-starter_kit/
-├── AI/
-├── ClientData/
-├── AB-test/
-└── shopify-themes/
-    └── copy-theme/          ← Your Shopify theme
-        ├── assets/
-        ├── config/
-        ├── layout/
-        ├── locales/
-        ├── sections/
-        ├── snippets/
-        └── templates/
+D:\WORK_EXPOGROWTH\
+├── ab_testing-starter_kit\          ← LIGHT, docs only
+│   ├── AI\
+│   ├── ClientData\
+│   └── scripts\
+└── AB-test\                         ← HEAVY, actual code per developer path may vary
+    └── <CLIENT>\                    ← e.g., ScrapArmor, ALTIUM
+        └── <TEST_NAME>\             ← e.g., T01-Home-Hero
+            ├── variation1\          ← CRO variation
+            ├── v1.json
+            └── shopify\
+                └── theme\           ← Your Shopify theme (AB-test/<CLIENT>/<TEST>/shopify/theme)
+                    ├── assets/
+                    ├── config/
+                    ├── layout/
+                    ├── locales/
+                    ├── sections/
+                    ├── snippets/
+                    └── templates/
 ```
+
+> **Reff path:** Always use `AB-test/<CLIENT>/<TEST_NAME>/shopify/theme`. In docs use relative `../AB-test/...` or env var `AB_TEST_ROOT=D:\WORK_EXPOGROWTH\AB-test` to handle per-device path differences.
 
 ---
 
@@ -218,7 +250,7 @@ ab_testing-starter_kit/
 ┌─────────────────────────────────────────────────────────────┐
 │                 LOCAL COMPUTER                              │
 │  ┌──────────────────────────────────────┐                  │
-│  │ shopify-themes/copy-theme/           │                  │
+│  │ AB-test/<CLIENT>/<TEST>/shopify/theme  ← Edit here      │
 │  │ ├── assets/                          │                  │
 │  │ ├── sections/  ← Edit files here    │                  │
 │  │ ├── templates/                       │                  │
@@ -265,8 +297,8 @@ shopify version
 
 ### "Not in theme directory" error
 ```bash
-# Navigate to theme directory first
-cd D:\WORK_EXPOGROWTH\ab_testing-starter_kit\shopify-themes\copy-theme
+# Navigate to AB-test theme directory first
+cd D:\WORK_EXPOGROWTH\AB-test\<CLIENT>\<TEST_NAME>\shopify\theme
 
 # Then run command
 shopify theme dev --store your-store.myshopify.com
@@ -279,7 +311,7 @@ shopify theme list --store your-store.myshopify.com
 ```
 
 ### Page not found on localhost
-- Make sure you're in the correct theme directory
+- Make sure you're in the correct theme directory (`AB-test/.../shopify/theme`)
 - Check terminal output for errors
 - Try: `http://127.0.0.1:9292`
 
@@ -288,34 +320,39 @@ shopify theme list --store your-store.myshopify.com
 - Make sure store password is correct
 - Verify you have access to the theme
 
+### Path varies per developer
+- Use relative: `../AB-test/<CLIENT>/<TEST>/shopify/theme` from `starter_kit`
+- Or set env var: `AB_TEST_ROOT=D:\WORK_EXPOGROWTH\AB-test` and use `$AB_TEST_ROOT/<CLIENT>/...`
+
 ---
 
 ## Best Practices
 
-1. **Always be in theme directory** before running Shopify commands
+1. **Always be in AB-test theme directory** before running Shopify commands (`AB-test/<CLIENT>/<TEST>/shopify/theme`)
 2. **Commit frequently** with descriptive messages
 3. **Test on copy theme** before publishing to production
-4. **Use Git** to track all changes
+4. **Use Git** to track all changes in `AB-test` repo
 5. **Never push directly** to production theme
 6. **Pull before push** to avoid conflicts
+7. **Keep starter_kit lightweight** — no theme files inside it
 
 ---
 
 ## Quick Reference Card
 
 ```bash
-# Setup (one time)
+# Setup (one time) — AB-test sibling on D: drive
 npm install -g @shopify/cli@latest
 shopify auth login --store your-store.myshopify.com
-mkdir shopify-themes\copy-theme
-shopify theme pull --theme "#THEME_ID" --path ./shopify-themes/copy-theme --store your-store.myshopify.com
-cd shopify-themes\copy-theme
+mkdir "D:\WORK_EXPOGROWTH\AB-test\<CLIENT>\<TEST_NAME>\shopify\theme"
+shopify theme pull --theme "#THEME_ID" --path "D:\WORK_EXPOGROWTH\AB-test\<CLIENT>\<TEST_NAME>\shopify\theme" --store your-store.myshopify.com
+cd "D:\WORK_EXPOGROWTH\AB-test\<CLIENT>\<TEST_NAME>\shopify\theme"
 git init && git add . && git commit -m "initial pull"
 
 # Daily workflow
-cd D:\WORK_EXPOGROWTH\ab_testing-starter_kit\shopify-themes\copy-theme
+cd "D:\WORK_EXPOGROWTH\AB-test\<CLIENT>\<TEST_NAME>\shopify\theme"
 shopify theme dev --store your-store.myshopify.com
-# ... edit files ...
+# ... edit files in AB-test/<CLIENT>/<TEST>/shopify/theme ...
 git add . && git commit -m "your changes"
 shopify theme push --theme "#THEME_ID" --store your-store.myshopify.com
 ```

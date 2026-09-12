@@ -324,3 +324,15 @@ function init() {
 waitForElement('.parent-container', init, 50, 15000);
 ```
 **Gotcha:** Visual-only reorder — DOM order unchanged. Screen readers follow DOM, not visual. Use P4 (JS reorder) when DOM order must match visual. Avoid if parent has existing `display: grid` or `flex` with complex properties. Test with `!important` only if site CSS conflicts.
+
+---
+
+## P20. ScrollSpy — Sticky Nav Auto-Highlight (Click + Scroll Sync)
+**When:** Sticky jump-links / tab nav must auto-highlight current section on scroll and stay synced with click. (ALTIUM TS-2501 V1-V3 — pill moved/jittered without this)
+**Use:** `SNIPPETS.md:8` — `getBoundingClientRect()` + `isClickScrolling` flag + `requestAnimationFrame` throttle. Do not use `offsetTop` when nav moves DOM (`insertAdjacentElement`/`appendChild` breaks `offsetTop`).
+```js
+// 1. After setActivePill() — paste SNIPPETS.md:8 helpers
+// 2. Replace click: isClickScrolling=true → setActivePill(this) → smoothScroll() → setTimeout(isClickScrolling=false, 900)
+// 3. Wire scroll: window.addEventListener('scroll', onScrollSpy, {passive:true}); updateActiveOnScroll();
+```
+**Gotcha:** Never `offsetTop` after `handleNavbarFixed()` moves nav — use `sec.getBoundingClientRect().top - stickyOffset`. Guard click vs scroll race with `isClickScrolling` (900ms > smoothScroll duration). Throttle with `rAF`, skip DOM if already active (`if activeLink.classList.contains('EG-xxx--active') return`). Compute `stickyOffset` dynamically: `navbar.offsetHeight + (quickLinks.is-sticky ? quickLinks.offsetHeight : 0) + 20`. Source: `ALTIUM/ST FY26Q2 TS-2501`.

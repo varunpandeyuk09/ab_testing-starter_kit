@@ -6,7 +6,38 @@
 
 ---
 
-## Latest Update: 2026-09-08
+## Latest Update: 2026-09-10
+
+### New Files Added
+| File | Purpose |
+|------|---------|
+| `scripts/shopify_browser_downloader.js` | Browser console Shopify theme downloader (no CLI auth) — uses session cookie to fetch 1005 assets via `/admin/themes/:id/assets.json` + JSZip. For ScrapeArmor 161424146684 when Authenticator blocks CLI. |
+
+### Files Updated
+
+#### AI/PATTERNS.md
+- Added P20: ScrollSpy — Sticky Nav Auto-Highlight (Click + Scroll Sync) — fixes ALTIUM TS-2501 pill jitter (offsetTop broke after DOM move, click vs scroll race). Uses getBoundingClientRect() + isClickScrolling flag + rAF throttle, dynamic stickyOffset.
+
+#### AI/SNIPPETS.md
+- Added Snippet 8: ScrollSpy — Sticky Nav Auto-Highlight — copy-paste helpers getStickyOffset/updateActiveOnScroll/onScrollSpy with isClickScrolling guard (900ms) and rAF throttle. References P20.
+
+#### AI/AB-TEST-CODEBASE-SUMMARY.md
+- Added ScrollSpy to Most Common Test Types (sticky nav pattern).
+
+#### SHOPIFY-GIT-SETUP.md + AI/SHOPIFY-GIT-SETUP.md
+- Moved Shopify themes out of `starter_kit` to keep it lightweight. New standard: `AB-test/<CLIENT>/<TEST_NAME>/shopify/theme` (e.g., `AB-test/ScrapArmor/T01-Home-Hero/shopify/theme`). Updated all paths, workflow diagram, and quick ref. Handles per-developer `D:` drive via `../AB-test` relative path. Removed `shopify/XYZ/theme` from starter_kit.
+
+#### scripts/shopify_browser_downloader.js
+- Added browser session downloader tool — verified on ScrapeArmor 161424146684.
+
+### Files Removed
+| File | Reason |
+|------|--------|
+| `shopify/` (from starter_kit) | Moved to `AB-test/<CLIENT>/<TEST>/shopify/theme` to keep kit lightweight per user request (all devs have `D:\WORK_EXPOGROWTH\AB-test` sibling). |
+
+---
+
+## Previous Update: 2026-09-08
 
 ### Files Updated
 

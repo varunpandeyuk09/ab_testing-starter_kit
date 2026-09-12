@@ -1,0 +1,19 @@
+{
+  "files": [
+    "./variation1/variation.css",
+    "./variation1/variation.js",
+    "./share.js"
+  ],
+  "urls": [
+    "https://zattoo.com/ch/tv-tipps/bauer-ledig-sucht-im-tv-livestream",
+    "https://zattoo.com/ch/tv-tipps/die-hoehle-der-loewen-online-livestream",
+    "https://zattoo.com/ch/tv-tipps/the-voice-of-germany-online-streamen",
+    "https://zattoo.com/ch/tv-tipps/the-masked-singer-livestream",
+    "https://zattoo.com/de/tv-tipps/die-hoehle-der-loewen-online-livestream",
+    "https://zattoo.com/de/tv-tipps/the-voice-of-germany-online-streamen",
+    "https://zattoo.com/de/tv-tipps/the-masked-singer-livestream",
+    "https://zattoo.com/at/tv-tipps/die-hoehle-der-loewen-online-livestream",
+    "https://zattoo.com/at/tv-tipps/the-voice-of-germany-online-streamen",
+    "https://zattoo.com/at/tv-tipps/the-masked-singer-livestream"
+  ]
+}

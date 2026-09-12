@@ -1,0 +1,25 @@
+{
+  "id": "EG-ZATTOO-T09",
+  "client": "ZATTOO",
+  "test_name": "T09 I A/B Test - USP Technical vs USP Usability - DE / CH / AT",
+  "website_url": "https://zattoo.com/ch/tv-tipps/die-hoehle-der-loewen-online-livestream",
+  "target_selector": "[data-soul=\"PACKAGE_CARDS\"]",
+  "insert_position": "beforebegin closest section of [data-soul=\"PACKAGE_CARDS\"]",
+  "anchor_logic": "waitForElement('[data-soul=\"PACKAGE_CARDS\"]') -> closest('section') add class 'EG-ZATTOO-T09--anchor-section' -> insertAdjacentHTML('beforebegin')",
+  "type": "USP Benefits Section Insertion",
+  "platform": "React",
+  "website_type": "Streaming",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": ["DOM insertion", "Swiper slider (mobile only)", "scrollbar progress", "idempotent insertion guard", "responsive grid/stack/slider"],
+  "changes_made": [
+    "Insert USP benefits section immediately after [data-soul='TILE_SQUARES_REVERSED']",
+    "Desktop (939px+): 3x2 grid with 20px gap, cards with 1px black border and 12px radius",
+    "Tablet (769-938px): stacked single column, centered max 560px",
+    "Mobile (<=768px): Swiper slider 1.15 view with scrollbar bar (not dots), last slide offset fixed"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "V1 = USP Technical vs Usability combined - 6 cards (Von vorne starten, Live pausieren, Ganze Folgen aufnehmen, Ein Log-in für alle, Auf jedem Gerät, Auch im EU-Ausland). For true A/B, duplicate to variation2 and swap copy to purely Technical (189 Sender, 7-Tage Replay, 100 Aufnahmen) vs Usability",
+  "complexity": "medium",
+  "notes": "Uses Swiper 11 via CDN (loadSwiper). Mobile only init, destroy on desktop/tablet to restore grid. Scrollbar dragSize 80 for bar look. Stable selector [data-soul='TILE_SQUARES_REVERSED'] with waitForElement."
+}

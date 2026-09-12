@@ -48,7 +48,12 @@
 - JS adds class on scroll threshold
 - Common: sticky ATC on mobile PDP, sticky filter on PLP
 
-### 4. Popup/Modal (exit intent, promo, upsell)
+### 5. ScrollSpy — Sticky Jump-Links Auto-Highlight (P20)
+- Sticky nav pill auto-highlights current section on scroll + stays synced with click
+- Use `getBoundingClientRect()` not `offsetTop` (DOM move breaks offsetTop) + `isClickScrolling` flag + `rAF` throttle
+- Source: ALTIUM TS-2501 V1-V3
+
+### 6. Popup/Modal (exit intent, promo, upsell)
 - Cookie-gated (show once per session/day)
 - `mouseout` event for exit intent on desktop
 - Scroll threshold for mobile

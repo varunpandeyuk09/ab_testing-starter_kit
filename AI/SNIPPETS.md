@@ -166,6 +166,53 @@ function parsePrice(el){ return parseFloat(el.innerText.replace(/[^0-9.]/g,''));
 
 ---
 
+## 8. ScrollSpy — Sticky Nav Auto-Highlight (P20)
+
+Syncs sticky jump-links pill with scroll + click without jitter. Fixes ALTIUM TS-2501 bug where `offsetTop` broke after DOM move and click vs scroll race caused flicker.
+
+```js
+// Paste after setActivePill() — no CSS change
+var isClickScrolling = false;
+var ticking = false;
+var clickTimer = null;
+
+function getStickyOffset() {
+  var navbar = document.querySelector('#altium-navigation-header');
+  var quickLinks = document.querySelector('.EG-TS-2501-quick-links');
+  var h = 0;
+  if (navbar) h += navbar.offsetHeight;
+  if (quickLinks && quickLinks.classList.contains('is-sticky')) h += quickLinks.offsetHeight;
+  return h + 20;
+}
+function updateActiveOnScroll() {
+  if (isClickScrolling) { ticking = false; return; }
+  var sections = [
+    { id: 'ai-agent', selector: '#ai-agent' },
+    { id: 'advance-capabilities', selector: '#advance-capabilities' },
+    { id: 'learning-hub', selector: '#learning-hub' },
+    { id: 'faq', selector: '#faq' }
+  ];
+  var stickyOffset = getStickyOffset();
+  var bestId = sections[0].id;
+  for (var i = 0; i < sections.length; i++) {
+    var sec = document.querySelector(sections[i].selector);
+    if (!sec) continue;
+    if (sec.getBoundingClientRect().top - stickyOffset <= 0) bestId = sections[i].id;
+  }
+  var activeLink = document.querySelector('.EG-TS-2501-link[href="#' + bestId + '"]');
+  if (activeLink && !activeLink.classList.contains('EG-TS-2501-link--pill')) setActivePill(activeLink);
+  ticking = false;
+}
+function onScrollSpy() {
+  if (!ticking) { ticking = true; window.requestAnimationFrame(updateActiveOnScroll); }
+}
+// In init(): replace live('click') with isClickScrolling guard + wire scroll
+// live('.EG-TS-2501-link','click',function(e){e.preventDefault();isClickScrolling=true;clearTimeout(clickTimer);setActivePill(this);smoothScroll(this.getAttribute('href'));clickTimer=setTimeout(function(){isClickScrolling=false;},900);});
+// window.addEventListener('scroll', onScrollSpy, {passive:true}); updateActiveOnScroll();
+```
+
+---
+
 ## Appendix — Archived (rare, 0-1.5% hit — keep for AWG only)
 
 Shopware: `fetchPdpBlocks`, `sanitizeBuyBox`, `syncBuyState`, `updateVariantUi`, `getSwitchQuery`, `swapModalMedia`, `pinTnsTransform`, `getNoSizeValue`, `getSizeGroupId`, `getFarbeGroupId` — see `ab-test/AWG-MODE/AB044`.
