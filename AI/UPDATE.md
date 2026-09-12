@@ -6,7 +6,30 @@
 
 ---
 
-## Latest Update: 2026-09-10
+## Latest Update: 2026-09-12
+
+### New Files Added
+| File | Purpose |
+|------|---------|
+| `communications/` | Private gitignored folder for client/manager communications (not for AI). Moved `*COMMUNICATION.txt` files from `AI/` here. |
+
+### Files Updated
+
+#### README.md
+- Added `Do NOT read communications/ — private, gitignored` to How to Use This Kit step 2 and Structure diagram. Updated structure to `AB-test/<CLIENT>/<TEST>/shopify/theme`.
+
+#### FLOW.md
+- Added RULE: `Do NOT read communications/ — private, gitignored folder` to system prompt.
+
+#### .gitignore
+- Added `communications/` to keep kit lightweight and private.
+
+#### AI/UPDATE.md
+- Logged communications folder creation and docs update.
+
+---
+
+## Previous Update: 2026-09-10
 
 ### New Files Added
 | File | Purpose |
@@ -34,6 +57,7 @@
 | File | Reason |
 |------|--------|
 | `shopify/` (from starter_kit) | Moved to `AB-test/<CLIENT>/<TEST>/shopify/theme` to keep kit lightweight per user request (all devs have `D:\WORK_EXPOGROWTH\AB-test` sibling). |
+| `AI/*COMMUNICATION.txt` (3 files) | Moved to `communications/` (now gitignored) — `AI/` should stay patterns/snippets only. |
 
 ---
 
