@@ -75,12 +75,6 @@ ab_testing-starter_kit/
   FLOW.md                 ← START HERE (also in AI/)
   README.md               ← this file (also in AI/)
   communications/         ← PRIVATE, gitignored — DO NOT READ (client/manager comms)
-  variation1/              ← READ-ONLY template
-    variation.js
-    variation.css
-  share.js
-  v1.json
-  UPDATE.md               ← log (outside AI, was AI/UPDATE.md)
   AI/
     guides/               ← grouped knowledge (AI must read)
       PATTERNS.md         ← P1-P20 techniques
