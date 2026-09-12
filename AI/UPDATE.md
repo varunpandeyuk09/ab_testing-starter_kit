@@ -6,7 +6,26 @@
 
 ---
 
-## Latest Update: 2026-09-12
+## Latest Update: 2026-09-13
+
+### Files Updated
+
+#### README.md
+- Updated `How to Use This Kit` step 2 to `AI/guides/...` paths and `Do NOT read communications/`.
+- Rewrote `Structure` diagram to grouped layout: `AI/guides/` (PATTERNS, SNIPPETS, PLAYBOOK, IMAGE_ANALYSIS, AB-TEST-CODEBASE-SUMMARY), `AI/templates/` (share.js, v1.json, EG-SPA-HELPER.js), `docs/SHOPIFY-GIT-SETUP.md`, `communications/` (gitignored), `AB-test/<CLIENT>/<TEST>/shopify/theme`.
+
+#### FLOW.md
+- Verified `How to Use` paths now point to `AI/guides/` — AI will read from grouped `guides/` folder, not root `AI/`.
+
+#### AI/* → Grouped
+- Moved `AB-TEST-CODEBASE-SUMMARY.md`, `PATTERNS.md`, `SNIPPETS.md`, `PLAYBOOK.md`, `IMAGE_ANALYSIS.md` → `AI/guides/`
+- Moved `share.js`, `v1.json`, `EG-SPA-HELPER.js` → `AI/templates/`
+- Moved `SHOPIFY-GIT-SETUP.md` (from `AI/`) → `docs/SHOPIFY-GIT-SETUP.md` (outside AI, generic folder)
+- Updated all cross-references in `README.md`, `FLOW.md`, and `AI/UPDATE.md` to new paths.
+
+---
+
+## Previous Update: 2026-09-12
 
 ### New Files Added
 | File | Purpose |
