@@ -27,6 +27,7 @@
    - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
    - `ClientData/examples/EG-EXAMPLE-SM01/` — reference example
    - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
+   - **Do NOT read** `UPDATE.md` initially — only log after test, not for initial read
 3. **Follow the flow** — PARSE → ANALYZE → DESIGN → ASK → MATCH → SCAFFOLD → CODE → QA
 4. **If anything is missing** — ASK first, never guess
 
