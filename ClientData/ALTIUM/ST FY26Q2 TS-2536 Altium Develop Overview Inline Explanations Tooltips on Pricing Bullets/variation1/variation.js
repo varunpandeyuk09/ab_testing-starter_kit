@@ -35,6 +35,13 @@
         position: 'right'
       },
       {
+        selector: 'html body .b-pricing-2 .b-pricing-2__feature-list > div:nth-child(3) span',
+        matchText: 'BOM',
+        wrapText: 'BOM',
+        content: 'Bill of Materials: the full parts list needed to build your board.',
+        position: 'right'
+      },
+      {
         selector: 'html body .b-pricing-2 .b-pricing-2__feature-list > div:nth-child(4) span',
         matchText: 'CoDesign',
         wrapText: 'CoDesign',
@@ -113,6 +120,15 @@
       }
     }
 
+    function isWrapAlreadyApplied(el, wrapText) {
+      if (!wrapText || !el.dataset.egTipWraps) return false;
+      var list = el.dataset.egTipWraps.split('|');
+      var nWrap = normalizeText(wrapText);
+      for (var k = 0; k < list.length; k++) {
+        if (list[k] === nWrap) return true;
+      }
+      return false;
+    }
     function findElementForConfig(cfg) {
       var el = null;
       // 1) try selector
@@ -126,8 +142,10 @@
             else isMatch = normalizeText(txt).indexOf(normalizeText(cfg.matchText)) !== -1;
           }
           if (!isMatch) continue;
-          if (nodes[i].dataset.egTipApplied) continue;
-          if (nodes[i].querySelector('.eg-tip')) continue;
+          // same element pe multiple tips allowed (jaise BOM + Workspace Users), sirf same wrapText dobara mat lagao
+          if (isWrapAlreadyApplied(nodes[i], cfg.wrapText)) continue;
+          // agar wrapText plain string hai to check karo ki kya text me abhi bhi wo word unwrapped bacha hai
+          // (pehle se wrapped hone pe textContent me abhi bhi word dikhega, par hum wraps list se check kar rahe hain)
           el = nodes[i];
           break;
         }
@@ -136,7 +154,7 @@
       if (!el) {
         var all = document.querySelectorAll('.b-pricing-2 span');
         for (var j = 0; j < all.length; j++) {
-          if (all[j].dataset.egTipApplied || all[j].querySelector('.eg-tip')) continue;
+          if (isWrapAlreadyApplied(all[j], cfg.wrapText)) continue;
           var txt2 = all[j].textContent || '';
           var isMatch2 = true;
           if (cfg.matchText) {
@@ -163,8 +181,18 @@
         if (!ok) return null;
       }
 
+      var isAdditional = !!el.dataset.egTipApplied;
       el.dataset.egTipApplied = '1';
       el.dataset.egTipIdx = String(idx);
+      // track kaunse wrapText already lage hain taaki duplicate na lage (BOM + Workspace Users same span)
+      var nWrap = normalizeText(cfg.wrapText || '');
+      if (nWrap) {
+        var existing = el.dataset.egTipWraps ? el.dataset.egTipWraps.split('|') : [];
+        if (existing.indexOf(nWrap) === -1) {
+          existing.push(nWrap);
+          el.dataset.egTipWraps = existing.join('|');
+        }
+      }
 
       var wrapSource = cfg.wrapText != null ? cfg.wrapText : '';
       var wrapRe;
@@ -183,23 +211,85 @@
         }
       }
 
-      var original = el.textContent;
-      if (!wrapRe.test(original)) {
-        if (debug) console.log('EG-TS-2536: wrapText not found in', original, 'cfg', idx);
-        // fallback: wrap first word of match
+      // pehli baar textContent se, dusri baar (same span pe BOM jaisa) innerHTML se replace karo taaki pehla tip na mite
+      var sourceForTest = el.textContent;
+      if (!wrapRe.test(sourceForTest)) {
+        if (debug) console.log('EG-TS-2536: wrapText not found in', sourceForTest, 'cfg', idx);
         return null;
       }
 
       var posClass = 'eg-pos-' + (cfg.position || 'right').toLowerCase();
-      // sirf pehla occurrence replace karo
-      var replaced = false;
-      el.innerHTML = original.replace(wrapRe, function (m) {
-        if (replaced) return m;
-        replaced = true;
-        return '<span class="eg-tip" tabindex="0" data-eg-pos="' + (cfg.position || 'right') + '">' + m + '<span class="eg-tip__box ' + posClass + '">' + cfg.content + '</span></span>';
-      });
 
-      var tip = el.querySelector('.eg-tip');
+      if (isAdditional) {
+        // Same span pe dusra tooltip (BOM) — sirf unwrapped text nodes me dhoondo, box ke andar wale BOM ko ignore karo
+        // Isse innerHTML.replace ka bug fix hota hai jisme pehle wale box ke andar wala "BOM" wrap ho jata tha aur nested DOM ban jata tha
+        var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+          acceptNode: function (node) {
+            if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+            // box ke andar ka text skip karo
+            if (node.parentElement && node.parentElement.closest('.eg-tip__box')) return NodeFilter.FILTER_REJECT;
+            // already wrapped tip ke andar ka text (e.g. "Workspace Users") skip karo
+            if (node.parentElement && node.parentElement.closest('.eg-tip') && node.parentElement.classList.contains('eg-tip')) {
+              // ye wrapped word khud hai - isme BOM nahi hai, par isko skip karo
+              return NodeFilter.FILTER_REJECT;
+            }
+            return wrapRe.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+          }
+        });
+        var textNode = walker.nextNode();
+        if (!textNode) return null;
+        var text = textNode.nodeValue;
+        var match = text.match(wrapRe);
+        if (!match) return null;
+        var idx = match.index;
+        var before = text.slice(0, idx);
+        var after = text.slice(idx + match[0].length);
+        var frag = document.createDocumentFragment();
+        if (before) frag.appendChild(document.createTextNode(before));
+        var tipEl = document.createElement('span');
+        tipEl.className = 'eg-tip';
+        tipEl.tabIndex = 0;
+        tipEl.setAttribute('data-eg-pos', cfg.position || 'right');
+        tipEl.appendChild(document.createTextNode(match[0]));
+        var box = document.createElement('span');
+        box.className = 'eg-tip__box ' + posClass;
+        box.textContent = cfg.content;
+        tipEl.appendChild(box);
+        frag.appendChild(tipEl);
+        if (after) frag.appendChild(document.createTextNode(after));
+        textNode.parentNode.replaceChild(frag, textNode);
+        // walker ke baad ke nodes invalidate ho jate hain, isliye yahan return ke liye tipEl use karo
+        // neeche wala generic tip dhoondhne wala logic is case me tipEl ko hi pick karega
+      } else {
+        var original = el.textContent;
+        var replaced = false;
+        el.innerHTML = original.replace(wrapRe, function (m) {
+          if (replaced) return m;
+          replaced = true;
+          return '<span class="eg-tip" tabindex="0" data-eg-pos="' + (cfg.position || 'right') + '">' + m + '<span class="eg-tip__box ' + posClass + '">' + cfg.content + '</span></span>';
+        });
+      }
+
+      // naya wala tip dhoondo (additional case me DOM se banaya hua tipEl)
+      var tip = null;
+      var allTips = el.querySelectorAll('.eg-tip');
+      for (var ti = 0; ti < allTips.length; ti++) {
+        if (!allTips[ti].dataset.defaultPos) {
+          var firstNode = allTips[ti].childNodes[0];
+          var tTxt = firstNode && firstNode.nodeType === 3 ? firstNode.nodeValue : allTips[ti].textContent;
+          if (wrapSource && normalizeText(tTxt).indexOf(normalizeText(wrapSource)) !== -1) {
+            tip = allTips[ti];
+            break;
+          }
+        }
+      }
+      if (!tip) {
+        // fallback: last tip jiska defaultPos abhi set nahi hua
+        for (var tj = allTips.length - 1; tj >= 0; tj--) {
+          if (!allTips[tj].dataset.defaultPos) { tip = allTips[tj]; break; }
+        }
+      }
+      if (!tip) tip = allTips[allTips.length - 1];
       if (!tip) return null;
 
       // store default pos for resize handler
