@@ -1,0 +1,21 @@
+{
+  "id": "EG-DM-AB002",
+  "client": "DUBLINMATHS",
+  "website_url": "https://dublinmaths.ie/maths-made-simple/",
+  "type": "PDP Gallery Image Swap",
+  "platform": "WooCommerce",
+  "website_type": "E-commerce / Education",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": [
+    "Image swap",
+    "idempotent guard"
+  ],
+  "changes_made": [
+    "Swapped 8 PDP gallery images with new design variants"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation — 8 new gallery images replacing control images.",
+  "complexity": "low",
+  "notes": "New gallery images for AB002 test. Compare engagement vs control."
+}
