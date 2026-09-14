@@ -1,0 +1,32 @@
+/* ==========================================================================
+   EG-PDP-DEL-BANNER — Free Returns Banner below Add-to-Cart
+   All rules scoped under .EG-PDP-DEL-BANNER (body class added in variation.js)
+   ========================================================================== */
+
+.EG-PDP-DEL-BANNER .eg-del-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  justify-content: center;
+}
+
+.EG-PDP-DEL-BANNER .eg-del-banner__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #384849;
+}
+
+.EG-PDP-DEL-BANNER .eg-del-banner__text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #384849;
+}
+
+.EG-PDP-DEL-BANNER .eg-del-banner__text strong {
+  font-weight: 700;
+}
