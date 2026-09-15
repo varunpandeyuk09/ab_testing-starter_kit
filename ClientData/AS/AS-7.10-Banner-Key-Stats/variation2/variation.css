@@ -1,0 +1,269 @@
+/* ==========================================================================
+   AS 7.10 — Course Page | Banner Key Stats (Variation 1 — Figma Option 1-D)
+   Scope: .EG-AS-710-V1 (body class added in variation.js)
+   - Hero: black panel left + page image right with gradient blend (desktop)
+   - Eyebrow parsed from H2; original H2 + extra paras hidden (first para kept)
+   - USP rebuilt from desktop grid into white key-stats strip (per-page dynamic)
+   - Breadcrumb + original details (grid + carousel) hidden
+   - V1: concise values (2-line clamp). V2: full text.
+   ========================================================================== */
+
+/* ── Hide originals ─────────────────────────────────────────── */
+.EG-AS-710-V1 .c-course-glance__breadcrumb-wrap {
+  display: none;
+}
+.EG-AS-710-V1 .c-course-glance__details-wrap {
+  display: none;
+}
+.EG-AS-710-V1 .course-glance__content-body h2 {
+  display: none;
+}
+.EG-AS-710-V1 .course-glance__content-body p:nth-of-type(n+2) {
+  display: none;
+}
+
+.EG-AS-710-V1 .c-course-glance{
+  position:relative !important;
+  isolation: isolate;
+}
+
+/* ── Eyebrow ────────────────────────────────────────────────── */
+.EG-AS-710-V1 .eg-eyebrow {
+  color: #D30063;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+/* ── Hero content base ──────────────────────────────────────── */
+.EG-AS-710-V1 .course-glance__content-wrap {
+  background-color: #000;
+}
+.EG-AS-710-V1 .course-glance__content-body > p:first-of-type {
+  color: #d1d5db;
+}
+.EG-AS-710-V1 .eg-hero-fade {
+  pointer-events: none;
+}
+
+/* ── Desktop hero (lg and up) ───────────────────────────────── */
+@media screen and (min-width: 1024px) {
+  .EG-AS-710-V1 .c-course-glance__bg-wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background-color: #000;
+  }
+  .EG-AS-710-V1 .c-course-glance__bg-wrap > .lg\:container {
+    flex: 0 0 50%;
+    order: 1;
+    max-width: none;
+    display: flex;
+  }
+  .EG-AS-710-V1 .course-glance__content-wrap {
+    width: 100%;
+    max-width: 640px;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-right: auto;
+    justify-content: center;
+  }
+  .EG-AS-710-V1 .course-glance__content-wrap h1 {
+    font-size: 44px;
+    line-height: 1.12;
+    color: #FFFFFF;
+  }
+  .EG-AS-710-V1 .course-glance__content-body > p:first-of-type {
+    font-size: 17px;
+    line-height: 1.55;
+    color: #FFFFFFD9;
+  }
+  .EG-AS-710-V1 .course-glance__img-wrap {
+    position: relative;
+    flex: 0 0 50%;
+    order: 2;
+    min-height: 574px;
+  }
+  .EG-AS-710-V1 .course-glance__img-wrap img.course-glance__img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .EG-AS-710-V1 .eg-hero-fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 200px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.95) 20.98%, rgba(0, 0, 0, 0) 100%);
+
+  }
+}
+
+/* ── USP strip (desktop) ────────────────────────────────────── */
+.EG-AS-710-V1 .eg-usp-strip {
+  background-color: #fff;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 28px;
+  max-width: 1482px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 28px 24px;
+  border-bottom: 3px solid rgba(200, 0, 143, 1);
+  margin-top: -84px;
+  z-index: 999999;
+  position: relative;
+}
+.EG-AS-710-V1 .eg-usp-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.EG-AS-710-V1 .eg-usp-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.EG-AS-710-V1 .eg-usp-title {
+  color: #920088;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.EG-AS-710-V1 .eg-usp-val {
+  color: #121212;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.EG-AS-710-V1 .eg-usp-val p {
+  margin: 0;
+  font-size: 15px;
+}
+.EG-AS-710-V1 .eg-usp-val a {
+  color: inherit;
+}
+.EG-AS-710-V1 .eg-usp-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.EG-AS-710-V1 .eg-usp-link .eg-usp-title {
+  text-decoration: underline;
+}
+.EG-AS-710-V1 .eg-usp-box {
+  display: block;
+}
+
+  .EG-AS-710-V1 .course-glance__content-wrap .course-glance__content-body {
+    margin-bottom: 0;
+}
+
+/* ── Mobile / tablet (below lg) ─────────────────────────────── */
+@media screen and (max-width: 1023.5px) {
+  .EG-AS-710-V1 .c-course-glance__bg-wrap {
+    display: flex;
+    flex-direction: column;
+    background-color: #000;
+    min-height: 0;
+  }
+  .EG-AS-710-V1 .c-course-glance__bg-wrap > .lg\:container {
+    order: 1;
+  }
+  .EG-AS-710-V1 .c-course-glance__bg-wrap > .eg-usp-strip {
+    order: 2;
+    display: block;
+    background-color: rgba(255, 255, 255, 1);
+    margin: 4px 20px 22px;
+    padding: 4px 16px;
+    max-width: none;
+    border-bottom: 3px solid rgba(200, 0, 143, 1);
+    z-index: unset;
+  }
+  .EG-AS-710-V1 .course-glance__img-wrap {
+    position: relative;
+    order: 3;
+    min-height: 300px;
+  }
+  .EG-AS-710-V1 .course-glance__img-wrap img.course-glance__img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .EG-AS-710-V1 .eg-hero-fade {
+    display: none;
+  }
+  .EG-AS-710-V1 .eg-usp-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .EG-AS-710-V1 .eg-usp-item:last-child {
+    border-bottom: 0;
+  }
+  .EG-AS-710-V1 .eg-usp-link, .EG-AS-710-V1 .eg-usp-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+  .EG-AS-710-V1 .eg-usp-head {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 0;
+  }
+  .EG-AS-710-V1 .eg-usp-icon {
+    width: 20px;
+    height: 20px;
+  }
+  .EG-AS-710-V1 .eg-usp-title {
+    font-size: 12px;
+  }
+  .EG-AS-710-V1 .eg-usp-val {
+    font-size: 12px;
+    text-align: right;
+    max-width: 52%;
+  }
+
+  .EG-AS-710-V1 .eg-eyebrow{
+    font-size: 11px;
+  }
+
+  .EG-AS-710-V1 .course-glance__content-wrap h1 {
+    font-size: 22px;
+  }
+
+  .EG-AS-710-V1 .course-glance__content-body > p:first-of-type{
+    font-size:13px;
+    
+  }
+
+  .EG-AS-710-V1 .course-glance__content-wrap .course-glance__btns a .icon{
+    display: none;
+  }
+  .EG-AS-710-V1 .course-glance__content-wrap .course-glance__btns a {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .EG-AS-710-V1 .eg-usp-val p{
+    font-size: 12px;
+  }
+
+  .EG-AS-710-V1 .course-glance__content-wrap{
+    padding-bottom: 0;
+  }
+}
