@@ -1,0 +1,27 @@
+{
+  "id": "EG-SP-001",
+  "client": "STOP PAINTING",
+  "website_url": "https://stop-painting.com/cart.php",
+  "type": "Cart Page Layout Redesign",
+  "platform": "BigCommerce",
+  "website_type": "E-commerce",
+  "framework": "vanilla js",
+  "devices": ["desktop"],
+  "techniques": [
+    "DOM reordering",
+    "CSS layout restructure",
+    "idempotent insertion guard"
+  ],
+  "changes_made": [
+    "Restructured cart page from single-column table to two-column layout",
+    "Added order summary sidebar with sticky positioning",
+    "Added USP bar below cart",
+    "Added phone/contact bar",
+    "Restyled quantity controls to modern stepper",
+    "Added continue shopping link"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation — redesigned cart layout matching Figma specifications.",
+  "complexity": "high",
+  "notes": "Desktop only. All cart functionality (quantity, remove, coupon, checkout) must remain functional."
+}
