@@ -22,6 +22,11 @@
   display: none;
 }
 
+.EG-AS-710-V1 .c-course-glance{
+  position:relative !important;
+  isolation: isolate;
+}
+
 /* ── Eyebrow ────────────────────────────────────────────────── */
 .EG-AS-710-V1 .eg-eyebrow {
   color: #D30063;
@@ -106,7 +111,7 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 28px;
-  max-width: 1280px;
+  max-width: 1482px;
   margin-left: auto;
   margin-right: auto;
   padding: 28px 24px;
@@ -175,7 +180,7 @@
     padding: 4px 16px;
     max-width: none;
     border: 1px solid rgba(222, 222, 224, 1);
-    z-index: 11;
+    z-index: 110000;
   }
   .EG-AS-710-V1 .course-glance__img-wrap {
     position: relative;
