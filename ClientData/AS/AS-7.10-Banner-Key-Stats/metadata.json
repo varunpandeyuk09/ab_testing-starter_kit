@@ -1,0 +1,34 @@
+{
+  "id": "AS-7.10",
+  "client": "AS (Aston Online)",
+  "website_url": "https://online.aston.ac.uk/online-courses/business/masters-in-business-administration-mba",
+  "type": "Course Page Banner Redesign | Key Stats",
+  "platform": "Nuxt/Vue + Tailwind",
+  "website_type": "Education",
+  "framework": "nuxt vue",
+  "devices": ["desktop", "tablet", "mobile"],
+  "target_pages": ["All course pages (MBA, DBA and others)"],
+  "techniques": [
+    "DOM insertion",
+    "MutationObserver",
+    "viewport branch + resize rebuild",
+    "delegated event binding",
+    "idempotent insertion guard"
+  ],
+  "changes_made": [
+    "Hero rebuilt Figma Option 1-D style: eyebrow (parsed from H2) + H1 + first paragraph + existing CTAs over solid black panel, page image reused on the right with gradient blend",
+    "Breadcrumb hidden, original details grid + mobile carousel hidden",
+    "USP rebuilt as white key-stats strip from desktop grid content (icon + title + text pulled per page, Entry-requirements link preserved)",
+    "Mobile: black panel stacks CTAs, USP becomes white table card, image moves to bottom"
+  ],
+  "number_of_variations": 2,
+  "variation_differences": "V1 = Figma exact concise key stats (USP values clamped to 2 lines). V2 = same hero redesign with full-length USP values (no clamp).",
+  "complexity": "medium",
+  "selectors": {
+    "anchor": ".c-course-glance",
+    "hero_image": ".course-glance__img-wrap img.course-glance__img",
+    "usp_source": ".c-course-glance__details-wrap .hidden .c-course-glance__detail-item",
+    "injected_usp": ".eg-usp-strip"
+  },
+  "notes": "Dynamic pull works on every course page (no per-page hardcoding). V2 design was not shared, so V2 mirrors V1 hero with full USP text; easy to diverge once second Figma arrives. v1.1: hero mirrored to Figma (panel left/image right), stronger seam blend, USP race-proofed (data-anchored boot + retry + count-check rebuild. v1.2: hero 50/50 split (panel left, image right)."
+}
