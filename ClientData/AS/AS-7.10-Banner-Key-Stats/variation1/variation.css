@@ -24,9 +24,9 @@
 
 /* ── Eyebrow ────────────────────────────────────────────────── */
 .EG-AS-710-V1 .eg-eyebrow {
-  color: #d6006e;
-  font-size: 12px;
-  font-weight: 700;
+  color: #D30063;
+  font-size: 13px;
+  font-weight: 600;
   letter-spacing: 1.6px;
   text-transform: uppercase;
   margin-bottom: 12px;
@@ -66,12 +66,14 @@
     justify-content: center;
   }
   .EG-AS-710-V1 .course-glance__content-wrap h1 {
-    font-size: 40px;
+    font-size: 44px;
     line-height: 1.12;
+    color: #FFFFFF;
   }
   .EG-AS-710-V1 .course-glance__content-body > p:first-of-type {
-    font-size: 16px;
+    font-size: 17px;
     line-height: 1.55;
+    color: #FFFFFFD9;
   }
   .EG-AS-710-V1 .course-glance__img-wrap {
     position: relative;
@@ -93,7 +95,8 @@
     bottom: 0;
     left: 0;
     width: 200px;
-    background: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.9) 35%, rgba(0, 0, 0, 0) 100%);
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.95) 20.98%, rgba(0, 0, 0, 0) 100%);
+
   }
 }
 
@@ -120,23 +123,19 @@
   object-fit: contain;
 }
 .EG-AS-710-V1 .eg-usp-title {
-  color: #c4006b;
-  font-size: 11px;
-  font-weight: 700;
+  color: #920088;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 1px;
-  text-transform: uppercase;
 }
 .EG-AS-710-V1 .eg-usp-val {
-  color: #111;
-  font-size: 14px;
+  color: #121212;
+  font-size: 15px;
   line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 .EG-AS-710-V1 .eg-usp-val p {
   margin: 0;
+  font-size: 15px;
 }
 .EG-AS-710-V1 .eg-usp-val a {
   color: inherit;
@@ -153,6 +152,10 @@
   display: block;
 }
 
+  .EG-AS-710-V1 .course-glance__content-wrap .course-glance__content-body {
+    margin-bottom: 0;
+}
+
 /* ── Mobile / tablet (below lg) ─────────────────────────────── */
 @media screen and (max-width: 1023.5px) {
   .EG-AS-710-V1 .c-course-glance__bg-wrap {
@@ -167,11 +170,12 @@
   .EG-AS-710-V1 .c-course-glance__bg-wrap > .eg-usp-strip {
     order: 2;
     display: block;
-    background-color: #fff;
-    border-radius: 8px;
-    margin: 4px 16px 20px;
+    background-color: rgba(255, 255, 255, 1);
+    margin: 4px 20px -35px;
     padding: 4px 16px;
     max-width: none;
+    border: 1px solid rgba(222, 222, 224, 1);
+    z-index: 11;
   }
   .EG-AS-710-V1 .course-glance__img-wrap {
     position: relative;
@@ -223,5 +227,34 @@
     font-size: 12px;
     text-align: right;
     max-width: 52%;
+  }
+
+  .EG-AS-710-V1 .eg-eyebrow{
+    font-size: 11px;
+  }
+
+  .EG-AS-710-V1 .course-glance__content-wrap h1 {
+    font-size: 22px;
+  }
+
+  .EG-AS-710-V1 .course-glance__content-body > p:first-of-type{
+    font-size:13px;
+    
+  }
+
+  .EG-AS-710-V1 .course-glance__content-wrap .course-glance__btns a .icon{
+    display: none;
+  }
+  .EG-AS-710-V1 .course-glance__content-wrap .course-glance__btns a {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .EG-AS-710-V1 .eg-usp-val p{
+    font-size: 12px;
+  }
+
+  .EG-AS-710-V1 .course-glance__content-wrap{
+    padding-bottom: 0;
   }
 }
