@@ -25,6 +25,7 @@
    - `AI/guides/SNIPPETS.md` — reusable functions (copy what you need)
    - `AI/guides/PLAYBOOK.md` — QA checklist and coding standards
    - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
+   - `AI/guides/SMART-COMMUNICATION-GUIDE.md` — communication templates (email, WhatsApp, client updates)
    - `ClientData/examples/EG-EXAMPLE-SM01/` — reference example (only examples, not other ClientData)
    - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
    - **Do NOT read** `ClientData/<CLIENT>/` other folders — only `ClientData/examples/` for initial read
@@ -82,6 +83,7 @@ ab_testing-starter_kit/
       SNIPPETS.md         ← reusable functions (8 core)
       PLAYBOOK.md         ← QA checklist + coding standards
       IMAGE_ANALYSIS.md   ← design screenshot analysis
+      SMART-COMMUNICATION-GUIDE.md ← communication templates (email, WhatsApp, client updates)
       AB-TEST-CODEBASE-SUMMARY.md
     templates/            ← boilerplate (AI read if needed)
       share.js
