@@ -38,7 +38,7 @@ DESIGN ─────── if screenshot/Figma provided → follow IMAGE_ANALY
 ASK ────────── only blocking questions (do not ask inferable from brief/patterns/site)
   │
   ▼
-MATCH ──────── PATTERNS.md + SNIPPETS.md + historical/client precedent — Adapt, do not blindly copy
+MATCH ──────── LEARNED-MEMORY.md (CRO Brain) + PATTERNS.md + SNIPPETS.md + historical/client precedent — Adapt, do not blindly copy
   │
   ▼
 SCAFFOLD ──── variation1/ + AI_DATA/ + guards/observers/responsive/cleanup strategy
@@ -67,7 +67,7 @@ CAPTURE ────── genuinely new technique?
 | ANALYZE | Determine page type, platform, DOM, SPA, responsive, deps, unknowns | — |
 | DESIGN | If screenshot/Figma → Analyze layout, colors, spacing, borders, mobile | IMAGE_ANALYSIS.md |
 | ASK | Only blocking questions | — |
-| MATCH | Find closest pattern/snippet/precedent | PATTERNS.md |
+| MATCH | Find closest pattern/snippet/precedent from CRO Brain + kit | LEARNED-MEMORY.md + PATTERNS.md |
 | SCAFFOLD | Create folders + init strategy | — |
 | CODE | Smallest solution per conventions | SNIPPETS.md |
 | QA | Verify 9 checks; loop if fail | user_qa.md |

@@ -21,6 +21,7 @@
 1. **Provide a brief** — paste your brief in any format below
 2. **Read the files in order** when beginning a new test:
    - `FLOW.md` — process flow
+   - `AI/brain/LEARNED-MEMORY.md` — CRO Brain (approaches, patterns, learnings from 100+ past tests)
    - `AI/guides/PATTERNS.md` — technique recipes (find matching P#)
    - `AI/guides/SNIPPETS.md` — reusable functions (copy what you need)
    - `AI/guides/PLAYBOOK.md` — QA checklist and coding standards
@@ -78,6 +79,8 @@ ab_testing-starter_kit/
   README.md               ← this file (also in AI/)
   communications/         ← PRIVATE, gitignored — DO NOT READ (client/manager comms)
   AI/
+    brain/                ← CRO Brain (learned memory from past tests)
+      LEARNED-MEMORY.md   ← approaches, patterns, learnings from 100+ tests
     guides/               ← grouped knowledge (AI must read)
       PATTERNS.md         ← P1-P20 techniques
       SNIPPETS.md         ← reusable functions (8 core)
