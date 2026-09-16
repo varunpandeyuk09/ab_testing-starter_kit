@@ -1,0 +1,283 @@
+
+
+/* FOL 7.10 — Banner Key Stats — white USP bar overlapping hero */
+.EG-FOL-7_10 .course-banner {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 56px; /* space for overlap */
+}
+
+.EG-FOL-7_10 .course-banner .container,
+.EG-FOL-7_10 .course-banner .course-banner-content {
+  position: relative;
+}
+
+/* hide original 4-card glance completely — new bar lives inside .course-banner */
+.EG-FOL-7_10 .course-glance {
+  display: none !important;
+}
+
+/* bar container inside banner — overlaps hero wrap */
+.EG-FOL-7_10 .course-banner .eg-fol-bar-container {
+  position: relative;
+  z-index: 3;
+  max-width: 1290px;
+  margin: -95px auto 0 auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.EG-FOL-7_10 .course-banner .breadcrumbs {
+  margin-top: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* new bar — desktop: 6 inline, icons top — exact Figma */
+.EG-FOL-7_10 .eg-fol-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  background: white;
+  border-radius: 18px;
+  padding: 24px 32px;
+  width: 100%;
+}
+
+.EG-FOL-7_10 .eg-fol-item {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.EG-FOL-7_10 .eg-fol-icon {
+  width: 33px;
+  height: 33px;
+  color: #2e3bff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.EG-FOL-7_10 .eg-fol-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+}
+
+.EG-FOL-7_10 .eg-fol-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.EG-FOL-7_10 .eg-fol-label {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #0a1931;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.EG-FOL-7_10 .eg-fol-value {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgba(107, 107, 112, 1);
+  margin: 0;
+  word-break: break-word;
+}
+
+.EG-FOL-7_10 .eg-fol-value a {
+  color: #0a1931;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: #9ca3af;
+}
+
+.EG-FOL-7_10 .eg-fol-value a:hover {
+  color: #2e3bff;
+  text-decoration-color: #2e3bff;
+}
+
+/* ensure hero image per page is kept, just ensure it doesn't overflow bar */
+.EG-FOL-7_10 .course-banner-img {
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.EG-FOL-7_10 .course-banner-title {
+    font-size: 40px;
+    font-weight: 600;
+}
+
+.EG-FOL-7_10 .course-banner-btns {
+    flex-direction: row;
+    gap: 16px;
+}
+
+.EG-FOL-7_10 .course-banner-btns * {
+    font-size: 16px !important;
+}
+
+.EG-FOL-7_10 .course-banner .course-banner-content {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+}
+
+.EG-FOL-7_10 .course-banner .course-banner-content>* {
+    width: 50%;
+}
+
+.EG-FOL-7_10 .course-banner .course-banner-content > .course-banner-img_wrap img {
+    border-radius: 16px !important;
+    max-height: 303px;
+    object-fit: cover;
+}
+
+.EG-FOL-7_10 .course-banner .course-banner-wrap {
+    padding-bottom: 100px;
+}
+
+/* MOBILE: hero centered + bar stacked + image repositioned after bar (Figma overlap) */
+@media screen and (max-width: 991.98px) {
+  .EG-FOL-7_10 .course-banner {
+    padding-bottom: 0;
+    background: transparent;
+    position: relative;
+    isolation: isolate;
+  }
+  .EG-FOL-7_10 .course-banner .course-banner-wrap {
+    background: #0a1931;
+    padding-bottom: 40px;
+    border-radius: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  .EG-FOL-7_10 .course-banner-content {
+    flex-direction: column !important;
+    align-items: center;
+    text-align: center;
+    gap: 16px !important;
+  }
+  .EG-FOL-7_10 .course-banner-body-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100% !important;
+    padding-bottom: 164px;
+  }
+  .EG-FOL-7_10 .course-banner_tag {
+    margin-bottom: 4px;
+  }
+  .EG-FOL-7_10 .course-banner-title {
+    font-size: 28px;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .EG-FOL-7_10 .course-banner-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 8px;
+  }
+  .EG-FOL-7_10 .course-banner-btns .btn,
+  .EG-FOL-7_10 .course-banner-btns a,
+  .EG-FOL-7_10 .course-banner-btns button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  /* image moved by JS to after bar — Figma: stacked with no gap, bar overlaps image top */
+  .EG-FOL-7_10 .course-banner-img_wrap {
+    width: 100% !important;
+    margin: 0;
+    order: unset;
+    position: relative;
+    z-index: 1;
+    margin-top: 0;
+    border-radius: 0;
+    overflow: hidden;
+  }
+  .EG-FOL-7_10 .course-banner-img_wrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 0;
+  }
+  /* bar mobile — stacked, no gap: pull up over hero, pull image under bar */
+  .EG-FOL-7_10 .course-banner .eg-fol-bar-container {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+  }
+  .EG-FOL-7_10 .course-banner .breadcrumbs {
+    margin-top: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .EG-FOL-7_10 .eg-fol-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px 16px;
+    border-radius: 12px;
+  }
+  .EG-FOL-7_10 .eg-fol-item {
+    flex: none;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .EG-FOL-7_10 .eg-fol-item:last-child {
+    border-bottom: none;
+  }
+  .EG-FOL-7_10 .eg-fol-icon {
+    width: 20px;
+    height: 20px;
+  }
+  .EG-FOL-7_10 .eg-fol-text {
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .EG-FOL-7_10 .eg-fol-label {
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .EG-FOL-7_10 .eg-fol-value {
+    font-size: 13px;
+    text-align: right;
+    max-width: 55%;
+    flex-shrink: 0;
+  }
+}
+
+@media screen and (max-width: 380px) {
+  .EG-FOL-7_10 .eg-fol-text {
+    gap: 8px;
+  }
+  .EG-FOL-7_10 .eg-fol-label,
+  .EG-FOL-7_10 .eg-fol-value {
+    font-size: 12px;
+  }
+}
