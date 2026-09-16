@@ -632,5 +632,577 @@ test-name/
 
 ---
 
-*Last updated: 16 September 2026 — Added 1.9 PDP Model Sizing & Gallery, 2.8 Slick Boost, 3.6 Salesforce, 4.11 Observer Loop + expanded NEW BALANCE V1/V2 notes (Test 22.3)*
+## SECTION 8: PATTERNS QUICK REFERENCE (P1-P20) — Merged from PATTERNS.md (Sep 2026)
+
+> Source merged 16 Sep 2026 from `AI/guides/PATTERNS.md`. Original file archived/removed — this section is now single source for pattern lookup. Reference as `LEARNED-MEMORY.md:8.x`. For snippets see `SNIPPETS.md:1-8`. Usage % from audit of 4344 tests (2026-09-01).
+
+### 8.1 P1. Image Swap
+
+**When to use:** Replace hero/product/section imagery.
+
+**Approach:**
+```js
+function swapImage(container, newSrc) {
+  var img = container.querySelector('img');
+  if (!img) return;
+  if (!container.classList.contains('eg-swapped')) {
+    container.dataset.egOrig = img.currentSrc || img.src;
+    container.classList.add('eg-swapped');
+  }
+  img.setAttribute('src', newSrc);
+  img.setAttribute('srcset', newSrc + ' 1x');
+  img.setAttribute('data-src', newSrc);
+  var sources = container.querySelectorAll('source');
+  for (var i = 0; i < sources.length; i++) sources[i].setAttribute('srcset', newSrc);
+}
+```
+
+**Key Learnings:**
+- Update `<source srcset>` inside `<picture>` too — else browser keeps old `srcset`
+- Keep element height to prevent CLS
+- Use `container.dataset.egOrig` to allow revert
+
+**Usage:** Common for hero/product swaps
+
+---
+
+### 8.2 P2. Insert Section
+
+**When to use:** Add marketing section/banner/CTA at a specific spot. (75% of tests — most common pattern)
+
+**Approach:**
+```js
+function addSection() {
+  var anchor = document.querySelector('.stable-anchor');
+  if (!anchor || document.querySelector('.eg-hero-section')) return;
+  var section = document.createElement('div');
+  section.className = 'eg-hero-section';
+  section.innerHTML = '<h2>Title</h2><p>Copy</p>';
+  anchor.insertAdjacentElement('beforebegin', section);
+}
+```
+
+**Key Learnings:**
+- Never `innerHTML =` container with event bindings — destroys listeners
+- Guard against duplicate insert (`!document.querySelector('.eg-*')`)
+- Always `waitForElement` on anchor, not parent — anchor is stable selector
+
+**Usage:** 75.3% `insertAdjacentHTML/Element`
+
+---
+
+### 8.3 P3. Sticky Element
+
+**When to use:** Element sticks/appears/collapses on scroll.
+
+**Approach:**
+```js
+function initSticky() {
+  if (document.body.classList.contains('eg-stuck')) return;
+  window.addEventListener('scroll', function () {
+    var y = window.scrollY || document.documentElement.scrollTop;
+    document.body.classList.toggle('eg-stuck', y > 300);
+  }, { passive: true });
+}
+```
+```css
+.EG-TEST-ID.eg-stuck .site-header { position: sticky; top: 0; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+```
+
+**Key Learnings:**
+- CSS `position: sticky` fails inside `overflow: auto` ancestor — check parent
+- Use `{ passive: true }` on scroll for performance
+- Toggle body class, handle visuals in CSS
+
+**Usage:** 12.9% sticky elements
+
+---
+
+### 8.4 P4. DOM Reordering
+
+**When to use:** Move/reorder existing sections.
+
+**Approach:**
+```js
+function reorder() {
+  var list = document.querySelector('.eg-parent');
+  if (!list || list.dataset.egReordered) return;
+  list.querySelectorAll('.eg-source-item').forEach(function (item) {
+    list.insertBefore(item, list.firstChild);
+  });
+  list.dataset.egReordered = '1';
+}
+```
+
+**Key Learnings:**
+- Moving node auto-detaches — no clone needed
+- Loop in reverse for correct order
+- Guard with `dataset.egReordered` flag
+- For visual-only reorder, prefer `SECTION 8.19` (CSS `order`) — safer, no listener breakage
+
+**Usage:** 18% `order`, 4.2% `:has`
+
+---
+
+### 8.5 P5. MutationObserver Guard
+
+**When to use:** Page re-renders target area and undoes changes.
+
+**Approach:**
+```js
+var isRunning = false;
+function ensureApplied() {
+  if (isRunning) return;
+  isRunning = true;
+  applyChanges();
+  setTimeout(function () { isRunning = false; }, 200);
+}
+var mo = new MutationObserver(function (mutations) {
+  if (mutations.some(function (m) { return m.type === 'childList' && m.addedNodes.length; }))
+    ensureApplied();
+});
+mo.observe(document.querySelector('.target'), { childList: true, subtree: true });
+```
+
+**Key Learnings:**
+- Scope to smallest container — never `document.body` or `main` (see `SECTION 2.4` / `4.11`)
+- Guard with `isRunning` flag + debounce
+- Filter own mutations (`target.closest('.eg-*')` + `onlyBadge` check) — avoids self-loop (NEW BALANCE Test 22.3)
+- Disconnect when done; `attributeFilter` only needed `data-*`, never `src`
+
+**Usage:** 8.6% MutationObserver
+
+**Relation:** See `SECTION 2.4` for self-trigger loop gotcha & fix
+
+---
+
+### 8.6 P6. SPA Routing
+
+**When to use:** Test applies on multiple routes / state persists across navigation.
+
+**Approach:** Use `listener()` from `SNIPPETS.md:3`. Re-run `waitForElement` in `locationchange` callback.
+
+```js
+listener(); // from SNIPPETS.md:3
+window.addEventListener('locationchange', function(){ waitForElement('.anchor', init, 50, 15000); });
+```
+
+**Key Learnings:**
+- Hook `pushState`/`replaceState`/`popstate` once
+- Re-init on `locationchange`, not `load`
+
+**Usage:** 9.8% SPA
+
+---
+
+### 8.7 P7. Event Tracking
+
+**When to use:** Measure clicks on test elements.
+
+**Approach:** Use `live()` in `share.js` (see `SNIPPETS.md:2`). One per tracked interaction. Never mutate DOM in `share.js`. Any DOM read on load (e.g. `[data-pid]` → cookie) must be inside `waitForElement` (see `SNIPPETS.md:1`) — never top-level `querySelector`.
+
+**Key Learnings:**
+- `share.js` = tracking only, no inserts
+- Use `live()` for delegated events — works for dynamic elements
+
+**Usage:** 28.7% variation / 95.8% share.js
+
+---
+
+### 8.8 P8. Form Restructure
+
+**When to use:** Redesign form layout without breaking submission.
+
+**Approach:** Move existing fields via `insertBefore`/`appendChild`. Never clone inputs — clones lose `name`/`validation` bindings.
+
+**Key Learnings:**
+- Preserve original `input` nodes — move, don't recreate
+- Test submission after restructure
+- See `SECTION 1.6` for form UX patterns
+
+---
+
+### 8.9 P9. Load External Library (Slick/JQuery)
+
+**When to use:** Need library site doesn't ship. Real pattern: dual CSS + JS inject (21% of tests use slick).
+
+**Approach:**
+```js
+function loadSlick(cb) {
+  if (document.querySelector('.eg-slick-loaded')) return;
+  var g = document.createElement('div'); g.className = 'eg-slick-loaded'; document.head.appendChild(g);
+  var l1 = document.createElement('link'); l1.rel = 'stylesheet'; l1.href = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css'; document.head.appendChild(l1);
+  var l2 = document.createElement('link'); l2.rel = 'stylesheet'; l2.href = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css'; document.head.appendChild(l2);
+  var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js'; s.onload = cb; document.head.appendChild(s);
+}
+function waitForSlick(cb){ var i=setInterval(function(){ if(window.jQuery && jQuery.fn.slick){ clearInterval(i); cb(); }},50); setTimeout(function(){clearInterval(i)},15000); }
+```
+Call `loadSlick(function(){ waitForSlick(initSlick); });`
+
+**Key Learnings:**
+- Dual CSS + JS required for slick
+- Poll `jQuery.fn.slick` before init
+- Guard with `.eg-slick-loaded` div
+
+**Usage:** 21.7% CDN inject / 5.4% slick
+
+---
+
+### 8.10 P10. Text/Price Replacement
+
+**When to use:** Swap headline, copy, prices, badges.
+
+**Approach:** Use `textContent` only on leaf elements. Preserve currency formatting.
+
+**Key Learnings:**
+- `textContent` not `innerHTML` for text only
+- Keep original number/currency format
+
+---
+
+### 8.11 P11. URL / Page-Type Gating
+
+**When to use:** Test only on specific PDP/PLP/category or exclude pages. (26% of tests)
+
+**Approach:**
+```js
+function shouldRun() {
+  if (['/cart','/checkout'].some(function(p){ return location.pathname.includes(p); })) return false;
+  if (location.href.includes('/collections/')) return true;
+  return false;
+}
+if (!shouldRun()) return;
+waitForElement('.stable-anchor', init, 50, 15000);
+```
+
+**Key Learnings:**
+- Gate **BEFORE** `waitForElement` — saves polling
+- Use `blockedUrls.includes(location.href)` early return for CROCS pattern
+- Check `!== -1` for `indexOf`, not truthy
+
+**Usage:** 26%
+
+---
+
+### 8.12 P12. Viewport Branch + Resize Rebuild
+
+**When to use:** Different DOM/position on mobile vs desktop.
+
+**Approach — choose per site:**
+```js
+// A) Legacy inline + rebuild (works, simple) — 35% of tests used this historically
+function buildA() {
+  var isMobile = window.innerWidth < 767;
+  if (document.querySelector('.eg-details')) document.querySelector('.eg-details').remove();
+  var anchor = document.querySelector(isMobile ? '.mobile-anchor' : '.desktop-anchor');
+  if (!anchor || document.querySelector('.eg-details')) return;
+  anchor.insertAdjacentHTML('afterend', '<div class="eg-details">...</div>');
+}
+waitForElement('.desktop-anchor', buildA, 50, 15000);
+window.addEventListener('resize', function(){ setTimeout(buildA, 200); });
+
+// B) matchMedia (preferred for viewport) + ResizeObserver (element size)
+var mq = window.matchMedia('(max-width: 767px)');
+mq.addEventListener('change', buildA);
+// or ResizeObserver: new ResizeObserver(buildA).observe(anchor);
+
+// C) CSS-only when possible — @media hide/show, no JS rebuild needed
+```
+
+**Key Learnings:**
+- `deviceAware()` matchMedia was only 0.07% — legacy, use inline `window.innerWidth < 767` or modern `matchMedia`
+- `screen.width` only if site lacks `matchMedia`
+- Prefer CSS or `matchMedia` for modern responsive
+- NEW BALANCE Test 22.3 uses `<768` for badge (all vs 1st) and `<1200` for gallery slick
+
+**Usage:** 35% viewport branching
+
+---
+
+### 8.13 P13. XHR Hook (Cart/Filter Re-apply)
+
+**When to use:** Page re-renders via fetch/XHR, DOM changes wiped. (11% fetch, 4.6% Cart)
+
+**Approach:**
+```js
+function hookCartReapply(reApply){
+  var orig = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(){
+    this.addEventListener('load', function(){
+      if (this.responseURL && this.responseURL.includes('Cart-UpdateQuantity')) reApply();
+    });
+    return orig.apply(this, arguments);
+  };
+}
+```
+Price helper: `var price = parseFloat(el.innerText.replace(/[^0-9.]/g,''));`
+
+**Key Learnings:**
+- Hook `XMLHttpRequest.prototype.send`, check `responseURL`
+- Re-apply after relevant endpoint only
+
+**Usage:** 11.2% XHR/fetch hooks
+
+---
+
+### 8.14 P14. Cookie Helpers
+
+**When to use:** Read/write cookies for targeting.
+
+**Approach:** Use `getCookie()` / `setCookie()` from `SNIPPETS.md:4`.
+
+**Key Learnings:** Cross-page state, variant persistence, promo gating
+
+**Usage:** 4.3% cookies
+
+---
+
+### 8.15 P15. Nudge / Progress / Urgency (merged)
+
+**When to use:** Exit nudge, cart progress, countdown, scarcity line. (exit 0%, progress 3%, urgency 0.4%)
+
+**Approach:**
+```js
+// progress bar
+var pct = Math.min((cartTotal/threshold)*100,100); document.querySelector('.eg-progress').style.width=pct+'%';
+// urgency line
+var anchor=document.querySelector('.hero-cta'); if(anchor && !document.querySelector('.eg-urgency')) anchor.insertAdjacentHTML('beforebegin','<div class="eg-urgency">Only 3 spots left</div>');
+// countdown: use setInterval + Date math, version key with variation name
+```
+
+**Key Learnings:** Keep to 5 lines, not full pattern per use; use real data not fake urgency
+
+---
+
+### 8.16 P16. CSS Scope & Layout Gotchas (merged)
+
+**When to use:** Scoping, accordion, carousel, flex. (80% @media, 80% !important, 71% flex in real tests)
+
+**Approach:**
+```css
+/* Scope — 78% use .EG-/.eg- prefix, 22% unscoped = bug */
+.EG-TEST-ID .element { /* correct - scope all CSS */ }
+.element { /* wrong - unscoped */ }
+/* !important guard — 80% bloat, use <2 per file */
+.EG-TEST-ID .eg-hidden { display:none !important; } /* only utility */
+/* Trust logos — 9.5% filter pattern */
+.EG-TEST-ID .eg-trust-logos { display:flex; flex-wrap:wrap; gap:15px; justify-content:center }
+.EG-TEST-ID .eg-trust-logos img { width:90px; height:48px; object-fit:contain; filter:invert(50%) grayscale(100%); transition:filter .2s }
+.EG-TEST-ID .eg-trust-logos img:hover { filter:invert(0) grayscale(0) !important; }
+/* Accordion — P21 grid, 3% use */
+.eg-accordion-content { display:grid; grid-template-rows:0fr; transition:grid-template-rows .32s; }
+.eg-accordion.open .eg-accordion-content { grid-template-rows:1fr; }
+.eg-accordion-content > div { overflow:hidden; }
+/* Progress — 2.2% */
+.EG-TEST-ID .eg-progress-track { height:6px; background:#E4E4E7; border-radius:9999px; overflow:hidden }
+.EG-TEST-ID .eg-progress { height:100%; width:0; background:#00BE00; transition:width .32s; }
+/* Reorder — 18% order, 4.2% :has */
+.EG-TEST-ID .eg-reorder { display:flex; flex-direction:column }
+.EG-TEST-ID .eg-reorder .eg-reviews { order:-1 }
+.EG-TEST-ID .container > .row { flex-wrap:nowrap; } /* P32 — only where needed */
+.eg-carousel { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; } /* P20 — rare, JS slick 5% preferred */
+```
+
+**Key Learnings:**
+- All CSS scoped under `.EG-*` — 78% correct, 22% unscoped is bug
+- `<2 !important` per file — only utility hides
+- Flex 71%, @media 80%, !important 80% in wild — keep lean
+
+---
+
+### 8.17 P17. Date Math / Countdown
+
+**When to use:** Business days calculation, urgency countdown.
+
+**Approach:**
+```js
+function addBusinessDays(startDate, days) {
+  var d = new Date(startDate);
+  while (days > 0) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) days--; }
+  return d;
+}
+```
+
+**Key Learnings:** Skip weekends (0=Sun, 6=Sat); use `setInterval` + `Date` math for countdown with version key
+
+---
+
+### 8.18 P18. YouTube / Video Integration
+
+**When to use:** Add YouTube video to gallery, lightbox, or custom player.
+
+**Approach:**
+```js
+// 1. Parse YouTube URL — handles all formats
+function extractYoutubeId(url) {
+  var patterns = [
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/,
+    /youtu\.be\/([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/v\/([a-zA-Z0-9_-]+)/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/
+  ];
+  for (var i = 0; i < patterns.length; i++) {
+    var match = url.match(patterns[i]);
+    if (match) return match[1];
+  }
+  return null;
+}
+// 2. Auto-generate thumbnail
+var thumbUrl = 'https://img.youtube.com/vi/' + videoId + '/mqdefault.jpg';
+// 3. Idempotent guard
+if (gallery.querySelector('[data-video-type="youtube"]')) return;
+// 4. Re-init jQuery plugin
+if ($lg.data('lightGallery')) { $lg.data('lightGallery').destroy(true); }
+$lg.lightGallery({ selector: 'a[data-video-type="youtube"]', videojs: true });
+```
+
+**Key Learnings:**
+- Always `destroy(true)` before re-init
+- Use `mqdefault.jpg` for thumbnails (120x90)
+- Watch URL preferred over embed for lightGallery
+
+---
+
+### 8.19 P19. CSS-Only Reorder (Visual Only)
+
+**When to use:** Reorder elements visually without touching DOM. Safer alternative to P4 when only visual position matters.
+
+**Approach:**
+```css
+.EG-TEST-ID .parent-container { display: flex; flex-direction: column; }
+.EG-TEST-ID .parent-container > .target-child { order: -2; }
+.EG-TEST-ID .parent-container > .first-child,
+.EG-TEST-ID .parent-container > .target-child { order: -2; }
+```
+```js
+function init() { document.body.classList.add('EG-TEST-ID'); }
+waitForElement('.parent-container', init, 50, 15000);
+```
+
+**Key Learnings:**
+- Visual-only — DOM order unchanged, screen readers follow DOM
+- Use P4 (JS reorder) when DOM order must match visual
+- Avoid if parent has existing `display: grid`/`flex` with complex props
+- Test with `!important` only if site CSS conflicts
+
+---
+
+### 8.20 P20. ScrollSpy — Sticky Nav Auto-Highlight (Click + Scroll Sync)
+
+**When to use:** Sticky jump-links / tab nav must auto-highlight current section on scroll and stay synced with click. (ALTIUM TS-2501 V1-V3 — pill jittered without this)
+
+**Approach:** Use `SNIPPETS.md:8` — `getBoundingClientRect()` + `isClickScrolling` flag + `requestAnimationFrame` throttle. Do not use `offsetTop` when nav moves DOM.
+
+```js
+// After setActivePill() — paste SNIPPETS.md:8 helpers
+// Replace click: isClickScrolling=true → setActivePill(this) → smoothScroll() → setTimeout(isClickScrolling=false, 900)
+// Wire scroll: window.addEventListener('scroll', onScrollSpy, {passive:true}); updateActiveOnScroll();
+```
+
+**Key Learnings:**
+- Never `offsetTop` after `handleNavbarFixed()` moves nav — use `sec.getBoundingClientRect().top - stickyOffset`
+- Guard click vs scroll race with `isClickScrolling` (900ms > smoothScroll)
+- Throttle with `rAF`, skip DOM if already active
+- Compute `stickyOffset` dynamically: `navbar.offsetHeight + (quickLinks.is-sticky ? quickLinks.offsetHeight : 0) + 20`
+
+**Source:** `ALTIUM/ST FY26Q2 TS-2501` — `SNIPPETS.md:8`
+
+---
+
+### 8.21 Appendix A. Shopware / AWG Quick-View (collapsed P23-P29, P31)
+
+**When to use:** Only for AWG-MODE Shopware PLP→PDP clone (0.3% of tests). Do not use for generic tests.
+
+**Approach:** Use `fetchPdpBlocks()` + `sanitizeBuyBox()` + CAPTURE handler + variant switch. See `ab-test/AWG-MODE/AB044`, `AB045` for full 80-line implementation. Snippets 7-13 archived.
+
+**Key Learnings:** Shopware offcanvas nav clones DOM — handle multiple containers, CAPTURE-phase events, `PluginManager.initializePlugins()`, tiny-slider `pinTnsTransform()`, payload encoding exact match.
+
+---
+
+### 8.22 Appendix B. Rare Gotchas (collapsed)
+
+**When to use:** Edge cases 0.2-1.3% hit rate — keep for reference, not new P#.
+
+**Approach:**
+- **P33 Payload Encoding:** Match `encodeURIComponent(JSON.stringify)` + `X-Requested-With` exactly — get real Network payload first. (1.3%)
+- **P34 Iframe Overlay:** Never `appendChild` PayPal iframe — overlay with `position:fixed` + rAF sync, keep original offscreen `left:-9999px`. (0.2%)
+
+**Key Learnings:** Rare — only apply when Network tab confirms pattern; otherwise keep in test's `notes`, not new P#
+
+---
+
+## SECTION 9: QA PLAYBOOK & REPO STANDARDS — Merged from PLAYBOOK.md (Sep 2026)
+
+> Source merged 16 Sep 2026 from `AI/guides/PLAYBOOK.md`. Original file archived/removed — this section now single source for QA + repo layout. Run `python scripts/qa_validate.py <TEST_PATH>` pre-handover.
+
+### 9.1 Repository Layout
+
+```
+CLIENT/
+  TEST NAME/
+    variation1/
+      variation.js
+      variation.css
+    v1.json              ← must
+    share.js             ← if tracking
+    metadata.json        ← must
+    AI_DATA/             ← optional for low tests
+      user_qa.md           ← optional (skip for low, keep for medium/high)
+      user_inputs/
+        test_images/
+```
+
+**v1.json:**
+```json
+{
+  "files": ["./variation1/variation.css", "./variation1/variation.js", "./share.js"],
+  "urls": ["https://client-site.com/page"]
+}
+```
+
+---
+
+### 9.2 QA Checklist
+
+- [ ] Standard IIFE wrapper; `init()` is entry point.
+- [ ] `waitForElement` (50/15000) guards every init — incl. `share.js` DOM reads (`[data-pid]` etc.) → see `SNIPPETS.md:1`.
+- [ ] Unique body class in `init()`; all CSS scoped to it.
+- [ ] Only stable selectors: semantic id/class/`data-*`.
+- [ ] All inserts/listeners/observers guarded against duplicates.
+- [ ] Every `setInterval`/`setTimeout` clears itself.
+- [ ] MutationObservers scoped, guarded, disconnected.
+- [ ] Events use `live()` (see `SNIPPETS.md:2`). SPA tests use `listener()` (see `SNIPPETS.md:3`).
+- [ ] CSS scoped under `.EG-xxx`/`.eg-xxx` (78% of real tests), <2 `!important` per file — see `SECTION 8.16`.
+- [ ] CSS-first: hide/show in CSS, JS only for behavior.
+- [ ] Site functionality untouched.
+- [ ] `v1.json` created (+ `share.js` if tracking).
+- [ ] Verified on desktop, tablet, mobile.
+
+---
+
+### 9.3 Automated QA (pre-handover) — run `python scripts/qa_validate.py <TEST_PATH>`
+
+- [ ] syntax check (brace balance)
+- [ ] duplicate selector check
+- [ ] unscoped CSS check (<2 `!important`, scoped under `.EG-` — 8.16)
+- [ ] setInterval/setTimeout cleanup check
+- [ ] missing `v1.json` / `variation.js/css` check
+- [ ] `share.js` DOM mutation check (P7 → 8.7)
+- [ ] anti-pattern scan (`[data-pid]` without waitForElement, `innerHTML=`)
+
+---
+
+### 9.4 Tips
+
+1. Minified HTML/JS — use `Select-String` or regex. Save fetched assets once, reuse.
+2. Don't chase minified theme bundles — get DOM from user instead.
+3. Detect state from rendered DOM, not plugin internals (use P25 if clicks unreliable).
+4. Validate with `node` — regex, URL mapping: `node -e "..."` (single-quote in PowerShell).
+5. Fetch cap: ONE `Invoke-WebRequest`/`webfetch` per page max. More = guessing → STOP.
+6. **Design screenshots** — follow `IMAGE_ANALYSIS.md` before coding. Analyze layout, colors, spacing, borders, mobile first.
+
+---
+
+*Last updated: 16 September 2026 — Big merge: Added SECTION 8 (P1-P20 + Appendix) from PATTERNS.md + SECTION 9 (QA/Repo) from PLAYBOOK.md — single-brain Option A; original files archived. Prev: 1.9 PDP, 2.8 Slick Boost, 3.6 Salesforce, 4.11 Observer Loop, NEW BALANCE V1/V2*
 *Based on analysis of 100+ AB tests across 50+ clients*
