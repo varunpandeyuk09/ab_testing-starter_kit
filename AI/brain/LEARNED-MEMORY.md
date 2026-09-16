@@ -181,6 +181,28 @@ When building a new test, reference this file for:
 
 ---
 
+### 1.9 PDP Model Sizing & Gallery Enhancement (NEW BALANCE Test 22.3)
+
+**When to use:** Apparel PDPs where model height/size info exists in DOM (`img[data-modelinfo]`) and gallery needs premium feel on desktop.
+
+**Approach:**
+1. Parse `img[data-modelinfo]` via `textarea` decode + regex (`/size\s+([A-Z0-9]+)/i`, `/(\d+'\d+")\/(\d+cm)/`) → short text `Model is X and wears a size Y` (fallback: first sentence ≤80 chars)
+2. Inject overlay badge `.eg-model-badge` absolutely bottom-center on `.item-content` / `button` wrapper — desktop: **1st valid image only**, mobile (`<768`): **all valid images** (skip `.slick-cloned`)
+3. (V2 only, desktop `>1199`): Boost image resolution (`$pdpflexf2$` → `$pdpflexf2MD2x$`, `wid/hei=1026`), strip `<picture><source>`, re-init `#imageGallery #imageGalleryInner` as slick with custom arrows + slide counter, handle SPA via `MutationObserver`
+
+**Key Learnings:**
+- Never use `clearBadges() + re-append` — use per-target `:scope > .eg-badge` check to avoid self-trigger loop (see 2.4/4.11)
+- Slick clones must be skipped or badge appears 3x
+- `data-modelinfo` may contain HTML entities — decode via `textarea.innerHTML` before regex
+- Image quality boost must remove `<source>` else browser keeps 440px variant
+- `unslick` before `slick()` essential — else duplicate arrows/counters
+- Slide counter via `slick('getSlick').slideCount` + `afterChange` event (namespace `.egCounter`)
+- Responsive: desktop 14px, mobile 10px, `position:relative` on wrapper required
+
+**Example Tests:** NEW BALANCE Test 22.3 V1 (badge only), V2 (badge + desktop gallery slick rebuild)
+
+---
+
 ## SECTION 2: TECHNICAL PATTERNS
 
 ### 2.1 Universal Helper: waitForElement
@@ -273,6 +295,10 @@ observer.observe(document.body, { childList: true, subtree: true });
 
 **Usage:** When framework re-renders DOM and removes injected content.
 
+**Gotcha — Self-Trigger Loop (NEW BALANCE Test 22.3, Sep 2026):**
+- `clearBadges() + appendChild()` inside `inject()` itself fires `addedNodes` → observer re-triggers → 120ms debounce still causes rapid remove/add churn (visually 1 badge, DOM thrashing on mobile).
+- **Fix:** (1) Use `isInjecting` flag + per-target idempotent check (`:scope > .eg-badge` + `textContent` compare) instead of `clear + re-add`, (2) Ignore own mutations (`target.closest('.eg-*')` + `onlyBadge` filter), (3) Scope `observe()` to smallest container (`#mainImageCarouselComponent` not `main`), (4) Remove `src` from `attributeFilter` (slick lazy-load triggers endlessly) — keep only `data-*`.
+
 ---
 
 ### 2.5 XHR/Fetch Interception
@@ -337,6 +363,27 @@ document.body.classList.add('EG-TEST-NAME');
 
 ---
 
+### 2.8 Slick Re-init & High-Res Image Boost (NEW BALANCE Test 22.3 V2)
+
+```javascript
+// 1. Boost URL: Salesforce $pdpflexf2$ params
+function boostResolution(url){
+  return url.replace(/\$pdpflexf2\$/g,'$pdpflexf2MD2x$').replace(/wid=\d+/g,'wid=1026').replace(/hei=\d+/g,'hei=1026');
+}
+// 2. Strip <source> then set high-res on img
+$carousel.find('picture source').remove();
+$img.removeAttr('srcset data-srcset').attr({src: highResUrl, 'data-src': highResUrl});
+// 3. Safe re-init
+if ($slider.hasClass('slick-initialized')) $slider.slick('unslick');
+$slider.slick({ slidesToShow:1, arrows:true, infinite:false, adaptiveHeight:true, prevArrow:'...', nextArrow:'...' });
+$slider.slick('getSlick').slideCount; // for counter
+$slider.on('afterChange.egCounter', function(e,slick,curr){ $('.eg-slide-count .current').text(curr+1); });
+```
+
+**Usage:** Desktop-only (`>1199`) gallery premium rebuild. Requires `waitForjQuery` + `waitForSlick` + CDN load (`slick.css` + `slick.min.js`). Disconnect/re-check via MutationObserver on `#imageGallery` with 500ms debounce. See `AB-test/NEW BALANCE/Test 22.3/variation2/variation.js:173-306`, `variation2/variation.css:42-114`.
+
+---
+
 ## SECTION 3: PLATFORM-SPECIFIC PATTERNS
 
 ### 3.1 Shopware 6
@@ -376,6 +423,15 @@ document.body.classList.add('EG-TEST-NAME');
 - Body class-based testing is most common
 - CSS-only variations via class toggle
 - Elementor widgets have predictable class patterns
+
+### 3.6 Salesforce Commerce Cloud (NEW BALANCE newbalance.com.au)
+
+- PDP gallery: `#imageGallery #imageGalleryInner` with `#mainImageCarouselComponent`, `.item-content`, `img[data-modelinfo]` holds model sizing string
+- Image params: `$pdpflexf2$`, `$pdpflexf22x$`, `$pdpflexf2MD$` → upgrade to `$pdpflexf2MD2x$` + `wid=1026&hei=1026` for hi-res (see 2.8)
+- Slick used for carousel — clones have `.slick-cloned`, need guard; `unslick` before re-init
+- Swatch variant switch is SPA — observe `click` on `[class*="swatch"],[class*="colour"],[data-testid*="swatch"]` + MutationObserver, not XHR
+- Responsive breakpoint `768` (badge all vs 1st), `1199`/`1200` (gallery slick rebuild)
+- Platform setting in metadata: `Salesforce`, `vanilla js`, body class `EG-NB-22_03`
 
 ---
 
@@ -420,6 +476,10 @@ document.body.classList.add('EG-TEST-NAME');
 ### 4.10 Removing Without Fallback
 **Mistake:** Hiding/removing elements without fallback for missing DOM
 **Fix:** Always check if target element exists before modification
+
+### 4.11 Self-Triggering MutationObserver Loop
+**Mistake:** `inject()` does `clearAll() → append()` on every trigger while `MutationObserver` watches `childList:true, subtree:true` on `main`/`body` with `attributeFilter:['src','data-*']`. Own `appendChild`/`removeChild` fires `addedNodes` → debounced re-inject → endless 120ms remove/add cycle. On mobile NEW BALANCE Test 22.3 Apparel PDP, every badge re-append triggered observer again (N badges = N mutations), slick `src` swaps amplified it.
+**Fix:** (1) Replace `clearBadges() + loop append` with per-target guard: `target.querySelector(':scope > .eg-badge')` → if exists and `textContent===newText` skip, else update text, else append; (2) Guard observer with `isInjecting` flag + `isClickScrolling` style debounce, (3) Filter own nodes in callback: `if (target.closest('.eg-*')) continue` and `if (onlyBadgeNodes) continue`, (4) Scope `observe(root)` to `#mainImageCarouselComponent` not `main`/`body`, (5) `attributeFilter: ['data-modelinfo']` only — never `src`. Reference: `AB-test/NEW BALANCE/Test 22.3 Add Model Sizing Information to Apparel PDPs/variation1/variation.js:32-128` — P5 pattern.
 
 ---
 
@@ -561,13 +621,16 @@ test-name/
 - Multi-step forms
 
 ### NEW BALANCE (newbalance.com.au)
-- E-commerce (Shopify-like)
+- E-commerce — **Salesforce Commerce Cloud** (`vanilla js`, `EG-NB-22_03`, Sep 2026)
+- **Test 22.3 Apparel PDP — V1 vs V2 breakdown:**
+  - **V1 (badge only, all devices):** Parse `img[data-modelinfo]` via `textarea` decode → regex `size` + `height` → `.eg-model-badge` overlay (`14px` desktop/`10px` mobile, white `bottom:12px` center, `border:1px #FFF`) on `.item-content`/`button` (`position:relative`); desktop **1st valid only** (`break`), mobile `<768` **all valid** (`loop`), skip `.slick-cloned`; `waitForElement('img[data-modelinfo]')` + `MutationObserver` on `#mainImageCarouselComponent` (`childList/subtree` + `attributeFilter:['data-modelinfo']` only) with `debouncedInject 120ms` + swatch click `300/800ms` fallback — **gotcha fixed in 2.4/4.11** (was `clear+append` self-loop on `main`, `src` filter, mobile N mutations)
+  - **V2 (V1 badge + desktop gallery rebuild `>1199`):** + `boostResolution()` (`$pdpflexf2$` → `$pdpflexf2MD2x$`, `wid/hei 1026`), strip `picture > source` + `srcset`, force reload, `waitForjQuery`/`waitForSlick` CDN `slick.css`+`slick.min.js` (cdnjs 1.8.1), safe `unslick`→`slick({slidesToShow1, arrows:true, infinite:false, adaptiveHeight:true, custom prev/next png})`, slide counter `.eg-slide-count` (`slick('getSlick').slideCount` + `afterChange.egCounter`), `MutationObserver` on `#imageGallery` `500ms` debounce re-init, CSS `min-width:1200` → `.pdpimg-container 66.33%`, `#productDetails pl-1.5rem`, arrows/counter `bottom:25px` `backdrop-filter:blur(16px)` `bg:#FFFFFFB2`
+- Shared selectors: `#imageGallery #imageGalleryInner`, `#mainImageCarouselComponent`, `.item-content`, `[class*="carousel"]`
 - Mobile sticky ATC essential
-- Model sizing information on PDPs
 - Recently viewed carousels
 - Size gating before ATC
 
 ---
 
-*Last updated: September 2026*
+*Last updated: 16 September 2026 — Added 1.9 PDP Model Sizing & Gallery, 2.8 Slick Boost, 3.6 Salesforce, 4.11 Observer Loop + expanded NEW BALANCE V1/V2 notes (Test 22.3)*
 *Based on analysis of 100+ AB tests across 50+ clients*
