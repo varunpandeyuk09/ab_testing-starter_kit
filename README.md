@@ -21,10 +21,8 @@
 1. **Provide a brief** — paste your brief in any format below
 2. **Read the files in order** when beginning a new test:
    - `FLOW.md` — process flow
-   - `AI/brain/LEARNED-MEMORY.md` — CRO Brain (approaches, patterns, learnings from 100+ past tests)
-   - `AI/guides/PATTERNS.md` — technique recipes (find matching P#)
+   - `AI/brain/LEARNED-MEMORY.md` — CRO Brain (SECTIONS 1-9: approaches + P1-P20 patterns + QA playbook, 100+ tests)
    - `AI/guides/SNIPPETS.md` — reusable functions (copy what you need)
-   - `AI/guides/PLAYBOOK.md` — QA checklist and coding standards
    - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
    - `AI/guides/SMART-COMMUNICATION-GUIDE.md` — communication templates (email, WhatsApp, client updates)
    - `ClientData/examples/EG-EXAMPLE-SM01/` — reference example (only examples, not other ClientData)
@@ -79,12 +77,10 @@ ab_testing-starter_kit/
   README.md               ← this file (also in AI/)
   communications/         ← PRIVATE, gitignored — DO NOT READ (client/manager comms)
   AI/
-    brain/                ← CRO Brain (learned memory from past tests)
-      LEARNED-MEMORY.md   ← approaches, patterns, learnings from 100+ tests
+    brain/                ← CRO Brain (single source, learned memory from 100+ tests)
+      LEARNED-MEMORY.md   ← SECTIONS 1-9: approaches + P1-P20 patterns (SEC 8) + QA playbook (SEC 9)
     guides/               ← grouped knowledge (AI must read)
-      PATTERNS.md         ← P1-P20 techniques
       SNIPPETS.md         ← reusable functions (8 core)
-      PLAYBOOK.md         ← QA checklist + coding standards
       IMAGE_ANALYSIS.md   ← design screenshot analysis
       SMART-COMMUNICATION-GUIDE.md ← communication templates (email, WhatsApp, client updates)
       AB-TEST-CODEBASE-SUMMARY.md
@@ -132,9 +128,11 @@ ab_testing-starter_kit/
 
 ## Knowledge Loop (after every test)
 
-- New technique → PATTERNS.md **only if qualifies**:
+- New technique → LEARNED-MEMORY.md:8 **only if qualifies**:
   1. Generic (not client-specific) + reusable across ≥2 clients or ≥3 tests
-  2. Distinct technique not covered by P1-P17
+  2. Distinct technique not covered by P1-P20 (see SEC 8)
   3. Has copy-paste snippet + gotcha
   4. Else → keep in test's `notes` or Appendix, not new P#
+- QA/process change → LEARNED-MEMORY.md:9
 - Any kit change → update this file
+- Archive note: PATTERNS.md + PLAYBOOK.md merged into LEARNED-MEMORY.md:8/9 on 16 Sep 2026 — do not recreate; update brain directly
