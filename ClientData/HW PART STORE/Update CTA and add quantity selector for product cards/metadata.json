@@ -1,0 +1,21 @@
+{
+  "id": "EG-HWP-QTY-01",
+  "client": "HW PART STORE",
+  "website_url": "https://hwpartstore.com/collections/bobcat-440-440b-skid-steer-seal-kits",
+  "type": "PLP Product Card Enhancement",
+  "platform": "Shopify",
+  "website_type": "E-commerce",
+  "framework": "vanilla js",
+  "devices": ["desktop", "tablet", "mobile"],
+  "techniques": ["DOM insertion", "Quantity stepper", "CTA grouping", "MutationObserver"],
+  "changes_made": [
+    "Inject - 1 + stepper per product tile before Add to cart",
+    "Group stepper + Add to cart in flex .eg-qty-wrap (side-by-side per Figma)",
+    "Sync stepper value to hidden input[name=quantity] on +/- and on ATC click",
+    "Scoped under EG-HWP-QTY-01, idempotent guard, Shopify Ajax re-init via MutationObserver"
+  ],
+  "number_of_variations": 1,
+  "variation_differences": "Single variation — qty selector + side-by-side ATC",
+  "complexity": "low",
+  "notes": "Figma shows - 0 + but logic starts at 1 (Shopify ATC fails at 0). Min 1 enforced. Re-inits on collection filter/pagination."
+}
