@@ -221,9 +221,12 @@
   }
   /* bar mobile — stacked, no gap: pull up over hero, pull image under bar */
   .EG-FOL-7_10 .course-banner .eg-fol-bar-container {
-    position: absolute;
+    margin-top: -28px;
+    margin-bottom: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    position: relative;
     z-index: 3;
-    top: 50%;
   }
   .EG-FOL-7_10 .course-banner .breadcrumbs {
     margin-top: 12px;
