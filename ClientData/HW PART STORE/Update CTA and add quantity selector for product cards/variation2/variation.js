@@ -13,90 +13,80 @@
       setTimeout(function () { clearInterval(interval); }, delayTimeout);
     }
 
+        function live(selector, event, callback, context) {
+  function addEvent(el, type, handler) {
+    if (el.attachEvent) el.attachEvent('on' + type, handler);
+    else el.addEventListener(type, handler);
+  }
+  this.Element && (function (ElementPrototype) {
+    ElementPrototype.matches = ElementPrototype.matches || ElementPrototype.matchesSelector ||
+      ElementPrototype.webkitMatchesSelector || ElementPrototype.msMatchesSelector ||
+      function (selector) {
+        var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+        while (nodes[++i] && nodes[i] != node);
+        return !!nodes[i];
+      };
+  })(Element.prototype);
+  function live(selector, event, callback, context) {
+    addEvent(context || document, event, function (e) {
+      var found, el = e.target || e.srcElement;
+      while (el && el.matches && el !== context && !(found = el.matches(selector))) el = el.parentElement;
+      if (el && found) callback.call(el, e);
+    });
+  }
+  live(selector, event, callback, context);
+}
+
+
     function init() {
       document.body.classList.add("EG-HWP-LEARN-02");
       // find ATC buttons and convert to Learn more -> PDP
-      var btns = document.querySelectorAll('form[action*="/cart/add"] button[data-action="add-to-cart"], form[action*="/cart/add"] button, .product-item button');
-      var targets = [];
-      for (var i = 0; i < btns.length; i++) {
-        if (btns[i].textContent.trim().toLowerCase().indexOf("add to cart") !== -1) targets.push(btns[i]);
-      }
-      if (!targets.length) {
-        var all = document.querySelectorAll("button");
-        for (var k = 0; k < all.length; k++) if (all[k].textContent.trim().toLowerCase().indexOf("add to cart") !== -1) targets.push(all[k]);
-      }
-
+      var targets = [...document.querySelectorAll('form[action*="/cart/add"] button[data-action="add-to-cart"]')];
+      
       for (var b = 0; b < targets.length; b++) {
         var btn = targets[b];
         if (btn.dataset.egLearn) continue;
         btn.dataset.egLearn = "1";
         btn.textContent = "Learn more";
         btn.classList.add("eg-learn-more");
-        // remove form submit behavior if inside form
+        // kill Shopify/Warehouse ATC handlers — must remove data-action + type
         btn.type = "button";
         btn.removeAttribute("name");
+        btn.removeAttribute("data-action");
+        btn.removeAttribute("data-product-id");
+        var frm = btn.closest("form");
+        if (frm) {
+          frm.addEventListener("submit", function (ev) { ev.preventDefault(); ev.stopPropagation(); }, true);
+        }
       }
     }
 
     function liveEvents() {
       if (document.body.dataset.egLearnLive) return;
       document.body.dataset.egLearnLive = "1";
+      // use capture to beat Warehouse theme's handler
       document.addEventListener("click", function (e) {
         var learn = e.target.closest(".eg-learn-more");
         if (!learn) return;
         e.preventDefault();
         e.stopPropagation();
-        var card = learn.closest(".product-item, .product-list__item, .grid__item, li, .ProductItem, form") || learn.parentElement;
-        // try image wrapper link first as requested
-        var imgLink = null;
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        // v2 must go to PDP via image wrapper href (wrapper itself IS <a class="product-item__image-wrapper" href="...">)
+        var card = learn.closest(".product-item");
+        var href = null;
         if (card) {
-          imgLink = card.querySelector(".product-item__image-wrapper a");
-          if (!imgLink) imgLink = card.querySelector(".product-item__image-wrapper");
-          if (!imgLink || !imgLink.getAttribute("href")) {
-            // fallback to any product link in card
-            var links = card.querySelectorAll('a[href*="/products/"]');
-            for (var l = 0; l < links.length; l++) {
-              if (links[l].getAttribute("href")) { imgLink = links[l]; break; }
-            }
-          }
-          // if card itself is inside form, also search sibling product-item
-          if (!imgLink) {
-            var outer = learn.closest(".product-item");
-            if (outer) {
-              imgLink = outer.querySelector(".product-item__image-wrapper a") || outer.querySelector('a[href*="/products/"]');
-            }
-          }
+          var w = card.querySelector(".product-item__image-wrapper");
+          if (w) href = w.getAttribute("href");
         }
-        if (imgLink && imgLink.getAttribute("href")) {
-          // trigger navigation via image link
-          var href = imgLink.getAttribute("href");
-          // if imgLink is not <a> but wrapper div, find its <a>
-          if (imgLink.tagName.toLowerCase() !== "a") {
-            var aInside = imgLink.querySelector("a");
-            if (aInside && aInside.getAttribute("href")) href = aInside.getAttribute("href");
-            else if (imgLink.closest("a")) href = imgLink.closest("a").getAttribute("href");
-          }
-          if (href) window.location.href = href;
-          else imgLink.click();
-        } else {
-          // fallback: click the product title link
-          var fallback = card ? card.querySelector('a[href*="/products/"]') : null;
-          if (fallback) fallback.click();
-        }
-      });
+        // fallback: search from learn itself upwards
+        if (href) window.location.href = href;
+      }, true);
     }
 
     function start() {
       waitForElement('form[action*="/cart/add"] button, .product-item, .product-item__image-wrapper', function () {
         init();
         liveEvents();
-      }, 50, 15000);
-      // re-run on ajax
-      var obs = new MutationObserver(function () {
-        if (document.querySelector('button') && !document.querySelector('.eg-learn-more')) init();
-      });
-      waitForElement("body", function () {
-        obs.observe(document.body, { childList: true, subtree: true });
       }, 50, 15000);
     }
 

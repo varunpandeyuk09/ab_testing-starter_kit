@@ -13,6 +13,30 @@
       setTimeout(function () { clearInterval(interval); }, delayTimeout);
     }
 
+    function live(selector, event, callback, context) {
+  function addEvent(el, type, handler) {
+    if (el.attachEvent) el.attachEvent('on' + type, handler);
+    else el.addEventListener(type, handler);
+  }
+  this.Element && (function (ElementPrototype) {
+    ElementPrototype.matches = ElementPrototype.matches || ElementPrototype.matchesSelector ||
+      ElementPrototype.webkitMatchesSelector || ElementPrototype.msMatchesSelector ||
+      function (selector) {
+        var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
+        while (nodes[++i] && nodes[i] != node);
+        return !!nodes[i];
+      };
+  })(Element.prototype);
+  function live(selector, event, callback, context) {
+    addEvent(context || document, event, function (e) {
+      var found, el = e.target || e.srcElement;
+      while (el && el.matches && el !== context && !(found = el.matches(selector))) el = el.parentElement;
+      if (el && found) callback.call(el, e);
+    });
+  }
+  live(selector, event, callback, context);
+}
+
     
 
     function init() {
@@ -53,25 +77,41 @@
     function liveEvents() {
       if (document.body.dataset.egQtyLive) return;
       document.body.dataset.egQtyLive = "1";
-      document.addEventListener("click", function (e) {
-        var minus = e.target.closest(".eg-minus");
-        var plus = e.target.closest(".eg-plus");
-        if (!minus && !plus) return;
-        var w = (minus || plus).closest(".eg-qty-wrap");
-        if (!w) return;
+      // minus click
+      live('.eg-minus', 'click', function () { 
+        var minus = this;
+        var w = minus.closest(".eg-qty-wrap");
+        if(!w) return;
         var valEl = w.querySelector(".eg-qty-val");
         var frm = w.closest("form");
-        var inp = frm ? frm.querySelector('[name="quantity"]') : null;
+        var inp = null;
+        if(frm && frm.querySelector('[name="quantity"]')) inp = frm.querySelector('[name="quantity"]');
         var cur = parseInt(valEl.textContent, 10) || 1;
-        if (minus) cur = Math.max(1, cur - 1);
-        if (plus) cur = cur + 1;
+        cur = Math.max(1, cur - 1);
         valEl.textContent = cur;
         if (inp) inp.value = cur;
         w.dataset.qty = cur;
       });
-      document.addEventListener("click", function (e) {
-        var atc = e.target.closest(".eg-atc");
-        if (!atc) return;
+
+      // plus click
+      live('.eg-plus', 'click', function () { 
+        var plus = this;
+        var w = plus.closest(".eg-qty-wrap");
+        if(!w) return;
+        var valEl = w.querySelector(".eg-qty-val");
+        var frm = w.closest("form");
+        var inp = null;
+        if(frm && frm.querySelector('[name="quantity"]')) inp = frm.querySelector('[name="quantity"]');
+        var cur = parseInt(valEl.textContent, 10) || 1;
+         cur = cur + 1;
+        valEl.textContent = cur;
+        if (inp) inp.value = cur;
+        w.dataset.qty = cur;
+      });
+
+      // atc click
+      live('.eg-atc', 'click', function () {
+        var atc = this;
         var w = atc.closest(".eg-qty-wrap");
         if (!w) return;
         var form = atc.closest("form");
