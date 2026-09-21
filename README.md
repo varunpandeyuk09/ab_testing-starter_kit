@@ -21,13 +21,11 @@
 1. **Provide a brief** — paste your brief in any format below
 2. **Read the files in order** when beginning a new test:
    - `FLOW.md` — process flow
-   - `AI/brain/LEARNED-MEMORY.md` — CRO Brain (SECTIONS 1-9: approaches + P1-P20 patterns + QA playbook, 100+ tests)
-   - `AI/guides/SNIPPETS.md` — reusable functions (copy what you need)
+   - `AI/brain/Theultimatebrain.md` — The Ultimate Brain (templates, patterns, snippets, rules — everything)
    - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
    - `AI/guides/SMART-COMMUNICATION-GUIDE.md` — communication templates (email, WhatsApp, client updates)
-   - `ClientData/examples/EG-EXAMPLE-SM01/` — reference example (only examples, not other ClientData)
    - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
-   - **Do NOT read** `ClientData/<CLIENT>/` other folders — only `ClientData/examples/` for initial read
+   - **Do NOT read** `ClientData/<CLIENT>/` — only Theultimatebrain.md for initial read
 3. **Follow the flow** — PARSE → ANALYZE → DESIGN → ASK → MATCH → SCAFFOLD → CODE → QA
 4. **If anything is missing** — ASK first, never guess
 
@@ -73,27 +71,21 @@ Add trust badges below H1
 
 ```
 ab_testing-starter_kit/
-  FLOW.md                 ← START HERE (also in AI/)
-  README.md               ← this file (also in AI/)
+  FLOW.md                 ← START HERE
+  README.md               ← this file
   communications/         ← PRIVATE, gitignored — DO NOT READ (client/manager comms)
   AI/
-    brain/                ← CRO Brain (single source, learned memory from 100+ tests)
-      LEARNED-MEMORY.md   ← SECTIONS 1-9: approaches + P1-P20 patterns (SEC 8) + QA playbook (SEC 9)
-    guides/               ← grouped knowledge (AI must read)
-      SNIPPETS.md         ← reusable functions (8 core)
+    brain/                ← The Ultimate Brain (single source of truth)
+      Theultimatebrain.md ← templates + principles + patterns + snippets + rules
+    guides/               ← reference guides
       IMAGE_ANALYSIS.md   ← design screenshot analysis
       SMART-COMMUNICATION-GUIDE.md ← communication templates (email, WhatsApp, client updates)
-      AB-TEST-CODEBASE-SUMMARY.md
     templates/            ← boilerplate (AI read if needed)
       share.js
       v1.json
       EG-SPA-HELPER.js
   docs/                   ← generic setup docs (outside AI)
     SHOPIFY-GIT-SETUP.md
-  ClientData/
-    examples/             ← ONLY this for AI initial read
-      EG-EXAMPLE-SM01/    ← reference example
-    <CLIENT>/             ← Do NOT read initially (only examples)
   ../AB-test/<CLIENT>/
     <TEST_NAME>/
       variation1/         ← JS + CSS only
@@ -128,11 +120,10 @@ ab_testing-starter_kit/
 
 ## Knowledge Loop (after every test)
 
-- New technique → LEARNED-MEMORY.md:8 **only if qualifies**:
+- New technique → Theultimatebrain.md **only if qualifies**:
   1. Generic (not client-specific) + reusable across ≥2 clients or ≥3 tests
-  2. Distinct technique not covered by P1-P20 (see SEC 8)
+  2. Distinct technique not covered by P1-P20 (see Section 8)
   3. Has copy-paste snippet + gotcha
-  4. Else → keep in test's `notes` or Appendix, not new P#
-- QA/process change → LEARNED-MEMORY.md:9
+  4. Else → keep in test's `notes`, not new P#
+- QA/process change → Theultimatebrain.md
 - Any kit change → update this file
-- Archive note: PATTERNS.md + PLAYBOOK.md merged into LEARNED-MEMORY.md:8/9 on 16 Sep 2026 — do not recreate; update brain directly

@@ -360,6 +360,9 @@ When user asks for a communication:
 5. **Generate** — using the matching template + user's voice + context
 6. **Keep it short** — user said "chota sa hi bol raha hu" — respect brevity
 7. **No over-explaining** — only include what is necessary
+8. **Save to file** — if user asks to save, write to `communications/` folder as `.txt` file
+   - Filename format: `[CLIENT]-[TEST]-[TYPE].txt` (e.g., `DEKRA-T12-update.txt`)
+   - Only save if user explicitly asks ("save this", "save kar do", "file mein daal do")
 
 ---
 

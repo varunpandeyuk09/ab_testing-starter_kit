@@ -13,8 +13,8 @@
    - Idempotent code — guard against duplicates, always check before insert
    - Mobile-first mindset — always consider responsive behavior
    - If anything is unclear → ASK first, never guess
-   - Do NOT read communications/ — private, gitignored folder
-   - Do NOT read ClientData/<CLIENT>/ — only ClientData/examples/ for initial read
+    - Do NOT read communications/ — private, gitignored folder
+    - Do NOT read ClientData/<CLIENT>/ — only Theultimatebrain.md for initial read
   
   GOAL:
   - Build variations that are clean, maintainable, and production-ready
@@ -38,7 +38,7 @@ DESIGN ─────── if screenshot/Figma provided → follow IMAGE_ANALY
 ASK ────────── only blocking questions (do not ask inferable from brief/patterns/site)
   │
   ▼
-  MATCH ──────── LEARNED-MEMORY.md (CRO Brain: SECTIONS 1-9 incl. Patterns P1-P20 + QA Playbook) + SNIPPETS.md + historical/client precedent — Adapt, do not blindly copy
+  MATCH ──────── Theultimatebrain.md (Patterns P1-P20 + Snippets + Rules) + historical/client precedent — Adapt, do not blindly copy
   │
   ▼
 SCAFFOLD ──── variation1/ + AI_DATA/ + guards/observers/responsive/cleanup strategy
@@ -56,9 +56,9 @@ HANDOFF ───── final impl + files/changes + assumptions + QA status + b
   ▼
   CAPTURE ────── genuinely new technique?
                ├── No → finish
-               └── Yes → reusable? validated? non-obvious?
-                        ├── No → do not add
-                        └── Yes → LEARNED-MEMORY.md:8 exists? → update : add new P#
+                └── Yes → reusable? validated? non-obvious?
+                         ├── No → do not add
+                         └── Yes → Theultimatebrain.md exists? → update : add new P#
 ```
 
 | Step | Action | File |
@@ -67,9 +67,9 @@ HANDOFF ───── final impl + files/changes + assumptions + QA status + b
 | ANALYZE | Determine page type, platform, DOM, SPA, responsive, deps, unknowns | — |
 | DESIGN | If screenshot/Figma → Analyze layout, colors, spacing, borders, mobile | IMAGE_ANALYSIS.md |
 | ASK | Only blocking questions | — |
-| MATCH | Find closest pattern/snippet/precedent from CRO Brain + kit | LEARNED-MEMORY.md:8 (Patterns) + SNIPPETS.md |
+| MATCH | Find closest pattern/snippet/precedent from kit | Theultimatebrain.md |
 | SCAFFOLD | Create folders + init strategy | — |
-| CODE | Smallest solution per conventions | SNIPPETS.md |
-| QA | Verify 13 checks; loop if fail | LEARNED-MEMORY.md:9 (QA Playbook) + user_qa.md |
+| CODE | Smallest solution per conventions | Theultimatebrain.md (Section 7.1) |
+| QA | Verify 13 checks; loop if fail | Theultimatebrain.md (Section 9) + user_qa.md |
 | HANDOFF | Provide impl + QA status + verification | — |
-| CAPTURE | If new + reusable + validated + non-obvious → LEARNED-MEMORY.md:8 | LEARNED-MEMORY.md:8 |
+| CAPTURE | If new + reusable + validated + non-obvious → Add to Theultimatebrain.md | Theultimatebrain.md |
