@@ -21,11 +21,11 @@
 1. **Provide a brief** — paste your brief in any format below
 2. **Read the files in order** when beginning a new test:
    - `FLOW.md` — process flow
-   - `AI/brain/Theultimatebrain.md` — The Ultimate Brain (templates, patterns, snippets, rules — everything)
+   - `AGENTS.md` — The Ultimate Brain (templates, patterns, snippets, rules — everything)
    - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
    - `AI/guides/SMART-COMMUNICATION-GUIDE.md` — communication templates (email, WhatsApp, client updates)
    - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
-   - **Do NOT read** `ClientData/<CLIENT>/` — only Theultimatebrain.md for initial read
+   - **Do NOT read** `ClientData/<CLIENT>/` — only AGENTS.md for initial read
 3. **Follow the flow** — PARSE → ANALYZE → DESIGN → ASK → MATCH → SCAFFOLD → CODE → QA
 4. **If anything is missing** — ASK first, never guess
 
@@ -73,17 +73,14 @@ Add trust badges below H1
 ab_testing-starter_kit/
   FLOW.md                 ← START HERE
   README.md               ← this file
+  AGENTS.md               ← The Ultimate Brain (single source of truth)
   communications/         ← PRIVATE, gitignored — DO NOT READ (client/manager comms)
   AI/
-    brain/                ← The Ultimate Brain (single source of truth)
-      Theultimatebrain.md ← templates + principles + patterns + snippets + rules
     guides/               ← reference guides
       IMAGE_ANALYSIS.md   ← design screenshot analysis
       SMART-COMMUNICATION-GUIDE.md ← communication templates (email, WhatsApp, client updates)
-    templates/            ← boilerplate (AI read if needed)
-      share.js
-      v1.json
-      EG-SPA-HELPER.js
+  scripts/                ← utility scripts
+    qa_validate.py        ← automated QA
   docs/                   ← generic setup docs (outside AI)
     SHOPIFY-GIT-SETUP.md
   ../AB-test/<CLIENT>/
@@ -111,6 +108,7 @@ ab_testing-starter_kit/
 
 ## Key Rules
 
+- Read `AGENTS.md` first — it contains all patterns, rules, snippets, and learnings
 - Base `variation.js` = only `waitForElement` + `init()`
 - Add `live()` only when events needed
 - Add `listener()` only for SPA sites
@@ -120,10 +118,10 @@ ab_testing-starter_kit/
 
 ## Knowledge Loop (after every test)
 
-- New technique → Theultimatebrain.md **only if qualifies**:
+- New technique → AGENTS.md **only if qualifies**:
   1. Generic (not client-specific) + reusable across ≥2 clients or ≥3 tests
   2. Distinct technique not covered by P1-P20 (see Section 8)
   3. Has copy-paste snippet + gotcha
   4. Else → keep in test's `notes`, not new P#
-- QA/process change → Theultimatebrain.md
+- QA/process change → AGENTS.md
 - Any kit change → update this file
