@@ -631,8 +631,10 @@ function onScrollSpy() {
 | jQuery without wait | Always `waitForSlick()` or poll `window.jQuery` before use |
 | Double init | Use either `load` OR `waitForElement`, never both |
 | indexOf without check | `indexOf('/blog')` returns -1 (truthy!) — use `includes()` |
+| Readiness gated on `window.X` | Top-level `class`/`let`/`const` never land on `window` — use `typeof X` |
 | External image hosting | Never use ibb.co — use CDN or local assets |
 | Clear + re-append loop | Avoid — self-triggers MutationObserver |
+| Guard flag reset by page-load fn | Reset done-flag only at flow start; init/poll fns must never touch state flags |
 
 ---
 
@@ -897,6 +899,18 @@ document.querySelector(".eg-moved-ele")
 ### Duplicate HTML IDs
 - **Invalid HTML** — `id="egCost"` used 8 times
 - **Use classes** — `eg-cost-value` instead
+
+### Swallowed ReferenceError (debug=0 catch)
+- Vars used by the bottom init block must be IIFE-scoped
+- Otherwise `ReferenceError` fires and the silent `catch` hides dead code for weeks
+- Verify every var referenced at file bottom is declared at IIFE top
+
+### Third-Party Global Readiness
+- Gate on `typeof X !== 'undefined'`, never on `window.X` — top-level `class`/`let`/`const` create lexical bindings only, not `window` properties
+- Bare `X` before its script runs throws (TDZ) — the `debug=0` catch swallows it, so wrap in `try/catch` or keep using `typeof`
+- A timeout fallback that calls `cb()` anyway turns a missing global into a **timing bug**: code runs late and fails only for fast users
+- Console autocomplete on `window` lists own properties only — "not in window" ≠ "doesn't exist"
+- Before assuming a global is missing, grep the vendor bundle for its real declaration
 
 ---
 
@@ -1342,6 +1356,72 @@ document.querySelector(".eg-moved-ele")
 - Combine global variable polling with MO
 - Wait for data + DOM readiness
 - Robust initialization pattern
+
+### P101. Body Class Guard at IIFE Top (SPA Duplicate Run Prevention)
+- Add body class in `init()`, check it at IIFE top **before `try` block**
+- `if (document.body.classList.contains('EG-XXX')) return;`
+- On SPA/filter re-render sites, AB tool re-injects script — guard prevents duplicate listeners, observers, fetch hooks
+- Different from `.eg-*` element guard (line 14 pattern) — body class persists even after modal/CTA elements are removed by re-render
+- Why before `try`: guard should fire before any code executes, not inside error handling
+
+```js
+(function () {
+  if (document.body.classList.contains('EG-XXX')) return; // SPA guard
+  try {
+    // ... all code
+    function init() {
+      document.body.classList.add('EG-XXX');
+      // ...
+    }
+  } catch (e) { ... }
+})();
+```
+
+### P102. Section-Wise Scaffold Order for Full Page Redesign
+- **Plan insertion order FIRST** — map every section to its anchor before writing code: which section comes first, which stable ID/class it attaches to, and via which `insertAdjacentHTML` position (`afterbegin` / `afterend`)
+- Build one function per section (`addEligibility()`, `addStructure()`, `addFees()`...) — never one giant HTML blob
+- **Every section function starts with its own idempotent guard**: `if (document.querySelector("#eg-xxx")) return;`
+- Why: guards make `init()` safe to re-run (SPA re-inject, double trigger, staggered re-init) — each call only builds the sections that are missing
+- Anchor chain pattern (MONASH EG-MOL1401 example): wrapper inserted `beforebegin` `#rankings` → hero `afterbegin` wrapper → quick links `afterend` `.eg-hero` → eligibility `afterend` `.eg-quick-links` → each next section `afterend` previous section's ID
+- Rule: **anchors must exist before their dependent section runs** — call functions in the same order as the chain; a missing anchor means that section (and everything after it) fails, so verify each anchor selector in QA
+- Different from P2 (single insert guard) — this is the ordering + per-section guard strategy for multi-section builds
+
+### P103. One-Shot Auto-Apply + User-Override Guard (Anti-Loop)
+**Principle:** Any JS that programmatically pre-selects / pre-fills / force-applies UI state must fire once per flow only, must never reset its own done-flag from a function that runs on every page load, and must stop permanently once the user changes that control manually.
+**Why:** If a page-load poll resets the done-flag, the guard becomes a no-op — the automation re-applies after every reload and silently overrides the user's choice (symptom: "my selection flips back after loading").
+**When:** Shipping/payment pre-select, dropdown default, radio prefill, auto-open tab/modal, auto-scroll, auto-activate CTA.
+
+**Rules:**
+- Store done-flag in `sessionStorage` (survives reload); reset ONLY at intentional flow start (CTA click / form submit) — never inside an init or poll function
+- Bind ONE capture-phase `change` listener (`data-eg-*` guard) → non-programmatic value sets `egUserChoice=true` + clears the pending interval
+- Ignore your own `dispatchEvent` by comparing value, otherwise the guard disables itself
+- Keep the interval handle in IIFE scope so the guard can `clearInterval` it
+- Gate EVERY entry point on the flag: helper fn, `waitForElement` trigger, bottom init block
+- Never let the `debug=0` catch swallow a ReferenceError — vars used by the bottom init block must be IIFE-scoped
+
+### P104. Viewport Auto-Action Config Flag
+**Principle:** Any action the script performs automatically after a user step (auto add-to-cart after size select, auto-scroll, auto-open) must be driven by one named config constant, never hard-coded — so client feedback ("remove it from mobile", "disable everywhere") becomes a one-line change.
+**Why:** Auto-actions flip often during client QA (AWG AB045: `mobile` → `none` in a single feedback round). A hard-coded click means re-hunting the code path every time; a constant documents the current decision and its allowed values.
+**When:** auto-click / auto-add after variant or size selection, auto-apply, auto-scroll, auto-open overlays — anything triggered by an interaction rather than page init.
+
+**Rules:**
+```js
+// AUTO_ADD_ON - viewports where a size/variant switch may auto-click Add-to-Cart:
+// 'mobile' | 'desktop' | 'both' | 'none'  (change this one value to switch behaviour)
+var AUTO_ADD_ON = 'none';
+
+// isAutoAddAllowed - true only when AUTO_ADD_ON covers the current viewport
+function isAutoAddAllowed() {
+  if (AUTO_ADD_ON === 'both') return true;
+  if (AUTO_ADD_ON === 'none') return false;
+  var isMobile = window.innerWidth < 768; // must match the CSS breakpoint
+  return AUTO_ADD_ON === 'mobile' ? isMobile : !isMobile;
+}
+```
+- Declare the constant at IIFE top with its allowed values in the comment line — QA flips one value, nothing else
+- Gate ONLY the action site: `if (isAutoAddAllowed()) { btn.click(); }` — validation, fetch, popups and the rest of the flow stay untouched
+- Reuse the exact CSS breakpoint (`<768` mobile / `>=768` desktop) so behaviour and layout never disagree
+- Default to the least intrusive value while feedback is pending (`'none'` = manual CTA only)
 
 ---
 
