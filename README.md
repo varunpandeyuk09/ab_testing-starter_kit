@@ -20,9 +20,10 @@
 
 1. **Provide a brief** — paste your brief in any format below
 2. **Read the files in order** when beginning a new test:
-   - `FLOW.md` — process flow
-   - `AGENTS.md` — The Ultimate Brain (templates, patterns, snippets, rules — everything)
-   - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
+    - `FLOW.md` — process flow
+    - `AGENTS.md` — MUST rules + router (slim, read first)
+    - `docs/agents/` — detail files, load on demand (rules, snippets S1-S8, patterns P1-P104, platforms, pitfalls)
+    - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
    - `AI/guides/SMART-COMMUNICATION-GUIDE.md` — communication templates (email, WhatsApp, client updates)
    - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
    - **Do NOT read** `ClientData/<CLIENT>/` — only AGENTS.md for initial read
@@ -73,7 +74,12 @@ Add trust badges below H1
 ab_testing-starter_kit/
   FLOW.md                 ← START HERE
   README.md               ← this file
-  AGENTS.md               ← The Ultimate Brain (single source of truth)
+  AGENTS.md               ← MUST rules + router (slim, points to docs/agents/)
+  docs/
+    agents/               ← detail files: 01 core rules, 02 scaffold, 03 snippets S1-S8,
+                            04-05 JS/CSS patterns, 06 quick P1-P20, 07 test types,
+                            08 CRO, 09 platforms, 10 pitfalls, 11-13 advanced P21-P104,
+                            14 share.js, 15 stats — load on demand, never all at once
   communications/         ← PRIVATE, gitignored — DO NOT READ (client/manager comms)
   AI/
     guides/               ← reference guides
@@ -81,8 +87,9 @@ ab_testing-starter_kit/
       SMART-COMMUNICATION-GUIDE.md ← communication templates (email, WhatsApp, client updates)
   scripts/                ← utility scripts
     qa_validate.py        ← automated QA
-  docs/                   ← generic setup docs (outside AI)
+  docs/                   ← setup docs + AI detail files
     SHOPIFY-GIT-SETUP.md
+    agents/               ← AI brain details (see above)
   ../AB-test/<CLIENT>/
     <TEST_NAME>/
       variation1/         ← JS + CSS only
@@ -108,7 +115,7 @@ ab_testing-starter_kit/
 
 ## Key Rules
 
-- Read `AGENTS.md` first — it contains all patterns, rules, snippets, and learnings
+- Read `AGENTS.md` first — MUST rules + index of `docs/agents/` detail files
 - Base `variation.js` = only `waitForElement` + `init()`
 - Add `live()` only when events needed
 - Add `listener()` only for SPA sites
@@ -118,10 +125,10 @@ ab_testing-starter_kit/
 
 ## Knowledge Loop (after every test)
 
-- New technique → AGENTS.md **only if qualifies**:
+- New technique → `docs/agents/` **only if qualifies**:
   1. Generic (not client-specific) + reusable across ≥2 clients or ≥3 tests
-  2. Distinct technique not covered by P1-P20 (see Section 8)
+  2. Distinct technique not covered by P1-P104 (see `docs/agents/06-quick-patterns.md`)
   3. Has copy-paste snippet + gotcha
   4. Else → keep in test's `notes`, not new P#
-- QA/process change → AGENTS.md
+- QA/process change → `docs/agents/10-pitfalls.md`
 - Any kit change → update this file
