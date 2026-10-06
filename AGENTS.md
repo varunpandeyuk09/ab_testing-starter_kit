@@ -49,9 +49,11 @@ Base `variation.js` = only `waitForElement` + `init()`. Add `live()` only when e
 | Advanced P47-P82 | `docs/agents/12-patterns-p47-p82.md` | Sec 24 |
 | Newest P83-P104 (P101 SPA guard, P102 scaffold, P103 anti-loop, P104 auto-action) | `docs/agents/13-patterns-p83-p104.md` | Sec 25 |
 | Tracking rules | `docs/agents/14-sharejs.md` | Sec 15 |
+| Communication records (schema + message rules) | `docs/agents/16-communication.md` | New |
+| Design analysis (screenshot to code, 13 steps) | `docs/agents/17-image-analysis.md` | New |
 | Stats (context only) | `docs/agents/15-stats.md` | Sec 13 |
 
-Process flow: `FLOW.md`. Design analysis: `AI/guides/IMAGE_ANALYSIS.md`.
+Process flow: `FLOW.md`. Design analysis: `docs/agents/17-image-analysis.md`.
 
 Do NOT read `communications/` (private, gitignored). Do NOT read `ClientData/<CLIENT>/` for initial read.
 

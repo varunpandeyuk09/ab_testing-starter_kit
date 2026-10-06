@@ -22,10 +22,9 @@
 2. **Read the files in order** when beginning a new test:
     - `FLOW.md` — process flow
     - `AGENTS.md` — MUST rules + router (slim, read first)
-    - `docs/agents/` — detail files, load on demand (rules, snippets S1-S8, patterns P1-P104, platforms, pitfalls)
-    - `AI/guides/IMAGE_ANALYSIS.md` — design screenshot analysis checklist
-   - `AI/guides/SMART-COMMUNICATION-GUIDE.md` — communication templates (email, WhatsApp, client updates)
-   - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
+    - `docs/agents/` — detail files, load on demand (rules, snippets S1-S8, patterns P1-P104, platforms, pitfalls, communication records)
+    - `docs/agents/17-image-analysis.md` — design screenshot analysis checklist
+    - **Do NOT read** `communications/` — private, gitignored (client/manager comms, not for AI)
    - **Do NOT read** `ClientData/<CLIENT>/` — only AGENTS.md for initial read
 3. **Follow the flow** — PARSE → ANALYZE → DESIGN → ASK → MATCH → SCAFFOLD → CODE → QA
 4. **If anything is missing** — ASK first, never guess
@@ -79,12 +78,8 @@ ab_testing-starter_kit/
     agents/               ← detail files: 01 core rules, 02 scaffold, 03 snippets S1-S8,
                             04-05 JS/CSS patterns, 06 quick P1-P20, 07 test types,
                             08 CRO, 09 platforms, 10 pitfalls, 11-13 advanced P21-P104,
-                            14 share.js, 15 stats — load on demand, never all at once
+                            14 share.js, 15 stats, 16 communication records, 17 design analysis — load on demand, never all at once
   communications/         ← PRIVATE, gitignored — DO NOT READ (client/manager comms)
-  AI/
-    guides/               ← reference guides
-      IMAGE_ANALYSIS.md   ← design screenshot analysis
-      SMART-COMMUNICATION-GUIDE.md ← communication templates (email, WhatsApp, client updates)
   scripts/                ← utility scripts
     qa_validate.py        ← automated QA
   docs/                   ← setup docs + AI detail files

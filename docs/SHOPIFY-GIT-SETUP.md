@@ -8,7 +8,7 @@
 
 ## Why Moved?
 
-`ab_testing-starter_kit` is now **lightweight** (only `AI/`, `ClientData/`, `scripts/`). Heavy theme files (`assets/`, `sections/` etc.) live in sibling `AB-test` repo under each test:
+`ab_testing-starter_kit` is now **lightweight** (only `docs/`, `ClientData/`, `scripts/`). Heavy theme files (`assets/`, `sections/` etc.) live in sibling `AB-test` repo under each test:
 ```
 D:\WORK_EXPOGROWTH\
 ├── ab_testing-starter_kit\   ← docs/patterns only

@@ -32,7 +32,7 @@ PARSE ──────── goal, page/site, user behavior, expected outcome,
 ANALYZE ────── page type, platform/framework, DOM architecture, SPA/dynamic, responsive, dependencies, unknowns
   │
   ▼
-DESIGN ─────── if screenshot/Figma provided → follow IMAGE_ANALYSIS.md (zoom, layout, colors, spacing, borders, mobile)
+DESIGN ─────── if screenshot/Figma provided → follow docs/agents/17-image-analysis.md (zoom, layout, colors, spacing, borders, mobile)
   │
   ▼
 ASK ────────── only blocking questions (do not ask inferable from brief/patterns/site)
@@ -65,7 +65,7 @@ HANDOFF ───── final impl + files/changes + assumptions + QA status + b
 |---|---|---|
 | PARSE | Extract goal, page, behavior, outcome, constraints, success | — |
 | ANALYZE | Determine page type, platform, DOM, SPA, responsive, deps, unknowns | — |
-| DESIGN | If screenshot/Figma → Analyze layout, colors, spacing, borders, mobile | IMAGE_ANALYSIS.md |
+| DESIGN | If screenshot/Figma → Analyze layout, colors, spacing, borders, mobile | docs/agents/17-image-analysis.md |
 | ASK | Only blocking questions | — |
 | MATCH | Find closest pattern/snippet/precedent from kit | AGENTS.md |
 | SCAFFOLD | Create folders + init strategy | — |

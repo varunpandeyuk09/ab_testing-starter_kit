@@ -1,21 +1,24 @@
-# Image Analysis Checklist — Figma Screenshot Parse
+# 17 — Design Analysis (Screenshot to Code)
 
-> **RULE: Do not code immediately after seeing an image. Analyze first, then code.**
+> Scope: screenshot-to-code analysis in 13 steps (11 base steps + states/motion + accessibility + output template + anti-guessing rules).
+> Priority: MEDIUM — load at the `FLOW.md` DESIGN step, before MATCH.
+> RULE: Do not code immediately after seeing an image. Analyze first, then code.
 
----
+## When to load
+
+- The brief includes a screenshot, Figma link, or any design reference.
+- Output of this file feeds MATCH (pattern pick → `06-quick-patterns.md`) and ASK (blocking questions → `16-communication.md` clarification record).
 
 ## Step 1: Zoom In
 
-- Open the image at full size
-- Zoom into every element
-- Do not miss small details (icons, lines, shadows, colors, spacing)
-- Check both desktop AND mobile views if provided
-
----
+- Open the image at full size.
+- Zoom into every element.
+- Do not miss small details (icons, lines, shadows, colors, spacing).
+- Check both desktop AND mobile views if provided. One viewport only → the other is TBD (see Anti-guessing rules).
 
 ## Step 2: Identify Component Type
 
-What are you building?
+What are you building? Then map it to a kit test type (`07-test-types.md`).
 
 | Component | What to Check |
 |-----------|---------------|
@@ -24,7 +27,7 @@ What are you building?
 | **Tab Navigation** | Active tab indicator (underline/highlight), scroll behavior |
 | **Badge / Tag** | Position (absolute?), shape (pill?), background color |
 | **CTA Button** | Color, size, border radius, icon, hover effect |
-| **Carousel / Slider** | Navigation arrows, thumbnails, dots, slides visible |
+| **Carousel / Slider** | Navigation arrows, thumbnails, dots, slides visible → S5 Slick (jQuery) or S8 Swiper (no jQuery) |
 | **Trust Section** | Cards connected or with gap? Separator lines? Icons? |
 | **Hero Enhancement** | Overlap effect? Social proof? USP bar? |
 | **Price Display** | Sale vs regular, strikethrough, badges |
@@ -34,8 +37,6 @@ What are you building?
 | **Banner** | Full-width or contained? Close button? |
 | **Navigation** | Active state, underline, color change |
 | **Table** | Header style, row borders, zebra striping |
-
----
 
 ## Step 3: Layout Analysis
 
@@ -69,8 +70,6 @@ TAB NAVIGATION:
     Tab Content
 ```
 
----
-
 ## Step 4: Spacing Map
 
 | Property | What to Look For | Common Values |
@@ -91,8 +90,6 @@ TAB NAVIGATION:
 19px       → Very round (panels)
 9999px     → Pill shape (badges, tags)
 ```
-
----
 
 ## Step 5: Colors Identify
 
@@ -120,8 +117,6 @@ RED:        #ef4444, #dc2626
 BLUE:       #3b82f6, #2563eb
 ```
 
----
-
 ## Step 6: Typography Note
 
 | Element | What to Look For |
@@ -141,8 +136,6 @@ BODY TEXT:  14px, normal
 VALUES:     28-31px, bold, primary color
 HEADINGS:   22-32px, bold
 ```
-
----
 
 ## Step 7: Borders and Separators
 
@@ -179,8 +172,6 @@ CONNECTED (no gap):
   gap: 0, border-right on cards
 ```
 
----
-
 ## Step 8: Shadows and Effects
 
 | Check | What to Look For |
@@ -201,9 +192,7 @@ HOVER:    box-shadow: 0 4px 12px rgba(0,0,0,0.15)
           transform: translateY(-1px)
 ```
 
----
-
-## Step 9: Responsive/Mobile
+## Step 9: Responsive / Mobile
 
 | Property | Desktop | Mobile |
 |----------|---------|--------|
@@ -232,8 +221,6 @@ HIDDEN ON MOBILE:
 @media (max-width: 767px) { .element { display: none; } }
 ```
 
----
-
 ## Step 10: Special Elements
 
 | Element | What to Check |
@@ -244,13 +231,11 @@ HIDDEN ON MOBILE:
 | **Strikethrough** | text-decoration: line-through for old price |
 | **Pill Shapes** | border-radius: 9999px |
 | **ARIA Attributes** | role, aria-selected, aria-label |
-| **Data Attributes** | [data-soul], [data-pid], custom attributes |
-
----
+| **Data Attributes** | Stable hooks for selectors (prefer over nth-child) |
 
 ## Step 11: Confirm
 
-**If unclear, ask first:**
+**If unclear, ask first (file a `clarification` record per file 16):**
 - Element is not clearly visible
 - Cannot identify color (ask for hex code)
 - Not sure if gap or separator
@@ -259,7 +244,57 @@ HIDDEN ON MOBILE:
 - Animation/transition details unclear
 - Hover state not shown in design
 
----
+## Step 12: States and Motion (NEW)
+
+Designs show one frozen frame. List every state the build needs, even when not pictured.
+
+| Check | What to Look For |
+|-------|------------------|
+| **Hover / Focus / Active** | Color, shadow, or underline change? Focus ring visible? |
+| **Disabled** | Greyed out or always-active look? (If the button must look active at all times, note it — block clicks internally instead of disabling.) |
+| **Loading** | Spinner, skeleton, or disabled-while-loading? |
+| **Empty / Error** | Empty-list message? Inline error text color and position (e.g., red validation line under a selector)? |
+| **Transitions** | Which property animates, duration, easing? Must the hand-off between two overlays stay visible? |
+| **Overlays** | Backdrop color + opacity — must stay constant through the whole flow. List z-index order when overlays stack. Card must never render on top of unrelated page sections. |
+| **Enter / Exit animation** | Slide direction (e.g., panel slides in from the right, sheet swipes down on mobile), fade, or instant? |
+| **Reduced motion** | If animation exists, plan a `prefers-reduced-motion` fallback (instant show/hide). |
+
+## Step 13: Accessibility Lens (NEW)
+
+| Check | Rule |
+|-------|------|
+| **Contrast** | Text ≥ 4.5:1 against background; large text ≥ 3:1 |
+| **Focus** | Every interactive element reachable and visibly focused via keyboard |
+| **Touch targets** | ≥ 44px on mobile for taps (CTAs, size options, close icons) |
+| **Color independence** | State never carried by color alone (error = color + text, active = color + underline/label) |
+| **Dynamic content** | Validation messages and success cards announced (`aria-live` / `role="status"`); icons decorative only (`aria-hidden`) |
+| **Images** | Informative images get `alt`; decorative get empty `alt` |
+
+Full bug catalog for violations: `10-pitfalls.md` section E.
+
+## Analysis Output Template (fill before MATCH)
+
+```
+DESIGN ANALYSIS — [Test]:
+1. Component: ... (Step 2 → test type in 07-test-types.md)
+2. Layout sketch: ... (Step 3, ASCII if helpful)
+3. Measurements: spacing / radius / fonts / hex colors (Steps 4-6)
+4. Borders + shadows: ... (Steps 7-8)
+5. Mobile delta: ... (Step 9; or MOBILE VIEW MISSING → ask)
+6. States + motion: ... (Step 12)
+7. A11y notes: ... (Step 13)
+8. Anchor guess: ... (stable selector near the insertion point)
+9. Pattern match: P# + S# (06-quick-patterns.md + 03-snippets.md)
+10. Open questions: ... (→ clarification record, file 16)
+```
+
+## Anti-guessing rules [MUST]
+
+- Never invent hex codes, font families, or spacing values — read them from the design tool or computed styles, else mark TBD and ask.
+- One viewport provided → the other viewport is TBD, not "same as desktop".
+- Hover/animation not shown → assume none exists; note as TBD instead of adding free animation.
+- Low-resolution screenshot → borders, separators, and small text are TBD until confirmed.
+- Never restyle stable site chrome (header, nav, PDP chrome) unless the brief asks — scope CSS under `.EG-TEST-NAME` (RULE 6).
 
 ## Quick Reference
 
@@ -269,9 +304,9 @@ RADIUS:      0 → 4px → 8px → 12px → 19px → 9999px (pill)
 FONTS:       10px (label) → 12px (small) → 14px (body) → 22px (heading) → 28px+ (value)
 SHADOWS:     subtle → medium → bold
 SEPARATORS:  1px solid #e5e7eb (vertical or horizontal)
+MOTION:      instant default; slide/fade only if design shows it
+TOUCH:       ≥ 44px tap targets on mobile
 ```
-
----
 
 ## TL;DR
 
@@ -286,3 +321,5 @@ SEPARATORS:  1px solid #e5e7eb (vertical or horizontal)
 9. **Mobile** — desktop vs mobile differences
 10. **Special Elements** — icons, badges, dots, ARIA
 11. **Confirm** — ask if in doubt
+12. **States + Motion** — all UI states, transitions, overlay discipline
+13. **Accessibility** — contrast, focus, touch targets, live regions
