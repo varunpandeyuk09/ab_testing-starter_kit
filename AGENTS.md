@@ -35,6 +35,7 @@ Base `variation.js` = only `waitForElement` + `init()`. Add `live()` only when e
 
 | When you need | Read | Old section |
 |---|---|---|
+| User context — load FIRST (standing decisions, corrections) | `docs/agents/00-user-context.md` | New |
 | Core 6 rules | `docs/agents/01-core-rules.md` | Sec 1-6 |
 | Templates, init pattern | `docs/agents/02-file-structure.md` | Sec 7 |
 | Copy-paste code S1-S8 (waitForElement, live, SPA, cookies, Slick, XHR, ScrollSpy, Swiper) | `docs/agents/03-snippets.md` | Sec 7.1 |
@@ -47,7 +48,7 @@ Base `variation.js` = only `waitForElement` + `init()`. Add `live()` only when e
 | QA pitfalls (mistakes, bugs, security, perf, a11y) | `docs/agents/10-pitfalls.md` | Sec 12+16+17+18+19+21+22 |
 | Advanced P21-P46 | `docs/agents/11-patterns-p21-p46.md` | Sec 23 |
 | Advanced P47-P82 | `docs/agents/12-patterns-p47-p82.md` | Sec 24 |
-| Newest P83-P104 (P101 SPA guard, P102 scaffold, P103 anti-loop, P104 auto-action) | `docs/agents/13-patterns-p83-p104.md` | Sec 25 |
+| Newest P83-P105 (P101 SPA guard, P102 scaffold, P103 anti-loop, P104 auto-action, P105 CSS text swap) | `docs/agents/13-patterns-p83-p104.md` | Sec 25 |
 | Tracking rules | `docs/agents/14-sharejs.md` | Sec 15 |
 | Communication records (schema + message rules) | `docs/agents/16-communication.md` | New |
 | Design analysis (screenshot to code, 13 steps) | `docs/agents/17-image-analysis.md` | New |

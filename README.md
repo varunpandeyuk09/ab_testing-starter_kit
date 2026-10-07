@@ -75,7 +75,7 @@ ab_testing-starter_kit/
   README.md               ← this file
   AGENTS.md               ← MUST rules + router (slim, points to docs/agents/)
   docs/
-    agents/               ← detail files: 01 core rules, 02 scaffold, 03 snippets S1-S8,
+    agents/               ← detail files: 00 user context (load first), 01 core rules, 02 scaffold, 03 snippets S1-S8,
                             04-05 JS/CSS patterns, 06 quick P1-P20, 07 test types,
                             08 CRO, 09 platforms, 10 pitfalls, 11-13 advanced P21-P104,
                             14 share.js, 15 stats, 16 communication records, 17 design analysis — load on demand, never all at once

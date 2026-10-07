@@ -56,7 +56,7 @@ HANDOFF ───── final impl + files/changes + assumptions + QA status + b
   ▼
   CAPTURE ────── genuinely new technique?
                ├── No → finish
-                └── Yes → reusable? validated? non-obvious?
+                └── Yes → reusable? validated? intent-confirmed? (necessity + consistency; deliberate, not accidental)
                          ├── No → do not add
                          └── Yes → AGENTS.md exists? → update : add new P#
 ```
@@ -72,4 +72,4 @@ HANDOFF ───── final impl + files/changes + assumptions + QA status + b
 | CODE | Smallest solution per conventions | AGENTS.md (Section 7.1) |
 | QA | Verify 13 checks; loop if fail | AGENTS.md (Section 9) |
 | HANDOFF | Provide impl + QA status + verification | — |
-| CAPTURE | If new + reusable + validated + non-obvious → Add to AGENTS.md | AGENTS.md |
+| CAPTURE | If new + reusable + validated + intent-confirmed → Add to docs/agents/ | docs/agents/ |

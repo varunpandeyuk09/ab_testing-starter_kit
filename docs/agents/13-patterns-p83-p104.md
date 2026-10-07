@@ -166,3 +166,27 @@ function isAutoAddAllowed() {
 - Gate ONLY the action site: `if (isAutoAddAllowed()) { btn.click(); }` — validation, fetch, popups and the rest of the flow stay untouched.
 - Reuse the exact CSS breakpoint (`<768` mobile / `>=768` desktop) so behaviour and layout never disagree.
 - Default to the least intrusive value while feedback is pending (`'none'` = manual CTA only).
+
+## P105. CSS-Only Text Swap (font-size:0 + ::before/::after)
+
+**Principle:** To change visible text without touching the DOM text node, set the element's `font-size: 0` and render the new copy in `::before` or `::after` with an explicit `font-size` (use `!important` where host styles are strong).
+
+**Why:** Zero JS, zero reflow risk on the text node; host listeners and structure stay intact. The DOM text is untouched.
+
+**When:** Copy/headline swap on heavily-styled pages where JS text replacement risks breaking bindings.
+
+**Rules:**
+```css
+.EG-XXX .hero-title {
+  font-size: 0 !important;
+}
+.EG-XXX .hero-title::before {
+  content: "New headline copy";
+  font-size: 28px !important;
+}
+```
+- Always set an explicit `font-size` on the pseudo-element — it inherits the zeroed size otherwise.
+- Center and constrain via the pseudo-element (`display`, `max-width`, alignment), not the zeroed parent.
+- Gotcha 1: screen readers announce the ORIGINAL DOM text while sighted users see the new copy — note the mismatch for information-critical copy.
+- Gotcha 2: pseudo-element text is not selectable and invisible to JS reads — content placed in CSS is a one-way door.
+- Different from P10 (JS leaf-text swap) — no DOM write at all.
